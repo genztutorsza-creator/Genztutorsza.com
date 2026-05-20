@@ -28,7 +28,7 @@
         .hero-bg {
             background:
                 linear-gradient(rgba(6,12,22,0.85), rgba(6,12,22,0.92)),
-                url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1400&auto=format&fit=crop');
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23060c16" width="1200" height="600"/></svg>');
             background-size: cover;
             background-position: center;
         }
@@ -56,9 +56,57 @@
             margin-bottom: 12px;
         }
 
-        .tutor-card img {
-            height: 300px;
-            object-fit: cover;
+        /* IMAGE PLACEHOLDER STYLES */
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 1rem;
+        }
+
+        .navbar-logo-placeholder {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+        }
+
+        .navbar-logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .hero-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+        }
+
+        .hero-image-placeholder img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
         }
 
         /* MOBILE DRAWER ANIMATIONS */
@@ -149,7 +197,9 @@
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         <div class="flex items-center gap-3">
-            <img src="https://i.imgur.com/7Xq4R6L.png" alt="Gen Z Tutors Logo" class="h-12 w-12 rounded-full bg-white p-1">
+            <div class="h-12 w-12 navbar-logo-placeholder">
+                <img src="https://i.imgur.com/eYjP9kK.png" alt="Gen Z Tutors Logo">
+            </div>
             <div>
                 <h1 class="font-extrabold text-xl">Gen Z Tutors</h1>
                 <p class="text-xs text-slate-300">Learn differently.</p>
@@ -286,8 +336,8 @@
             </div>
         </div>
 
-        <div class="glass rounded-3xl p-8">
-            <img src="https://i.imgur.com/7Xq4R6L.png" class="w-full rounded-2xl" alt="Gen Z Tutors">
+        <div class="glass rounded-3xl p-8 hero-image-placeholder">
+            <img src="https://i.imgur.com/9B8k2qL.png" alt="Gen Z Tutors Banner">
         </div>
     </div>
 </section>
@@ -429,9 +479,9 @@
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-            <div class="glass rounded-3xl overflow-hidden tutor-card card-hover">
-                <div class="h-80 bg-gradient-to-br from-orange-500 to-purple-600 flex items-center justify-center">
-                    <i class="fa-solid fa-user text-6xl text-white/30"></i>
+            <div class="glass rounded-3xl overflow-hidden card-hover">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo">
                 </div>
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-2">Thapelo</h3>
@@ -442,9 +492,9 @@
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden tutor-card card-hover">
-                <div class="h-80 bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
-                    <i class="fa-solid fa-user text-6xl text-white/30"></i>
+            <div class="glass rounded-3xl overflow-hidden card-hover">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Mike">
                 </div>
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-2">Mike</h3>
@@ -455,9 +505,9 @@
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden tutor-card card-hover">
-                <div class="h-80 bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                    <i class="fa-solid fa-user text-6xl text-white/30"></i>
+            <div class="glass rounded-3xl overflow-hidden card-hover">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Tyren">
                 </div>
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-2">Tyren Majola</h3>
@@ -468,9 +518,9 @@
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden tutor-card card-hover">
-                <div class="h-80 bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-                    <i class="fa-solid fa-user text-6xl text-white/30"></i>
+            <div class="glass rounded-3xl overflow-hidden card-hover">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke">
                 </div>
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-2">Lilonke</h3>
@@ -481,9 +531,9 @@
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden tutor-card card-hover">
-                <div class="h-80 bg-gradient-to-br from-orange-500 to-yellow-600 flex items-center justify-center">
-                    <i class="fa-solid fa-user text-6xl text-white/30"></i>
+            <div class="glass rounded-3xl overflow-hidden card-hover">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Fulufhelo">
                 </div>
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-2">Fulufhelo</h3>
