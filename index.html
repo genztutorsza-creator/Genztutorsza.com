@@ -1228,15 +1228,13 @@
     let onAuthStateChanged;
     let signOut;
 
-    const firebaseConfig = {
-        apiKey: 'AIzaSyAGG8S44RzRP129Caj5QfyVkT8dffH0ip0',
-        authDomain: 'genztutorsza-efa13.firebaseapp.com',
-        projectId: 'genztutorsza-efa13',
-        storageBucket: 'genztutorsza-efa13.firebasestorage.app',
-        messagingSenderId: '699691673917',
-        appId: '1:699691673917:web:7ed8bd10cf0701410cfd54',
-        measurementId: 'G-CL8NS75JGJ'
-    };
+   
+      const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+};
+
 
     function hasFirebaseConfig() {
         return !Object.values(firebaseConfig).some(value => String(value).includes('PASTE_YOUR'));
