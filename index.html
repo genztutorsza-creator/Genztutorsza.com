@@ -271,6 +271,55 @@
         .close-profile-btn:hover {
             background: rgba(255,255,255,0.2);
         }
+
+        .booking-step-tab {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.09);
+            color: #94a3b8;
+            border-radius: 0.75rem;
+            padding: 0.75rem 0.5rem;
+        }
+
+        .booking-step-tab.active {
+            background: #f97316;
+            color: white;
+            border-color: #fb923c;
+        }
+
+        .booking-input {
+            width: 100%;
+            background: #09111d;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            color: white;
+        }
+
+        .booking-input:focus {
+            outline: 2px solid rgba(56,189,248,0.45);
+            border-color: rgba(56,189,248,0.7);
+        }
+
+        .booking-choice {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.875rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .booking-choice.active {
+            border-color: #38bdf8;
+            background: rgba(56,189,248,0.15);
+        }
+
+        .time-slot.booked {
+            background: rgba(239,68,68,0.2);
+            color: #fca5a5;
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
     </style>
 </head>
 <body>
@@ -310,10 +359,7 @@
                 Sign Up
             </button>
 
-            <a href="https://wa.me/27679256394" target="_blank"
-               class="bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-sm">
-               Book Now
-            </a>
+            <a href="#booking" class="bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Book Now</a>
         </div>
     </div>
     <!-- MOBILE MENU -->
@@ -334,11 +380,7 @@
                 </button>
             </div>
 
-            <a href="https://wa.me/27679256394"
-               target="_blank"
-               class="drawer-link bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-center mt-2">
-               Book Now
-            </a>
+            <a href="#booking" class="drawer-link bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-center mt-2">Book Now</a>
         </div>
     </div>
 </header>
@@ -937,36 +979,160 @@
 
 <!-- BOOKING SYSTEM -->
 <section id="booking" class="py-24 bg-[#08111f]">
-  <div class="max-w-4xl mx-auto px-6 text-center">
-    <h2 class="section-title">Book A Session</h2>
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="section-title">Book Your Lesson</h2>
+      <p class="text-slate-300 max-w-2xl mx-auto">Select your modules, choose a tutor, and pick an available weekend time slot.</p>
+    </div>
 
-    <form class="glass rounded-3xl p-10 mt-12 text-left space-y-6">
-      <div>
-        <label class="block mb-2 text-sm text-slate-300">Full Name</label>
-        <input type="text" placeholder="Enter your full name" class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white placeholder-slate-500">
+    <div id="bookingAuthNotice" class="glass rounded-3xl p-8 text-center hidden">
+      <i class="fa-solid fa-lock text-4xl text-orange-400 mb-4"></i>
+      <h3 class="text-2xl font-bold mb-3">Sign In Required</h3>
+      <p class="text-slate-300 mb-6">You need to be logged in to book a lesson with Gen Z Tutors.</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <button type="button" id="bookingLoginBtn" class="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-xl font-semibold transition">Login</button>
+        <button type="button" id="bookingSignupBtn" class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">Sign Up</button>
+      </div>
+    </div>
+
+    <div id="bookingApp" class="glass rounded-3xl p-6 md:p-10">
+      <div class="grid grid-cols-4 gap-2 mb-8 text-center text-xs sm:text-sm font-semibold">
+        <div class="booking-step-tab active" data-step-tab="1">Step 1</div>
+        <div class="booking-step-tab" data-step-tab="2">Step 2</div>
+        <div class="booking-step-tab" data-step-tab="3">Step 3</div>
+        <div class="booking-step-tab" data-step-tab="4">Step 4</div>
       </div>
 
-      <div>
-        <label class="block mb-2 text-sm text-slate-300">Select Tutor</label>
-        <select class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
-          <option>Choose a tutor...</option>
-          <option>Tyren Majola (Founder & CEO)</option>
-          <option>Thapelo (Commerce Tutor)</option>
-          <option>Mike (Academic Mentor)</option>
-          <option>Lilonke Breakfast (Accounting Tutor)</option>
-          <option>Fulufhelo (Accounting Tutor)</option>
-        </select>
+      <p id="bookingMessage" class="hidden rounded-xl px-4 py-3 text-sm font-medium mb-6"></p>
+
+      <div class="booking-step" data-booking-step="1">
+        <h3 class="text-2xl font-bold mb-2">Step 1: Select Your Academic Level & Modules</h3>
+        <p class="text-slate-300 mb-6">Choose the level and modules you need help with.</p>
+
+        <label class="block text-sm font-semibold text-slate-300 mb-3">Academic Level</label>
+        <div id="academicLevelOptions" class="grid sm:grid-cols-2 gap-3 mb-6"></div>
+
+        <div id="moduleArea" class="hidden">
+          <label class="block text-sm font-semibold text-slate-300 mb-3">Select Modules</label>
+          <div id="moduleOptions" class="space-y-3"></div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+          <button type="button" id="clearBookingStep1" class="border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Clear</button>
+          <button type="button" data-next-step="2" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+        </div>
       </div>
 
-      <div>
-        <label class="block mb-2 text-sm text-slate-300">Preferred Date</label>
-        <input type="date" class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+      <div class="booking-step hidden" data-booking-step="2">
+        <h3 class="text-2xl font-bold mb-2">Step 2: Choose Your Tutor & Lesson Details</h3>
+        <p class="text-slate-300 mb-6">Select a tutor and specify your lesson preferences.</p>
+
+        <label class="block text-sm font-semibold text-slate-300 mb-3">Available Tutors</label>
+        <div id="tutorOptions" class="grid gap-4 mb-6"></div>
+
+        <div class="grid md:grid-cols-3 gap-5">
+          <div>
+            <label class="block mb-2 text-sm text-slate-300">Lesson Type</label>
+            <select id="bookingLessonType" class="booking-input">
+              <option value="">Select lesson type</option>
+              <option>Online</option>
+              <option>In-Person</option>
+            </select>
+          </div>
+          <div>
+            <label id="bookingVenueLabel" class="block mb-2 text-sm text-slate-300">Platform / Venue</label>
+            <select id="bookingVenue" class="booking-input">
+              <option value="">Select platform or venue</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-2 text-sm text-slate-300">Lesson Duration</label>
+            <select id="bookingDuration" class="booking-input">
+              <option value="">Select duration</option>
+              <option>30 minutes</option>
+              <option>1 hour</option>
+              <option>1.5 hours</option>
+              <option>2 hours</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-between gap-3 mt-8">
+          <button type="button" data-prev-step="1" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+          <button type="button" data-next-step="3" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+        </div>
       </div>
 
-      <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 transition rounded-xl py-4 font-bold text-lg">
-        Submit Booking
-      </button>
-    </form>
+      <div class="booking-step hidden" data-booking-step="3">
+        <h3 class="text-2xl font-bold mb-2">Step 3: Choose Your Preferred Date & Time</h3>
+        <p class="text-slate-300 mb-6">Gen Z Tutors is available on Saturdays and Sundays only.</p>
+
+        <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl p-4 mb-6 text-sky-200 text-sm">
+          <i class="fa-solid fa-circle-info mr-2"></i>
+          Booked slots are saved in this browser for now. When Firestore is enabled, bookings are also saved to Firebase.
+        </div>
+
+        <label class="block mb-2 text-sm text-slate-300">Date (Saturday or Sunday)</label>
+        <input id="bookingDate" type="date" class="booking-input mb-3">
+        <p id="nextWeekendHint" class="text-xs text-slate-400 mb-6"></p>
+
+        <label class="block mb-3 text-sm text-slate-300">Available Time Slots</label>
+        <div id="timeSlotOptions" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5"></div>
+        <div class="flex gap-5 text-xs text-slate-400 mb-6">
+          <span><span class="inline-block w-3 h-3 rounded bg-white/10 border border-white/15 mr-1"></span>Available</span>
+          <span><span class="inline-block w-3 h-3 rounded bg-red-500/30 mr-1"></span>Booked</span>
+        </div>
+
+        <label class="block mb-2 text-sm text-slate-300">Additional Notes (Optional)</label>
+        <textarea id="bookingNotes" rows="4" placeholder="Tell us about your learning goals, challenges, or any specific topics you'd like to focus on..." class="booking-input"></textarea>
+
+        <div class="flex justify-between gap-3 mt-8">
+          <button type="button" data-prev-step="2" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+          <button type="button" data-next-step="4" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+        </div>
+      </div>
+
+      <div class="booking-step hidden" data-booking-step="4">
+        <h3 class="text-2xl font-bold mb-2">Step 4: Confirm Your Booking</h3>
+        <p class="text-slate-300 mb-6">Review your booking details before sending your request.</p>
+
+        <div id="bookingSummary" class="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 mb-6"></div>
+
+        <div class="grid md:grid-cols-2 gap-5 mb-6">
+          <div>
+            <label class="block mb-2 text-sm text-slate-300">First Name *</label>
+            <input id="bookingFirstName" type="text" class="booking-input">
+          </div>
+          <div>
+            <label class="block mb-2 text-sm text-slate-300">Last Name *</label>
+            <input id="bookingLastName" type="text" class="booking-input">
+          </div>
+          <div>
+            <label class="block mb-2 text-sm text-slate-300">Email *</label>
+            <input id="bookingEmail" type="email" class="booking-input">
+          </div>
+          <div>
+            <label class="block mb-2 text-sm text-slate-300">Phone *</label>
+            <input id="bookingPhone" type="tel" class="booking-input">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block mb-2 text-sm text-slate-300">ID Number *</label>
+            <input id="bookingIdNumber" type="text" class="booking-input">
+          </div>
+        </div>
+
+        <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 mb-6 flex justify-between gap-4 text-lg font-bold">
+          <span>Total Amount:</span>
+          <span id="bookingTotal" class="text-orange-400">R0</span>
+        </div>
+        <p class="text-slate-400 text-sm mb-6">Payment will be arranged via PayFast, Yoco, EFT, or WhatsApp confirmation.</p>
+
+        <div class="flex justify-between gap-3">
+          <button type="button" data-prev-step="3" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+          <button type="button" id="submitBookingRequest" class="bg-green-500 hover:bg-green-600 px-5 py-3 rounded-xl font-bold transition">Send Booking Request</button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1076,6 +1242,18 @@
         return !Object.values(firebaseConfig).some(value => String(value).includes('PASTE_YOUR'));
     }
 
+    function currentAuthDomain() {
+        return window.location.hostname || 'this domain';
+    }
+
+    function isLocalTestingHost() {
+        return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+    }
+
+    function authorizedDomainHelp() {
+        return `Add ${currentAuthDomain()} in Firebase Console > Authentication > Settings > Authorized domains.`;
+    }
+
     function showAuthMessage(message, type = 'error') {
         authMessage.textContent = message;
         authMessage.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
@@ -1092,21 +1270,29 @@
         const messages = {
             'auth/admin-restricted-operation': 'Email/password login is not enabled yet. Enable it in Firebase Authentication > Sign-in method.',
             'auth/api-key-not-valid': 'Firebase rejected this API key. Check the Firebase config in the page.',
-            'auth/app-not-authorized': 'This website domain is not authorized in Firebase. Add it under Authentication > Settings > Authorized domains.',
+            'auth/app-not-authorized': 'This website domain is not authorized in Firebase.',
             'auth/configuration-not-found': 'Firebase Authentication is not enabled yet. Open Firebase Console > Authentication and click Get started.',
             'auth/email-already-in-use': 'This account already exists. Please login instead.',
             'auth/invalid-email': 'Please enter a valid email address.',
             'auth/invalid-credential': 'Incorrect email or password.',
-            'auth/network-request-failed': 'Firebase could not be reached from this page. Use http://localhost while testing, then add your live domain in Firebase Authorized domains.',
+            'auth/network-request-failed': 'Firebase could not be reached from this page. Check your internet connection, use HTTPS online, and make sure this domain is authorized in Firebase.',
             'auth/operation-not-allowed': 'This sign-in method is disabled. Enable Email/Password or Google in Firebase Authentication > Sign-in method.',
             'auth/popup-blocked': 'The Google popup was blocked. Allow popups for this site and try again.',
             'auth/popup-closed-by-user': 'Google login was closed before it finished.',
             'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
-            'auth/unauthorized-domain': 'This domain is not authorized for Firebase login. Add it in Firebase Authentication > Settings > Authorized domains.',
+            'auth/unauthorized-domain': 'This domain is not authorized for Firebase login.',
             'auth/user-not-found': 'No account found with that email. Please sign up first.',
             'auth/weak-password': 'Password must be at least 6 characters.',
             'auth/wrong-password': 'Incorrect email or password.'
         };
+
+        if (['auth/app-not-authorized', 'auth/unauthorized-domain'].includes(error.code)) {
+            return `${messages[error.code]} ${authorizedDomainHelp()}`;
+        }
+
+        if (error.code === 'auth/network-request-failed') {
+            return `${messages[error.code]} Current domain: ${currentAuthDomain()}.`;
+        }
 
         return messages[error.code] || error.message || 'Something went wrong. Please try again.';
     }
@@ -1122,7 +1308,12 @@
             }
 
             if (window.location.protocol === 'file:') {
-                if (showErrors) showAuthMessage('Firebase login must run from a website URL. Test with http://localhost or publish the site online.');
+                if (showErrors) showAuthMessage('Firebase login must run from a website URL. Use http://localhost for testing or publish the site to an HTTPS domain.');
+                return false;
+            }
+
+            if (window.location.protocol === 'http:' && !isLocalTestingHost()) {
+                if (showErrors) showAuthMessage('Online Firebase login should be served over HTTPS. Publish the site with HTTPS, then add the domain in Firebase Authorized domains.');
                 return false;
             }
 
@@ -1143,6 +1334,7 @@
                 firebaseReady = true;
 
                 onAuthStateChanged(firebaseAuth, (user) => {
+                    if (typeof window.renderBookingAuthState === 'function') window.renderBookingAuthState(user);
                     if (user) {
                         loginBtn.textContent = 'Logout';
                         mobileLoginBtn.textContent = 'Logout';
@@ -1283,6 +1475,419 @@
     });
 
     initializeFirebaseAuth(false);
+    // BOOKING SYSTEM
+    const academicLevels = ['High School', 'BAcc 1st Year', 'BCom 1st Year', '2nd Year'];
+    const modulesByLevel = {
+        'High School': ['Economics', 'Maths', 'Physics', 'Accounting'],
+        'BAcc 1st Year': ['Accounting (EFIN1/FACC1)'],
+        'BCom 1st Year': ['Accounting', 'Commercial Law', 'Economics'],
+        '2nd Year': ['Tax (Tax1/2)', 'Accounting (EFIN2/FACC2)', 'Managerial/Cost & Financial Management (MFM/CFM)']
+    };
+    const bookingTutors = [
+        { id: 'tyren', name: 'Tyren K.M', rating: 4.9, modules: ['Economics', 'Accounting', 'Tax', 'Commercial Law'] },
+        { id: 'lilonke', name: 'Lilonke Breakfast', rating: 4.95, modules: ['Accounting', 'Economics'] },
+        { id: 'fulufhelo', name: 'Fulufhelo Masevhe', rating: 4.85, modules: ['Maths', 'Accounting', 'Tax'] },
+        { id: 'thapelo', name: 'Thapelo', rating: 4.8, modules: ['Commerce', 'Business Studies', 'Economics'] },
+        { id: 'mike', name: 'Mike', rating: 4.8, modules: ['Academic Mentorship', 'Commerce'] }
+    ];
+    const onlinePlatforms = ['Zoom', 'Google Meet', 'Jitsi Meet'];
+    const inPersonVenues = ['UFS Campus', 'Student Home', "Tutor's Office", 'Library', 'Coffee Shop'];
+    const timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'];
+    const bookingRatePerTutor = 150;
+    const bookingState = {
+        step: 1,
+        academicLevel: '',
+        modules: [],
+        tutors: [],
+        lessonType: '',
+        venue: '',
+        duration: '',
+        date: '',
+        time: '',
+        notes: ''
+    };
+
+    function bookingEls() {
+        return {
+            app: document.getElementById('bookingApp'),
+            notice: document.getElementById('bookingAuthNotice'),
+            message: document.getElementById('bookingMessage'),
+            levels: document.getElementById('academicLevelOptions'),
+            moduleArea: document.getElementById('moduleArea'),
+            modules: document.getElementById('moduleOptions'),
+            tutors: document.getElementById('tutorOptions'),
+            lessonType: document.getElementById('bookingLessonType'),
+            venue: document.getElementById('bookingVenue'),
+            venueLabel: document.getElementById('bookingVenueLabel'),
+            duration: document.getElementById('bookingDuration'),
+            date: document.getElementById('bookingDate'),
+            nextWeekendHint: document.getElementById('nextWeekendHint'),
+            times: document.getElementById('timeSlotOptions'),
+            notes: document.getElementById('bookingNotes'),
+            summary: document.getElementById('bookingSummary'),
+            total: document.getElementById('bookingTotal'),
+            firstName: document.getElementById('bookingFirstName'),
+            lastName: document.getElementById('bookingLastName'),
+            email: document.getElementById('bookingEmail'),
+            phone: document.getElementById('bookingPhone'),
+            idNumber: document.getElementById('bookingIdNumber')
+        };
+    }
+
+    function showBookingMessage(message, type = 'error') {
+        const el = bookingEls().message;
+        if (!el) return;
+        el.textContent = message;
+        el.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
+        el.classList.add('border');
+        if (type === 'success') {
+            el.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
+        } else {
+            el.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30');
+        }
+    }
+
+    function clearBookingMessage() {
+        const el = bookingEls().message;
+        if (el) el.classList.add('hidden');
+    }
+
+    function getBookedSlots() {
+        return JSON.parse(localStorage.getItem('genZTutorsBookedSlots') || '{}');
+    }
+
+    function saveBookedSlot(date, time) {
+        const bookedSlots = getBookedSlots();
+        bookedSlots[`${date}|${time}`] = true;
+        localStorage.setItem('genZTutorsBookedSlots', JSON.stringify(bookedSlots));
+    }
+
+    function isBookedSlot(time) {
+        return Boolean(getBookedSlots()[`${bookingState.date}|${time}`]);
+    }
+
+    function isWeekend(dateValue) {
+        if (!dateValue) return false;
+        const [year, month, day] = dateValue.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.getDay() === 0 || date.getDay() === 6;
+    }
+
+    function getNextWeekendDate() {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        while (date.getDay() !== 0 && date.getDay() !== 6) {
+            date.setDate(date.getDate() + 1);
+        }
+        return date.toISOString().split('T')[0];
+    }
+
+    function setBookingStep(step) {
+        bookingState.step = step;
+        document.querySelectorAll('[data-booking-step]').forEach(panel => {
+            panel.classList.toggle('hidden', panel.dataset.bookingStep !== String(step));
+        });
+        document.querySelectorAll('[data-step-tab]').forEach(tab => {
+            const tabStep = Number(tab.dataset.stepTab);
+            tab.classList.toggle('active', tabStep === step);
+            tab.classList.toggle('bg-emerald-500/20', tabStep < step);
+        });
+        clearBookingMessage();
+        if (step === 4) renderBookingSummary();
+    }
+
+    function validateBookingStep(step) {
+        if (step === 1 && bookingState.modules.length === 0) return 'Please select at least one module.';
+        if (step === 2 && bookingState.tutors.length === 0) return 'Please choose at least one tutor.';
+        if (step === 2 && (!bookingState.lessonType || !bookingState.venue || !bookingState.duration)) return 'Please choose the lesson type, platform or venue, and duration.';
+        if (step === 3 && (!bookingState.date || !bookingState.time)) return 'Please choose a Saturday/Sunday date and an available time slot.';
+        return '';
+    }
+
+    function renderAcademicLevels() {
+        const els = bookingEls();
+        if (!els.levels) return;
+        els.levels.innerHTML = academicLevels.map(level => `
+            <button type="button" class="booking-choice text-left ${bookingState.academicLevel === level ? 'active' : ''}" data-academic-level="${level}">
+                <span class="font-bold">${level}</span>
+            </button>
+        `).join('');
+    }
+
+    function renderModules() {
+        const els = bookingEls();
+        if (!els.modules || !els.moduleArea) return;
+        els.moduleArea.classList.toggle('hidden', !bookingState.academicLevel);
+        const modules = modulesByLevel[bookingState.academicLevel] || [];
+        els.modules.innerHTML = modules.map(module => `
+            <label class="booking-choice flex items-center gap-3 ${bookingState.modules.includes(module) ? 'active' : ''}">
+                <input type="checkbox" class="booking-module accent-sky-500" value="${module}" ${bookingState.modules.includes(module) ? 'checked' : ''}>
+                <span>${module}</span>
+            </label>
+        `).join('');
+    }
+
+    function matchingTutors() {
+        if (bookingState.modules.length === 0) return bookingTutors;
+        return bookingTutors.filter(tutor => bookingState.modules.some(module => tutor.modules.some(tutorModule => module.toLowerCase().includes(tutorModule.toLowerCase()) || tutorModule.toLowerCase().includes(module.split(' ')[0].toLowerCase()))));
+    }
+
+    function renderTutors() {
+        const els = bookingEls();
+        if (!els.tutors) return;
+        const tutors = matchingTutors();
+        els.tutors.innerHTML = tutors.map(tutor => `
+            <button type="button" class="booking-choice text-left ${bookingState.tutors.includes(tutor.id) ? 'active' : ''}" data-tutor-id="${tutor.id}">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="font-bold">${tutor.name}</p>
+                        <p class="text-sm text-slate-300">Star ${tutor.rating} • ${tutor.modules.join(', ')}</p>
+                    </div>
+                    <span class="h-5 w-5 rounded border border-white/25 flex-shrink-0 ${bookingState.tutors.includes(tutor.id) ? 'bg-sky-500' : ''}"></span>
+                </div>
+            </button>
+        `).join('');
+    }
+
+    function renderVenueOptions() {
+        const els = bookingEls();
+        if (!els.venue) return;
+        const options = bookingState.lessonType === 'Online' ? onlinePlatforms : bookingState.lessonType === 'In-Person' ? inPersonVenues : [];
+        els.venueLabel.textContent = bookingState.lessonType === 'Online' ? 'Platform' : bookingState.lessonType === 'In-Person' ? 'Venue' : 'Platform / Venue';
+        els.venue.innerHTML = '<option value="">Select platform or venue</option>' + options.map(option => `<option>${option}</option>`).join('');
+        els.venue.value = bookingState.venue;
+    }
+
+    function renderTimeSlots() {
+        const els = bookingEls();
+        if (!els.times) return;
+        els.times.innerHTML = timeSlots.map(slot => {
+            const booked = isBookedSlot(slot);
+            const active = bookingState.time === slot;
+            return `<button type="button" class="time-slot rounded-xl px-3 py-3 font-semibold transition ${booked ? 'booked' : active ? 'bg-orange-500 text-white' : 'bg-white/10 hover:bg-white/15 text-white'}" data-time-slot="${slot}" ${booked ? 'disabled' : ''}>${slot}</button>`;
+        }).join('');
+    }
+
+    function renderBookingSummary() {
+        const els = bookingEls();
+        const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name);
+        const rows = [
+            ['Academic Level', bookingState.academicLevel],
+            ['Modules', bookingState.modules.join(', ')],
+            ['Tutors', tutorNames.join(', ')],
+            ['Lesson Type', bookingState.lessonType],
+            ['Platform / Venue', bookingState.venue],
+            ['Duration', bookingState.duration],
+            ['Date & Time', `${bookingState.date} at ${bookingState.time}`],
+            ['Notes', bookingState.notes || 'None']
+        ];
+        els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join('');
+        els.total.textContent = `R${bookingState.tutors.length * bookingRatePerTutor}`;
+        if (firebaseAuth?.currentUser?.email && !els.email.value) els.email.value = firebaseAuth.currentUser.email;
+    }
+
+    function resetBooking() {
+        Object.assign(bookingState, { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' });
+        ['bookingLessonType', 'bookingVenue', 'bookingDuration', 'bookingDate', 'bookingNotes', 'bookingFirstName', 'bookingLastName', 'bookingEmail', 'bookingPhone', 'bookingIdNumber'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        renderBookingAll();
+        setBookingStep(1);
+    }
+
+    function renderBookingAll() {
+        renderAcademicLevels();
+        renderModules();
+        renderTutors();
+        renderVenueOptions();
+        renderTimeSlots();
+        const els = bookingEls();
+        if (els.date) els.date.min = new Date().toISOString().split('T')[0];
+        if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`;
+    }
+
+    window.renderBookingAuthState = function renderBookingAuthState(user) {
+        const els = bookingEls();
+        if (!els.app || !els.notice) return;
+        els.notice.classList.toggle('hidden', Boolean(user));
+        els.app.classList.toggle('hidden', !user);
+        if (user && els.email && !els.email.value) els.email.value = user.email || '';
+    };
+
+    async function saveBookingToFirebase(booking) {
+        if (!(await initializeFirebaseAuth(true)) || !firebaseAuth?.currentUser) return false;
+        try {
+            const savePromise = (async () => {
+                const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
+                const db = firestoreModule.getFirestore(firebaseAuth.app);
+                await firestoreModule.addDoc(firestoreModule.collection(db, 'bookings'), {
+                    ...booking,
+                    userId: firebaseAuth.currentUser.uid,
+                    userEmail: firebaseAuth.currentUser.email,
+                    status: 'pending',
+                    createdAt: firestoreModule.serverTimestamp()
+                });
+                return true;
+            })();
+            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 5000));
+            return await Promise.race([savePromise, timeoutPromise]);
+        } catch (error) {
+            console.warn('Booking was not saved to Firestore:', error);
+            return false;
+        }
+    }
+
+    function buildWhatsAppBookingUrl(booking, savedOnline) {
+        const lines = [
+            'New Gen Z Tutors booking request',
+            '',
+            `Name: ${booking.student.firstName} ${booking.student.lastName}`,
+            `Email: ${booking.student.email}`,
+            `Phone: ${booking.student.phone}`,
+            `Academic Level: ${booking.academicLevel}`,
+            `Modules: ${booking.modules.join(', ')}`,
+            `Tutors: ${booking.tutors.map(t => t.name).join(', ')}`,
+            `Lesson Type: ${booking.lessonType}`,
+            `Platform/Venue: ${booking.venue}`,
+            `Duration: ${booking.duration}`,
+            `Date/Time: ${booking.date} at ${booking.time}`,
+            `Total: R${booking.total}`,
+            booking.notes ? `Notes: ${booking.notes}` : '',
+            savedOnline ? 'Saved online: Yes' : 'Saved online: Local backup only'
+        ].filter(Boolean);
+        return `https://wa.me/27679256394?text=${encodeURIComponent(lines.join('\n'))}`;
+    }
+
+    async function submitBookingRequest() {
+        const els = bookingEls();
+        bookingState.notes = els.notes.value.trim();
+        const student = {
+            firstName: els.firstName.value.trim(),
+            lastName: els.lastName.value.trim(),
+            email: els.email.value.trim(),
+            phone: els.phone.value.trim(),
+            idNumber: els.idNumber.value.trim()
+        };
+        if (!student.firstName || !student.lastName || !student.email || !student.phone || !student.idNumber) {
+            showBookingMessage('Please complete all required student details.');
+            return;
+        }
+        const booking = {
+            academicLevel: bookingState.academicLevel,
+            modules: [...bookingState.modules],
+            tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })),
+            lessonType: bookingState.lessonType,
+            venue: bookingState.venue,
+            duration: bookingState.duration,
+            date: bookingState.date,
+            time: bookingState.time,
+            notes: bookingState.notes,
+            student,
+            total: bookingState.tutors.length * bookingRatePerTutor,
+            createdAt: new Date().toISOString()
+        };
+
+        const submitBtn = document.getElementById('submitBookingRequest');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        const savedOnline = await saveBookingToFirebase(booking);
+        const existingBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]');
+        existingBookings.push({ ...booking, savedOnline });
+        localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
+        saveBookedSlot(booking.date, booking.time);
+        showBookingMessage(savedOnline ? 'Booking saved. Opening WhatsApp confirmation...' : 'Booking saved locally. Opening WhatsApp confirmation...', 'success');
+        renderTimeSlots();
+        setTimeout(() => {
+            window.open(buildWhatsAppBookingUrl(booking, savedOnline), '_blank');
+            resetBooking();
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Booking Request';
+        }, 700);
+    }
+
+    function setupBookingSystem() {
+        const els = bookingEls();
+        if (!els.app) return;
+        renderBookingAll();
+        setBookingStep(1);
+        window.renderBookingAuthState(firebaseAuth?.currentUser || null);
+
+        document.getElementById('bookingLoginBtn').addEventListener('click', () => openAuthModal('login'));
+        document.getElementById('bookingSignupBtn').addEventListener('click', () => openAuthModal('signup'));
+        document.getElementById('clearBookingStep1').addEventListener('click', () => {
+            bookingState.academicLevel = '';
+            bookingState.modules = [];
+            bookingState.tutors = [];
+            renderBookingAll();
+            clearBookingMessage();
+        });
+        els.levels.addEventListener('click', event => {
+            const button = event.target.closest('[data-academic-level]');
+            if (!button) return;
+            bookingState.academicLevel = button.dataset.academicLevel;
+            bookingState.modules = [];
+            bookingState.tutors = [];
+            renderBookingAll();
+        });
+        els.modules.addEventListener('change', event => {
+            if (!event.target.classList.contains('booking-module')) return;
+            const value = event.target.value;
+            bookingState.modules = event.target.checked ? [...bookingState.modules, value] : bookingState.modules.filter(module => module !== value);
+            bookingState.tutors = bookingState.tutors.filter(id => matchingTutors().some(tutor => tutor.id === id));
+            renderModules();
+            renderTutors();
+        });
+        els.tutors.addEventListener('click', event => {
+            const button = event.target.closest('[data-tutor-id]');
+            if (!button) return;
+            const id = button.dataset.tutorId;
+            bookingState.tutors = bookingState.tutors.includes(id) ? bookingState.tutors.filter(tutorId => tutorId !== id) : [...bookingState.tutors, id];
+            renderTutors();
+        });
+        els.lessonType.addEventListener('change', event => {
+            bookingState.lessonType = event.target.value;
+            bookingState.venue = '';
+            renderVenueOptions();
+        });
+        els.venue.addEventListener('change', event => bookingState.venue = event.target.value);
+        els.duration.addEventListener('change', event => bookingState.duration = event.target.value);
+        els.date.addEventListener('change', event => {
+            if (!isWeekend(event.target.value)) {
+                event.target.value = '';
+                bookingState.date = '';
+                bookingState.time = '';
+                renderTimeSlots();
+                showBookingMessage('Please select a Saturday or Sunday.');
+                return;
+            }
+            bookingState.date = event.target.value;
+            bookingState.time = '';
+            clearBookingMessage();
+            renderTimeSlots();
+        });
+        els.times.addEventListener('click', event => {
+            const button = event.target.closest('[data-time-slot]');
+            if (!button || button.disabled) return;
+            bookingState.time = button.dataset.timeSlot;
+            renderTimeSlots();
+        });
+        els.notes.addEventListener('input', event => bookingState.notes = event.target.value.trim());
+        document.querySelectorAll('.booking-next').forEach(button => {
+            button.addEventListener('click', () => {
+                const error = validateBookingStep(bookingState.step);
+                if (error) {
+                    showBookingMessage(error);
+                    return;
+                }
+                setBookingStep(Number(button.dataset.nextStep));
+            });
+        });
+        document.querySelectorAll('.booking-prev').forEach(button => button.addEventListener('click', () => setBookingStep(Number(button.dataset.prevStep))));
+        document.getElementById('submitBookingRequest').addEventListener('click', submitBookingRequest);
+    }
+
+    setupBookingSystem();
 
     // MOBILE MENU
     const menuBtn = document.getElementById('menuBtn');
@@ -1379,6 +1984,15 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 
