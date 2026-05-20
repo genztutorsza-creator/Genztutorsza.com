@@ -109,6 +109,40 @@
             object-fit: contain;
         }
 
+        /* TUTOR CARD STYLES */
+        .tutor-card-link {
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .tutor-profile-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .tutor-profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tutor-role {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         /* MOBILE DRAWER ANIMATIONS */
         #mobileMenu {
             transition: all 0.35s ease;
@@ -187,6 +221,55 @@
 
         .light-mode body {
             background: #f8fafc;
+        }
+
+        /* MODAL STYLES */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .profile-modal.active {
+            display: flex;
+        }
+
+        .profile-modal-content {
+            background: #0d1728;
+            border-radius: 2rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-profile-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+
+        .close-profile-btn:hover {
+            background: rgba(255,255,255,0.2);
         }
     </style>
 </head>
@@ -473,13 +556,29 @@
                 Meet Your <span class="gradient-text">Gen Z Tutors</span>
             </h2>
             <p class="text-slate-300 max-w-2xl mx-auto">
-                Passionate university tutors dedicated to helping students succeed.
+                Passionate university tutors dedicated to helping students succeed. Click on any tutor to learn more!
             </p>
         </div>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-            <div class="glass rounded-3xl overflow-hidden card-hover">
+            <!-- TYREN CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('tyren')">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-2">Tyren Majola</h3>
+                    <p class="text-orange-400 font-medium mb-4">Founder & CEO</p>
+                    <p class="text-slate-300 leading-relaxed">
+                        Founder of Gen Z Tutors focused on making learning relatable, empowering and effective.
+                    </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile →</div>
+                </div>
+            </div>
+
+            <!-- THAPELO CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('thapelo')">
                 <div class="h-80 image-placeholder">
                     <img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo">
                 </div>
@@ -489,10 +588,12 @@
                     <p class="text-slate-300 leading-relaxed">
                         Passionate about helping students build confidence and master difficult concepts.
                     </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile →</div>
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden card-hover">
+            <!-- MIKE CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('mike')">
                 <div class="h-80 image-placeholder">
                     <img src="https://i.imgur.com/9B8k2qL.png" alt="Mike">
                 </div>
@@ -502,38 +603,29 @@
                     <p class="text-slate-300 leading-relaxed">
                         Dedicated to creating engaging lessons that help students achieve excellence.
                     </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile →</div>
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden card-hover">
-                <div class="h-80 image-placeholder">
-                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Tyren">
-                </div>
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold mb-2">Tyren Majola</h3>
-                    <p class="text-orange-400 font-medium mb-4">Founder & CEO</p>
-                    <p class="text-slate-300 leading-relaxed">
-                        Founder of Gen Z Tutors focused on making learning relatable, empowering and effective.
-                    </p>
-                </div>
-            </div>
-
-            <div class="glass rounded-3xl overflow-hidden card-hover">
+            <!-- LILONKE CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('lilonke')">
                 <div class="h-80 image-placeholder">
                     <img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke">
                 </div>
                 <div class="p-6">
-                    <h3 class="text-2xl font-bold mb-2">Lilonke</h3>
+                    <h3 class="text-2xl font-bold mb-2">Lilonke Breakfast</h3>
                     <p class="text-emerald-400 font-medium mb-4">Accounting Tutor</p>
                     <p class="text-slate-300 leading-relaxed">
                         Committed to helping students realize their potential and succeed academically.
                     </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile →</div>
                 </div>
             </div>
 
-            <div class="glass rounded-3xl overflow-hidden card-hover">
+            <!-- FULUFHELO CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('fulufhelo')">
                 <div class="h-80 image-placeholder">
-                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Fulufhelo">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo">
                 </div>
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-2">Fulufhelo</h3>
@@ -541,12 +633,259 @@
                     <p class="text-slate-300 leading-relaxed">
                         Encouraging discipline, consistency and academic growth for every learner.
                     </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile →</div>
                 </div>
             </div>
 
         </div>
     </div>
 </section>
+
+<!-- TUTOR PROFILE MODALS -->
+
+<!-- TYREN PROFILE MODAL -->
+<div id="tyrenModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('tyren')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren Majola">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Tyren Majola</h2>
+                    <div class="tutor-role text-orange-400">
+                        <i class="fa-solid fa-crown"></i> Founder & CEO
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Commerce Expert</span>
+                        <span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Leader</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Because "Checking Out" in Class is Real. Hey it's Tyren, Your Gen Z Tutor that believes learning shouldn't feel like a chore. I'm here to bridge the gap between "I'm lost" and "I've got this."
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Let's be honest: sitting through a lecture that feels like it's in a different language is exhausting. I tutor because I've been the person staring at a textbook wondering when it was going to start making sense. I'm not here to be another "teacher"—I'm here to be the person who finally makes it click!
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        My goal isn't just to help you pass a test (though we're definitely doing that with a Distinction of course). I want to help you stop the 'I'm bad at this' spiral. I'm here to give you the cheat codes for your brain, build your confidence back up, and make sure you walk into your next exam feeling like a main character.
+                    </p>
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 mb-6">
+                        <p class="text-orange-400 italic font-semibold">
+                            "Your success is our No.1 priority"
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Tyren
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun • +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LILONKE PROFILE MODAL -->
+<div id="lilonkeModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('lilonke')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Lilonke Breakfast">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Lilonke Breakfast</h2>
+                    <div class="tutor-role text-emerald-400">
+                        <i class="fa-solid fa-book"></i> Accounting Tutor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Accounting Expert</span>
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">UFS Graduate</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        <span class="font-bold text-emerald-400">Why I Love Being a Tutor:</span> I love being a tutor because I get to empower and inspire others to achieve their goals. There's nothing more rewarding than seeing a student gain confidence, overcome challenges, and realise their full potential.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        At GEN Z Tutors, I'm part of a team that believes in making quality education accessible, relatable, and effective for every student. I enjoy creating a supportive space where questions are welcome, progress is celebrated, and learning becomes enjoyable.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Being a tutor allows me to make a real difference while growing my own skills and building meaningful connections. It's more than teaching — it's about changing lives, one lesson at a time.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-check text-emerald-400"></i>
+                        <span class="text-slate-300"><strong>Education:</strong> Bachelor of Accounting - University of the Free State (UFS)</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-check text-emerald-400"></i>
+                        <span class="text-slate-300"><strong>Passionate about:</strong> Learning & Student Success</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-check text-emerald-400"></i>
+                        <span class="text-slate-300"><strong>Commitment:</strong> Proud to be part of GEN Z Tutors</span>
+                    </div>
+                    <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+                        <p class="text-amber-400 italic font-semibold">
+                            "Education is the most powerful weapon which you can use to change the world." - Nelson Mandela
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Lilonke
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun • +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OTHER TUTORS - PLACEHOLDER PROFILES -->
+
+<!-- THAPELO PROFILE MODAL -->
+<div id="thapeloModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('thapelo')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Thapelo">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Thapelo</h2>
+                    <div class="tutor-role text-orange-400">
+                        <i class="fa-solid fa-chalkboard-user"></i> Commerce Tutor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Commerce Expert</span>
+                        <span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Student Success</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Passionate about helping students build confidence and master difficult concepts. Thapelo brings enthusiasm and relatable teaching methods to every session.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        With expertise in Commerce modules, Thapelo focuses on breaking down complex topics into manageable parts, ensuring students not only understand but truly grasp the material.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-star text-orange-400"></i>
+                        <span class="text-slate-300">Specializes in Commerce, Business Studies & Economics</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-heart text-emerald-400"></i>
+                        <span class="text-slate-300">Loves seeing students succeed and gain confidence</span>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Thapelo
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun • +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MIKE PROFILE MODAL -->
+<div id="mikeModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('mike')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Mike">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Mike</h2>
+                    <div class="tutor-role text-sky-400">
+                        <i class="fa-solid fa-graduation-cap"></i> Academic Mentor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Academic Excellence</span>
+                        <span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Mentorship</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Dedicated to creating engaging lessons that help students achieve excellence. Mike's approach combines practical knowledge with inspiring mentorship.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        As an academic mentor, Mike goes beyond tutoring to provide guidance on study techniques, time management, and building confidence for long-term success.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-book-open text-sky-400"></i>
+                        <span class="text-slate-300">Expert in multiple academic disciplines</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-lightbulb text-sky-400"></i>
+                        <span class="text-slate-300">Focuses on understanding over memorization</span>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Mike
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun • +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FULUFHELO PROFILE MODAL -->
+<div id="fulufheloModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('fulufhelo')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Fulufhelo</h2>
+                    <div class="tutor-role text-orange-400">
+                        <i class="fa-solid fa-calculator"></i> Accounting Tutor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Accounting Expert</span>
+                        <span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Discipline & Growth</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Encouraging discipline, consistency and academic growth for every learner. Fulufhelo believes that success comes from dedication and strategic effort.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        With deep expertise in Accounting, Fulufhelo helps students develop strong foundations and the habits needed for long-term academic excellence.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-target text-orange-400"></i>
+                        <span class="text-slate-300">Specializes in Accounting & Financial topics</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-seedling text-orange-400"></i>
+                        <span class="text-slate-300">Focused on sustainable learning habits</span>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Fulufhelo
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun • +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- STUDENT PORTAL -->
 <section id="portal" class="py-24 bg-[#0d1728]">
@@ -593,11 +932,11 @@
         <label class="block mb-2 text-sm text-slate-300">Select Tutor</label>
         <select class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
           <option>Choose a tutor...</option>
-          <option>Tyren Majola</option>
-          <option>Thapelo</option>
-          <option>Mike</option>
-          <option>Lilonke</option>
-          <option>Fulufhelo</option>
+          <option>Tyren Majola (Founder & CEO)</option>
+          <option>Thapelo (Commerce Tutor)</option>
+          <option>Mike (Academic Mentor)</option>
+          <option>Lilonke Breakfast (Accounting Tutor)</option>
+          <option>Fulufhelo (Accounting Tutor)</option>
         </select>
       </div>
 
@@ -610,185 +949,6 @@
         Submit Booking
       </button>
     </form>
-  </div>
-</section>
-
-<!-- ADMIN PORTAL -->
-<section id="admin-portal" class="py-24 bg-[#07101d] border-t border-white/10">
-  <div class="max-w-7xl mx-auto px-6">
-
-    <div class="text-center mb-16">
-      <h2 class="section-title">
-        Admin Dashboard
-      </h2>
-      <p class="text-slate-300 max-w-2xl mx-auto">
-        Manage tutors, bookings, students, payments and academic operations.
-      </p>
-    </div>
-
-    <div class="grid lg:grid-cols-4 gap-8">
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold">Students</h3>
-          <i class="fa-solid fa-users text-sky-400 text-2xl"></i>
-        </div>
-        <p class="text-4xl font-extrabold">248</p>
-        <p class="text-slate-400 mt-2">Active learners enrolled</p>
-      </div>
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold">Bookings</h3>
-          <i class="fa-solid fa-calendar-check text-orange-400 text-2xl"></i>
-        </div>
-        <p class="text-4xl font-extrabold">58</p>
-        <p class="text-slate-400 mt-2">Upcoming sessions</p>
-      </div>
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold">Tutors</h3>
-          <i class="fa-solid fa-user-graduate text-emerald-400 text-2xl"></i>
-        </div>
-        <p class="text-4xl font-extrabold">5</p>
-        <p class="text-slate-400 mt-2">Registered tutors</p>
-      </div>
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold">Revenue</h3>
-          <i class="fa-solid fa-wallet text-purple-400 text-2xl"></i>
-        </div>
-        <p class="text-4xl font-extrabold">R12k</p>
-        <p class="text-slate-400 mt-2">Monthly earnings</p>
-      </div>
-
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-8 mt-12">
-
-      <div class="glass rounded-3xl p-8">
-        <h3 class="text-2xl font-bold mb-6">Recent Bookings</h3>
-
-        <div class="space-y-5">
-          <div class="flex items-center justify-between border-b border-white/10 pb-4">
-            <div>
-              <p class="font-semibold">Accounting Session</p>
-              <p class="text-slate-400 text-sm">Student: Siya M.</p>
-            </div>
-            <span class="text-orange-400">Pending</span>
-          </div>
-
-          <div class="flex items-center justify-between border-b border-white/10 pb-4">
-            <div>
-              <p class="font-semibold">Economics Revision</p>
-              <p class="text-slate-400 text-sm">Student: Amanda K.</p>
-            </div>
-            <span class="text-emerald-400">Confirmed</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass rounded-3xl p-8">
-        <h3 class="text-2xl font-bold mb-6">Admin Controls</h3>
-
-        <div class="grid grid-cols-2 gap-4">
-          <button class="bg-orange-500 hover:bg-orange-600 rounded-xl py-4 font-semibold transition">
-            Add Tutor
-          </button>
-
-          <button class="bg-sky-500 hover:bg-sky-600 rounded-xl py-4 font-semibold transition">
-            Upload Notes
-          </button>
-
-          <button class="bg-emerald-500 hover:bg-emerald-600 rounded-xl py-4 font-semibold transition">
-            Manage Students
-          </button>
-
-          <button class="bg-purple-500 hover:bg-purple-600 rounded-xl py-4 font-semibold transition">
-            View Reports
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- TUTOR PORTAL -->
-<section id="tutor-portal" class="py-24 bg-[#0d1728] border-t border-white/10">
-  <div class="max-w-7xl mx-auto px-6">
-
-    <div class="text-center mb-16">
-      <h2 class="section-title">Tutor Portal</h2>
-      <p class="text-slate-300 max-w-2xl mx-auto">
-        Dedicated workspace for tutors to manage students, schedules and resources.
-      </p>
-    </div>
-
-    <div class="grid lg:grid-cols-3 gap-8">
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-5">
-          <h3 class="text-2xl font-bold">Today's Sessions</h3>
-          <i class="fa-solid fa-clock text-orange-400 text-2xl"></i>
-        </div>
-
-        <div class="space-y-4">
-          <div class="border border-white/10 rounded-2xl p-4">
-            <p class="font-semibold">Accounting Group Session</p>
-            <p class="text-slate-400 text-sm mt-1">18:00 - 19:30</p>
-          </div>
-
-          <div class="border border-white/10 rounded-2xl p-4">
-            <p class="font-semibold">Private Taxation Lesson</p>
-            <p class="text-slate-400 text-sm mt-1">20:00 - 21:00</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-5">
-          <h3 class="text-2xl font-bold">Student Messages</h3>
-          <i class="fa-solid fa-comments text-sky-400 text-2xl"></i>
-        </div>
-
-        <div class="space-y-4">
-          <div class="border border-white/10 rounded-2xl p-4">
-            <p class="font-semibold">Assignment Question</p>
-            <p class="text-slate-400 text-sm mt-1">New message from student</p>
-          </div>
-
-          <div class="border border-white/10 rounded-2xl p-4">
-            <p class="font-semibold">Session Reschedule</p>
-            <p class="text-slate-400 text-sm mt-1">Student requested a new time</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass rounded-3xl p-8">
-        <div class="flex items-center justify-between mb-5">
-          <h3 class="text-2xl font-bold">Tutor Resources</h3>
-          <i class="fa-solid fa-folder-open text-emerald-400 text-2xl"></i>
-        </div>
-
-        <div class="space-y-4">
-          <button class="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 transition text-left px-5">
-            Upload Session Notes
-          </button>
-
-          <button class="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 transition text-left px-5">
-            Add Assignments
-          </button>
-
-          <button class="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 transition text-left px-5">
-            View Student Performance
-          </button>
-        </div>
-      </div>
-
-    </div>
   </div>
 </section>
 
@@ -907,7 +1067,6 @@
     // TESTIMONIALS CAROUSEL
     let currentTestimonial = 0;
     const testimonials = document.querySelectorAll('.testimonial-slide');
-    const dots = document.querySelectorAll('[onclick^="changeTestimonial"]');
 
     function changeTestimonial(index) {
         testimonials[currentTestimonial].classList.add('hidden');
@@ -935,6 +1094,35 @@
         const nextIndex = (currentTestimonial + 1) % testimonials.length;
         changeTestimonial(nextIndex);
     }, 6000);
+
+    // TUTOR PROFILE MODALS
+    function openTutorProfile(tutor) {
+        const modalId = tutor + 'Modal';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeTutorProfile(tutor) {
+        const modalId = tutor + 'Modal';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // Close modal when clicking outside
+    document.querySelectorAll('.profile-modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                const tutor = modal.id.replace('Modal', '');
+                closeTutorProfile(tutor);
+            }
+        });
+    });
 
     // THEME TOGGLE
     const themeToggle = document.getElementById('themeToggle');
