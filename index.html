@@ -1,705 +1,1319 @@
-<script>
-/* =========================================================
-   GEN Z TUTORS FULL WEBSITE SYSTEM
-========================================================= */
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gen Z Tutors | Learn Differently</title>
 
-/* =========================
-   STORAGE
-========================= */
-const USERS_KEY = "genz_users";
-const CURRENT_USER_KEY = "genz_current_user";
-const BOOKINGS_KEY = "genz_bookings";
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-/* =========================
-   DEFAULT ADMIN
-========================= */
-if (!localStorage.getItem(USERS_KEY)) {
-    const defaultUsers = [
-        {
-            name: "Admin",
-            email: "admin@genztutors.com",
-            password: "admin123",
-            role: "admin"
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    ];
 
-    localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #08111f;
+            color: white;
+            scroll-behavior: smooth;
+        }
 
-/* =========================
-   AUTH MODAL
-========================= */
-const authModal = document.getElementById('authModal');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const closeModal = document.getElementById('closeModal');
+        .hero-bg {
+            background:
+                linear-gradient(rgba(6,12,22,0.85), rgba(6,12,22,0.92)),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23060c16" width="1200" height="600"/></svg>');
+            background-size: cover;
+            background-position: center;
+        }
 
-loginBtn.addEventListener('click', () => {
-    authModal.classList.add('active');
-});
+        .glass {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
 
-signupBtn.addEventListener('click', () => {
-    authModal.classList.add('active');
-});
+        .gradient-text {
+            background: linear-gradient(90deg, #38bdf8, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-closeModal.addEventListener('click', () => {
-    authModal.classList.remove('active');
-});
+        .card-hover:hover {
+            transform: translateY(-6px);
+            transition: 0.3s ease;
+        }
 
-window.addEventListener('click', (e) => {
-    if (e.target === authModal) {
-        authModal.classList.remove('active');
-    }
-});
+        .section-title {
+            font-size: 2.3rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
 
-/* =========================
-   AUTH FORM CREATION
-========================= */
+        /* IMAGE PLACEHOLDER STYLES */
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            position: relative;
+        }
 
-const authForm = document.querySelector("#authModal form");
+        .image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 1rem;
+        }
 
-authForm.innerHTML = `
-<div>
-    <label class="block mb-2 text-sm text-slate-300">Full Name</label>
-    <input id="authName"
-           type="text"
-           placeholder="Enter full name"
-           class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+        .navbar-logo-placeholder {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+        }
+
+        .navbar-logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .hero-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+        }
+
+        .hero-image-placeholder img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+
+        /* TUTOR CARD STYLES */
+        .tutor-card-link {
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .tutor-profile-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .tutor-profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tutor-role {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* MOBILE DRAWER ANIMATIONS */
+        #mobileMenu {
+            transition: all 0.35s ease;
+            transform: translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #mobileMenu.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer-link {
+            transform: translateX(-15px);
+            opacity: 0;
+            transition: all 0.35s ease;
+        }
+
+        #mobileMenu.active .drawer-link {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        #mobileMenu.active .drawer-link:nth-child(1) { transition-delay: 0.05s; }
+        #mobileMenu.active .drawer-link:nth-child(2) { transition-delay: 0.1s; }
+        #mobileMenu.active .drawer-link:nth-child(3) { transition-delay: 0.15s; }
+        #mobileMenu.active .drawer-link:nth-child(4) { transition-delay: 0.2s; }
+        #mobileMenu.active .drawer-link:nth-child(5) { transition-delay: 0.25s; }
+
+        /* AUTHENTICATION STYLES */
+        .auth-btn {
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .auth-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .auth-modal.active {
+            display: flex;
+        }
+
+        /* TESTIMONIALS */
+        .testimonial-slide {
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .testimonial-slide.hidden {
+            display: none;
+        }
+
+        /* LIGHT MODE */
+        .light-mode {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .light-mode .glass {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .light-mode body {
+            background: #f8fafc;
+        }
+
+        /* MODAL STYLES */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .profile-modal.active {
+            display: flex;
+        }
+
+        .profile-modal-content {
+            background: #0d1728;
+            border-radius: 2rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-profile-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+
+        .close-profile-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="fixed top-0 w-full z-50 glass">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+
+        <div class="flex items-center gap-3">
+            <div class="h-12 w-12 navbar-logo-placeholder">
+                <img src="https://i.imgur.com/eYjP9kK.png" alt="Gen Z Tutors Logo">
+            </div>
+            <div>
+                <h1 class="font-extrabold text-xl">Gen Z Tutors</h1>
+                <p class="text-xs text-slate-300">Learn differently.</p>
+            </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a href="#home" class="hover:text-orange-400">Home</a>
+            <a href="#about" class="hover:text-orange-400">About</a>
+            <a href="#services" class="hover:text-orange-400">Services</a>
+            <a href="#tutors" class="hover:text-orange-400">Tutors</a>
+            <a href="#contact" class="hover:text-orange-400">Contact</a>
+        </nav>
+
+        <button id="menuBtn" class="md:hidden text-2xl text-white">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="hidden md:flex items-center gap-4">
+            <button id="loginBtn" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">
+                Login
+            </button>
+
+            <button id="signupBtn" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">
+                Sign Up
+            </button>
+
+            <a href="https://wa.me/27679256394" target="_blank"
+               class="bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-sm">
+               Book Now
+            </a>
+        </div>
+    </div>
+    <!-- MOBILE MENU -->
+    <div id="mobileMenu" class="absolute top-full left-0 w-full bg-[#09111d] border-t border-white/10 md:hidden">
+        <div class="flex flex-col px-6 py-6 gap-5 text-lg font-medium">
+            <a href="#home" class="drawer-link hover:text-orange-400">Home</a>
+            <a href="#about" class="drawer-link hover:text-orange-400">About</a>
+            <a href="#services" class="drawer-link hover:text-orange-400">Services</a>
+            <a href="#tutors" class="drawer-link hover:text-orange-400">Tutors</a>
+            <a href="#contact" class="drawer-link hover:text-orange-400">Contact</a>
+
+            <a href="https://wa.me/27679256394"
+               target="_blank"
+               class="drawer-link bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-center mt-2">
+               Book Now
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="auth-modal">
+    <div class="glass rounded-3xl p-10 w-[95%] max-w-md relative">
+
+        <button id="closeModal"
+                class="absolute top-5 right-5 text-white text-2xl hover:text-orange-400 transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="text-center mb-8">
+            <h2 id="authTitle" class="text-3xl font-extrabold mb-3">Welcome Back</h2>
+            <p id="authSubtitle" class="text-slate-300">Login to your Gen Z Tutors account.</p>
+        </div>
+
+        <form id="authForm" class="space-y-5">
+
+            <div>
+                <label class="block mb-2 text-sm text-slate-300">Email</label>
+                <input id="authEmail"
+                       type="email"
+                       placeholder="Enter your email"
+                       autocomplete="email"
+                       required
+                       class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm text-slate-300">Password</label>
+                <input id="authPassword"
+                       type="password"
+                       placeholder="Enter your password"
+                       autocomplete="current-password"
+                       required
+                       minlength="6"
+                       class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+            </div>
+
+            <p id="authMessage" class="hidden rounded-xl px-4 py-3 text-sm font-medium"></p>
+
+            <button id="authSubmit" type="submit" class="w-full bg-orange-500 hover:bg-orange-600 transition py-4 rounded-xl font-bold text-lg">
+                Login
+            </button>
+
+        </form>
+
+        <div class="flex items-center gap-4 my-8">
+            <div class="flex-1 h-px bg-white/10"></div>
+            <span class="text-slate-400 text-sm">OR</span>
+            <div class="flex-1 h-px bg-white/10"></div>
+        </div>
+
+        <button id="googleAuthBtn" type="button" class="w-full bg-white hover:bg-slate-200 text-black transition py-4 rounded-xl font-bold flex items-center justify-center gap-3">
+            <i class="fa-brands fa-google text-xl"></i>
+            Continue with Google
+        </button>
+
+        <p class="text-center text-slate-400 text-sm mt-8">
+            By continuing you agree to Gen Z Tutors Terms & Privacy Policy.
+        </p>
+    </div>
 </div>
 
-<div>
-    <label class="block mb-2 text-sm text-slate-300">Email</label>
-    <input id="authEmail"
-           type="email"
-           placeholder="Enter email"
-           class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+<!-- HERO -->
+<section id="home" class="hero-bg min-h-screen flex items-center pt-20">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+
+        <div>
+            <span class="bg-sky-500/20 border border-sky-400/20 text-sky-300 px-4 py-2 rounded-full text-sm">
+                Academic Excellence Redefined
+            </span>
+
+            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mt-6 mb-6">
+                Learn Smarter With
+                <span class="gradient-text">Gen Z Tutors</span>
+            </h1>
+
+            <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">
+                We help university students master Accounting, Economics, Financial Management,
+                Taxation, and Commerce modules through relatable, high-performance tutoring.
+            </p>
+
+            <div class="flex flex-wrap gap-4">
+                <a href="#tutors"
+                   class="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-xl font-semibold transition">
+                    Meet The Tutors
+                </a>
+
+                <a href="https://wa.me/27679256394" target="_blank"
+                   class="border border-white/20 hover:bg-white/10 px-8 py-4 rounded-xl font-semibold transition">
+                    WhatsApp Us
+                </a>
+            </div>
+        </div>
+
+        <div class="glass rounded-3xl p-8 hero-image-placeholder">
+            <img src="https://i.imgur.com/9B8k2qL.png" alt="Gen Z Tutors Banner">
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="py-24">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+
+        <h2 class="section-title">
+            About <span class="gradient-text">Gen Z Tutors</span>
+        </h2>
+
+        <p class="text-slate-300 max-w-3xl mx-auto leading-relaxed text-lg mt-6">
+            Gen Z Tutors is a student-centered tutoring organization focused on helping learners
+            unlock confidence, improve grades, and fully understand their academic modules.
+            Our tutoring approach blends modern learning techniques, mentorship, and real-life
+            academic experience.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-8 mt-16">
+
+            <div class="glass p-8 rounded-2xl card-hover">
+                <i class="fa-solid fa-book-open text-4xl text-sky-400 mb-5"></i>
+                <h3 class="font-bold text-xl mb-3">Quality Learning</h3>
+                <p class="text-slate-300">
+                    Simplifying difficult concepts into understandable lessons.
+                </p>
+            </div>
+
+            <div class="glass p-8 rounded-2xl card-hover">
+                <i class="fa-solid fa-user-graduate text-4xl text-orange-400 mb-5"></i>
+                <h3 class="font-bold text-xl mb-3">Student Focused</h3>
+                <p class="text-slate-300">
+                    We build confidence and help students feel capable academically.
+                </p>
+            </div>
+
+            <div class="glass p-8 rounded-2xl card-hover">
+                <i class="fa-solid fa-chart-line text-4xl text-emerald-400 mb-5"></i>
+                <h3 class="font-bold text-xl mb-3">Results Driven</h3>
+                <p class="text-slate-300">
+                    Structured tutoring aimed at distinctions and long-term understanding.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="py-24 bg-[#0d1728]">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="text-center mb-16">
+            <h2 class="section-title">Our Services</h2>
+            <p class="text-slate-300 max-w-2xl mx-auto">
+                Specialized academic support built for university students.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <div class="glass p-8 rounded-2xl card-hover">
+                <h3 class="font-bold text-2xl mb-4">Accounting</h3>
+                <p class="text-slate-300 leading-relaxed">
+                    Financial Accounting, IFRS, IAS frameworks and reporting standards.
+                </p>
+            </div>
+
+            <div class="glass p-8 rounded-2xl card-hover">
+                <h3 class="font-bold text-2xl mb-4">Economics & Finance</h3>
+                <p class="text-slate-300 leading-relaxed">
+                    Financial management, market structures and economic systems.
+                </p>
+            </div>
+
+            <div class="glass p-8 rounded-2xl card-hover">
+                <h3 class="font-bold text-2xl mb-4">Taxation</h3>
+                <p class="text-slate-300 leading-relaxed">
+                    Corporate taxation systems and practical commerce applications.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="py-24 bg-[#08111f] overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <h2 class="section-title mb-4">Student Testimonials</h2>
+    <p class="text-slate-300 mb-14">What Gen Z Tutors students are saying.</p>
+
+    <div class="relative max-w-3xl mx-auto glass rounded-3xl p-10 min-h-[280px]">
+      <div id="testimonialContainer">
+        <div class="testimonial-slide active">
+          <p class="text-xl leading-relaxed text-slate-200 mb-6">
+            "Gen Z Tutors completely changed how I understood accounting. I went from struggling to passing confidently."
+          </p>
+          <h4 class="font-bold text-orange-400">Commerce Student</h4>
+        </div>
+
+        <div class="testimonial-slide hidden">
+          <p class="text-xl leading-relaxed text-slate-200 mb-6">
+            "The tutors are relatable, patient and actually make difficult concepts easy."
+          </p>
+          <h4 class="font-bold text-sky-400">Financial Accounting Student</h4>
+        </div>
+
+        <div class="testimonial-slide hidden">
+          <p class="text-xl leading-relaxed text-slate-200 mb-6">
+            "The online sessions and mentorship helped improve my confidence massively."
+          </p>
+          <h4 class="font-bold text-emerald-400">University Student</h4>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-3 mt-6">
+        <button class="w-3 h-3 rounded-full bg-orange-400 transition" onclick="changeTestimonial(0)"></button>
+        <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(1)"></button>
+        <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(2)"></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TUTORS -->
+<section id="tutors" class="py-24">
+    <div class="max-w-7xl mx-auto px-6">
+
+        <div class="text-center mb-16">
+            <h2 class="section-title">
+                Meet Your <span class="gradient-text">Gen Z Tutors</span>
+            </h2>
+            <p class="text-slate-300 max-w-2xl mx-auto">
+                Passionate university tutors dedicated to helping students succeed. Click on any tutor to learn more!
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <!-- TYREN CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('tyren')">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-2">Tyren Majola</h3>
+                    <p class="text-orange-400 font-medium mb-4">Founder & CEO</p>
+                    <p class="text-slate-300 leading-relaxed">
+                        Founder of Gen Z Tutors focused on making learning relatable, empowering and effective.
+                    </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile â†’</div>
+                </div>
+            </div>
+
+            <!-- THAPELO CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('thapelo')">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-2">Thapelo</h3>
+                    <p class="text-orange-400 font-medium mb-4">Commerce Tutor</p>
+                    <p class="text-slate-300 leading-relaxed">
+                        Passionate about helping students build confidence and master difficult concepts.
+                    </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile â†’</div>
+                </div>
+            </div>
+
+            <!-- MIKE CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('mike')">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Mike">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-2">Mike</h3>
+                    <p class="text-sky-400 font-medium mb-4">Academic Mentor</p>
+                    <p class="text-slate-300 leading-relaxed">
+                        Dedicated to creating engaging lessons that help students achieve excellence.
+                    </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile â†’</div>
+                </div>
+            </div>
+
+            <!-- LILONKE CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('lilonke')">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-2">Lilonke Breakfast</h3>
+                    <p class="text-emerald-400 font-medium mb-4">Accounting Tutor</p>
+                    <p class="text-slate-300 leading-relaxed">
+                        Committed to helping students realize their potential and succeed academically.
+                    </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile â†’</div>
+                </div>
+            </div>
+
+            <!-- FULUFHELO CARD -->
+            <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('fulufhelo')">
+                <div class="h-80 image-placeholder">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-2">Fulufhelo</h3>
+                    <p class="text-orange-400 font-medium mb-4">Accounting Tutor</p>
+                    <p class="text-slate-300 leading-relaxed">
+                        Encouraging discipline, consistency and academic growth for every learner.
+                    </p>
+                    <div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile â†’</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- TUTOR PROFILE MODALS -->
+
+<!-- TYREN PROFILE MODAL -->
+<div id="tyrenModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('tyren')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren Majola">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Tyren Majola</h2>
+                    <div class="tutor-role text-orange-400">
+                        <i class="fa-solid fa-crown"></i> Founder & CEO
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Commerce Expert</span>
+                        <span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Leader</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Because "Checking Out" in Class is Real. Hey it's Tyren, Your Gen Z Tutor that believes learning shouldn't feel like a chore. I'm here to bridge the gap between "I'm lost" and "I've got this."
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Let's be honest: sitting through a lecture that feels like it's in a different language is exhausting. I tutor because I've been the person staring at a textbook wondering when it was going to start making sense. I'm not here to be another "teacher"â€”I'm here to be the person who finally makes it click!
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        My goal isn't just to help you pass a test (though we're definitely doing that with a Distinction of course). I want to help you stop the 'I'm bad at this' spiral. I'm here to give you the cheat codes for your brain, build your confidence back up, and make sure you walk into your next exam feeling like a main character.
+                    </p>
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 mb-6">
+                        <p class="text-orange-400 italic font-semibold">
+                            "Your success is our No.1 priority"
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Tyren
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun â€¢ +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div>
-    <label class="block mb-2 text-sm text-slate-300">Password</label>
-    <input id="authPassword"
-           type="password"
-           placeholder="Enter password"
-           class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+<!-- LILONKE PROFILE MODAL -->
+<div id="lilonkeModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('lilonke')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Lilonke Breakfast">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Lilonke Breakfast</h2>
+                    <div class="tutor-role text-emerald-400">
+                        <i class="fa-solid fa-book"></i> Accounting Tutor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Accounting Expert</span>
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">UFS Graduate</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        <span class="font-bold text-emerald-400">Why I Love Being a Tutor:</span> I love being a tutor because I get to empower and inspire others to achieve their goals. There's nothing more rewarding than seeing a student gain confidence, overcome challenges, and realise their full potential.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        At GEN Z Tutors, I'm part of a team that believes in making quality education accessible, relatable, and effective for every student. I enjoy creating a supportive space where questions are welcome, progress is celebrated, and learning becomes enjoyable.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Being a tutor allows me to make a real difference while growing my own skills and building meaningful connections. It's more than teaching â€” it's about changing lives, one lesson at a time.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-check text-emerald-400"></i>
+                        <span class="text-slate-300"><strong>Education:</strong> Bachelor of Accounting - University of the Free State (UFS)</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-check text-emerald-400"></i>
+                        <span class="text-slate-300"><strong>Passionate about:</strong> Learning & Student Success</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-check text-emerald-400"></i>
+                        <span class="text-slate-300"><strong>Commitment:</strong> Proud to be part of GEN Z Tutors</span>
+                    </div>
+                    <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+                        <p class="text-amber-400 italic font-semibold">
+                            "Education is the most powerful weapon which you can use to change the world." - Nelson Mandela
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Lilonke
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun â€¢ +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div>
-    <label class="block mb-2 text-sm text-slate-300">Select Role</label>
-    <select id="authRole"
-            class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
-        <option value="student">Student</option>
-        <option value="tutor">Tutor</option>
-    </select>
+<!-- OTHER TUTORS - PLACEHOLDER PROFILES -->
+
+<!-- THAPELO PROFILE MODAL -->
+<div id="thapeloModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('thapelo')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Thapelo">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Thapelo</h2>
+                    <div class="tutor-role text-orange-400">
+                        <i class="fa-solid fa-chalkboard-user"></i> Commerce Tutor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Commerce Expert</span>
+                        <span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Student Success</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Passionate about helping students build confidence and master difficult concepts. Thapelo brings enthusiasm and relatable teaching methods to every session.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        With expertise in Commerce modules, Thapelo focuses on breaking down complex topics into manageable parts, ensuring students not only understand but truly grasp the material.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-star text-orange-400"></i>
+                        <span class="text-slate-300">Specializes in Commerce, Business Studies & Economics</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-heart text-emerald-400"></i>
+                        <span class="text-slate-300">Loves seeing students succeed and gain confidence</span>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Thapelo
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun â€¢ +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4">
-    <button type="button"
-            id="realLoginBtn"
-            class="bg-sky-500 hover:bg-sky-600 transition py-4 rounded-xl font-bold">
-        Login
-    </button>
-
-    <button type="button"
-            id="realSignupBtn"
-            class="bg-orange-500 hover:bg-orange-600 transition py-4 rounded-xl font-bold">
-        Sign Up
-    </button>
+<!-- MIKE PROFILE MODAL -->
+<div id="mikeModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('mike')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Mike">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Mike</h2>
+                    <div class="tutor-role text-sky-400">
+                        <i class="fa-solid fa-graduation-cap"></i> Academic Mentor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Academic Excellence</span>
+                        <span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Mentorship</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Dedicated to creating engaging lessons that help students achieve excellence. Mike's approach combines practical knowledge with inspiring mentorship.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        As an academic mentor, Mike goes beyond tutoring to provide guidance on study techniques, time management, and building confidence for long-term success.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-book-open text-sky-400"></i>
+                        <span class="text-slate-300">Expert in multiple academic disciplines</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-lightbulb text-sky-400"></i>
+                        <span class="text-slate-300">Focuses on understanding over memorization</span>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Mike
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun â€¢ +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-`;
 
-/* =========================
-   SIGNUP SYSTEM
-========================= */
+<!-- FULUFHELO PROFILE MODAL -->
+<div id="fulufheloModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('fulufhelo')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="p-8 md:p-12">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="tutor-profile-image">
+                    <img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo">
+                </div>
+                <div>
+                    <h2 class="text-4xl font-extrabold mb-2">Fulufhelo</h2>
+                    <div class="tutor-role text-orange-400">
+                        <i class="fa-solid fa-calculator"></i> Accounting Tutor
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Accounting Expert</span>
+                        <span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Discipline & Growth</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Encouraging discipline, consistency and academic growth for every learner. Fulufhelo believes that success comes from dedication and strategic effort.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        With deep expertise in Accounting, Fulufhelo helps students develop strong foundations and the habits needed for long-term academic excellence.
+                    </p>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-target text-orange-400"></i>
+                        <span class="text-slate-300">Specializes in Accounting & Financial topics</span>
+                    </div>
+                    <div class="flex gap-2 mb-6">
+                        <i class="fa-solid fa-seedling text-orange-400"></i>
+                        <span class="text-slate-300">Focused on sustainable learning habits</span>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Fulufhelo
+                        </a>
+                        <p class="text-slate-400 text-sm">Available: Sat & Sun â€¢ +267 925 6394</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-document.getElementById("realSignupBtn").addEventListener("click", () => {
+<!-- STUDENT PORTAL -->
+<section id="portal" class="py-24 bg-[#0d1728]">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="section-title">Student Portal</h2>
+      <p class="text-slate-300">A dedicated learning space for Gen Z Tutors students.</p>
+    </div>
 
-    const name = document.getElementById("authName").value.trim();
-    const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value.trim();
-    const role = document.getElementById("authRole").value;
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="glass rounded-3xl p-8 card-hover">
+        <i class="fa-solid fa-book text-4xl text-sky-400 mb-5"></i>
+        <h3 class="text-2xl font-bold mb-4">Session Notes</h3>
+        <p class="text-slate-300">Access tutor summaries, revision packs and lesson resources.</p>
+      </div>
 
-    if (!name || !email || !password) {
-        alert("Please complete all fields.");
-        return;
-    }
+      <div class="glass rounded-3xl p-8 card-hover">
+        <i class="fa-solid fa-list-check text-4xl text-orange-400 mb-5"></i>
+        <h3 class="text-2xl font-bold mb-4">Assignments</h3>
+        <p class="text-slate-300">Submit tasks, download exercises and practice questions.</p>
+      </div>
 
-    let users = JSON.parse(localStorage.getItem(USERS_KEY));
+      <div class="glass rounded-3xl p-8 card-hover">
+        <i class="fa-solid fa-chart-bar text-4xl text-emerald-400 mb-5"></i>
+        <h3 class="text-2xl font-bold mb-4">Performance Tracking</h3>
+        <p class="text-slate-300">Monitor progress and academic performance over time.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-    const exists = users.find(user => user.email === email);
+<!-- BOOKING SYSTEM -->
+<section id="booking" class="py-24 bg-[#08111f]">
+  <div class="max-w-4xl mx-auto px-6 text-center">
+    <h2 class="section-title">Book A Session</h2>
 
-    if (exists) {
-        alert("Account already exists.");
-        return;
-    }
+    <form class="glass rounded-3xl p-10 mt-12 text-left space-y-6">
+      <div>
+        <label class="block mb-2 text-sm text-slate-300">Full Name</label>
+        <input type="text" placeholder="Enter your full name" class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white placeholder-slate-500">
+      </div>
 
-    const newUser = {
-        name,
-        email,
-        password,
-        role
+      <div>
+        <label class="block mb-2 text-sm text-slate-300">Select Tutor</label>
+        <select class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+          <option>Choose a tutor...</option>
+          <option>Tyren Majola (Founder & CEO)</option>
+          <option>Thapelo (Commerce Tutor)</option>
+          <option>Mike (Academic Mentor)</option>
+          <option>Lilonke Breakfast (Accounting Tutor)</option>
+          <option>Fulufhelo (Accounting Tutor)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm text-slate-300">Preferred Date</label>
+        <input type="date" class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white">
+      </div>
+
+      <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 transition rounded-xl py-4 font-bold text-lg">
+        Submit Booking
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="py-24 bg-[#0d1728]">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+
+        <h2 class="section-title">Contact Us</h2>
+
+        <p class="text-slate-300 max-w-2xl mx-auto mb-10">
+            Ready to improve your grades and confidence? Reach out to Gen Z Tutors today.
+        </p>
+
+        <div class="glass rounded-3xl p-10 max-w-2xl mx-auto">
+
+            <div class="space-y-6 text-left">
+
+                <div class="flex items-center gap-4">
+                    <div class="bg-orange-500/20 p-4 rounded-xl">
+                        <i class="fa-solid fa-phone text-orange-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">WhatsApp</p>
+                        <p class="font-bold text-lg">067 925 6394</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="bg-sky-500/20 p-4 rounded-xl">
+                        <i class="fa-solid fa-envelope text-sky-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Email</p>
+                        <p class="font-bold text-lg">GenZTutorsza@gmail.com</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <a href="https://wa.me/27679256394" target="_blank"
+               class="inline-block mt-10 bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-bold text-lg transition">
+                <i class="fa-brands fa-whatsapp mr-2"></i>
+                Chat on WhatsApp
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-10 border-t border-white/10 text-center text-slate-400 text-sm">
+    <div class="max-w-7xl mx-auto px-6">
+        <p>Â© 2026 Gen Z Tutors. All rights reserved.</p>
+        <p class="mt-2">Learn differently. Your success is our No.1 priority âœ…</p>
+    </div>
+</footer>
+
+<!-- FLOATING WHATSAPP -->
+<a href="https://wa.me/27679256394"
+   target="_blank"
+   class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 h-16 w-16 rounded-full flex items-center justify-center text-3xl shadow-2xl z-50 transition">
+    <i class="fa-brands fa-whatsapp"></i>
+</a>
+
+<!-- THEME TOGGLE -->
+<button id="themeToggle" class="fixed left-6 bottom-6 z-50 bg-white text-black h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition">
+  <i class="fa-solid fa-moon"></i>
+</button>
+
+<script>
+    // AUTH MODAL - Firebase Authentication
+    const authModal = document.getElementById('authModal');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const closeModal = document.getElementById('closeModal');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authSubmit = document.getElementById('authSubmit');
+    const authMessage = document.getElementById('authMessage');
+    const googleAuthBtn = document.getElementById('googleAuthBtn');
+    let authMode = 'login';
+    let firebaseAuth;
+    let firebaseReady = false;
+    let createUserWithEmailAndPassword;
+    let signInWithEmailAndPassword;
+    let signInWithPopup;
+    let GoogleAuthProvider;
+    let onAuthStateChanged;
+    let signOut;
+
+    const firebaseConfig = {
+        apiKey: 'AIzaSyAGG8S44RzRP129Caj5QfyVkT8dffH0ip0',
+        authDomain: 'genztutorsza-efa13.firebaseapp.com',
+        projectId: 'genztutorsza-efa13',
+        storageBucket: 'genztutorsza-efa13.firebasestorage.app',
+        messagingSenderId: '699691673917',
+        appId: '1:699691673917:web:7ed8bd10cf0701410cfd54',
+        measurementId: 'G-CL8NS75JGJ'
     };
 
-    users.push(newUser);
-
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
-
-    alert("Account created successfully!");
-
-    authModal.classList.remove("active");
-
-    loadDashboard(newUser);
-});
-
-/* =========================
-   LOGIN SYSTEM
-========================= */
-
-document.getElementById("realLoginBtn").addEventListener("click", () => {
-
-    const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value.trim();
-
-    let users = JSON.parse(localStorage.getItem(USERS_KEY));
-
-    const user = users.find(
-        user => user.email === email && user.password === password
-    );
-
-    if (!user) {
-        alert("Invalid login details.");
-        return;
+    function hasFirebaseConfig() {
+        return !Object.values(firebaseConfig).some(value => value.includes('PASTE_YOUR'));
     }
 
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    function showAuthMessage(message, type = 'error') {
+        authMessage.textContent = message;
+        authMessage.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
+        authMessage.classList.add('border');
 
-    alert("Login successful!");
-
-    authModal.classList.remove("active");
-
-    loadDashboard(user);
-});
-
-/* =========================
-   GOOGLE LOGIN
-========================= */
-
-setTimeout(() => {
-
-    const googleBtn = document.querySelector(
-        '#authModal button:last-of-type'
-    );
-
-    if (googleBtn) {
-
-        googleBtn.addEventListener("click", () => {
-
-            const googleUser = {
-                name: "Google Student",
-                email: "googleuser@gmail.com",
-                role: "student"
-            };
-
-            localStorage.setItem(
-                CURRENT_USER_KEY,
-                JSON.stringify(googleUser)
-            );
-
-            alert("Signed in with Google!");
-
-            authModal.classList.remove("active");
-
-            loadDashboard(googleUser);
-        });
+        if (type === 'success') {
+            authMessage.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
+        } else {
+            authMessage.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30');
+        }
     }
 
-}, 100);
-   
-/* =========================
-   DASHBOARDS
-========================= */
+    function friendlyAuthError(error) {
+        const messages = {
+            'auth/email-already-in-use': 'This account already exists. Please login instead.',
+            'auth/invalid-email': 'Please enter a valid email address.',
+            'auth/invalid-credential': 'Incorrect email or password.',
+            'auth/popup-closed-by-user': 'Google login was closed before it finished.',
+            'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+            'auth/user-not-found': 'No account found with that email. Please sign up first.',
+            'auth/weak-password': 'Password must be at least 6 characters.',
+            'auth/wrong-password': 'Incorrect email or password.'
+        };
 
-function loadDashboard(user) {
-
-    removeExistingDashboard();
-
-    const dashboard = document.createElement("section");
-
-    dashboard.id = "dynamicDashboard";
-
-    dashboard.className =
-        "fixed inset-0 bg-[#08111f] z-[9999] overflow-y-auto p-8";
-
-    let content = "";
-
-    if (user.role === "student") {
-
-        content = `
-        <div class="max-w-6xl mx-auto">
-
-            <div class="flex justify-between items-center mb-10">
-                <div>
-                    <h1 class="text-5xl font-extrabold">
-                        Student Portal
-                    </h1>
-                    <p class="text-slate-400 mt-2">
-                        Welcome back ${user.name}
-                    </p>
-                </div>
-
-                <button onclick="logoutUser()"
-                        class="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-xl font-bold">
-                    Logout
-                </button>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Upcoming Lessons
-                    </h3>
-
-                    <p class="text-slate-300">
-                        No upcoming lessons yet.
-                    </p>
-                </div>
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Assignments
-                    </h3>
-
-                    <p class="text-slate-300">
-                        0 pending assignments.
-                    </p>
-                </div>
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Progress
-                    </h3>
-
-                    <div class="w-full bg-white/10 rounded-full h-4 mt-4">
-                        <div class="bg-orange-500 h-4 rounded-full w-[72%]"></div>
-                    </div>
-
-                    <p class="mt-4 text-orange-400 font-bold">
-                        72% Academic Progress
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-        `;
+        return messages[error.code] || error.message || 'Something went wrong. Please try again.';
     }
 
-    else if (user.role === "tutor") {
+    async function initializeFirebaseAuth() {
+        if (firebaseReady) return true;
 
-        content = `
-        <div class="max-w-6xl mx-auto">
+        if (!hasFirebaseConfig()) {
+            showAuthMessage('Firebase is ready in the code, but you still need to paste your Firebase config values first.');
+            return false;
+        }
 
-            <div class="flex justify-between items-center mb-10">
-                <div>
-                    <h1 class="text-5xl font-extrabold">
-                        Tutor Portal
-                    </h1>
+        try {
+            const appModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js');
+            const authModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js');
+            const app = appModule.initializeApp(firebaseConfig);
 
-                    <p class="text-slate-400 mt-2">
-                        Tutor Dashboard: ${user.name}
-                    </p>
-                </div>
+            firebaseAuth = authModule.getAuth(app);
+            createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
+            signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
+            signInWithPopup = authModule.signInWithPopup;
+            GoogleAuthProvider = authModule.GoogleAuthProvider;
+            onAuthStateChanged = authModule.onAuthStateChanged;
+            signOut = authModule.signOut;
+            firebaseReady = true;
 
-                <button onclick="logoutUser()"
-                        class="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-xl font-bold">
-                    Logout
-                </button>
-            </div>
+            onAuthStateChanged(firebaseAuth, (user) => {
+                if (user) {
+                    loginBtn.textContent = 'Logout';
+                    signupBtn.textContent = user.email || 'Account';
+                    signupBtn.disabled = true;
+                    signupBtn.classList.add('opacity-70', 'cursor-not-allowed');
+                } else {
+                    loginBtn.textContent = 'Login';
+                    signupBtn.textContent = 'Sign Up';
+                    signupBtn.disabled = false;
+                    signupBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            });
 
-            <div class="grid md:grid-cols-2 gap-8">
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Assigned Students
-                    </h3>
-
-                    <ul class="space-y-3 text-slate-300">
-                        <li>• Student 1</li>
-                        <li>• Student 2</li>
-                        <li>• Student 3</li>
-                    </ul>
-                </div>
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Tutor Analytics
-                    </h3>
-
-                    <p class="text-slate-300">
-                        Weekly lesson activity: 12 Sessions
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-        `;
+            return true;
+        } catch (error) {
+            showAuthMessage('Firebase could not load. Check your internet connection and Firebase config.');
+            return false;
+        }
     }
 
-    else if (user.role === "admin") {
-
-        let bookings =
-            JSON.parse(localStorage.getItem(BOOKINGS_KEY)) || [];
-
-        let bookingHTML = bookings.length
-            ? bookings.map(booking => `
-                <div class="border border-white/10 rounded-xl p-4">
-                    <h4 class="font-bold">${booking.name}</h4>
-                    <p>${booking.tutor}</p>
-                    <p>${booking.date}</p>
-                </div>
-            `).join("")
-            : "<p>No bookings yet.</p>";
-
-        content = `
-        <div class="max-w-7xl mx-auto">
-
-            <div class="flex justify-between items-center mb-10">
-                <div>
-                    <h1 class="text-5xl font-extrabold">
-                        Admin Portal
-                    </h1>
-
-                    <p class="text-slate-400 mt-2">
-                        Website management dashboard
-                    </p>
-                </div>
-
-                <button onclick="logoutUser()"
-                        class="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-xl font-bold">
-                    Logout
-                </button>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Total Users
-                    </h3>
-
-                    <p class="text-5xl font-extrabold text-orange-400">
-                        ${JSON.parse(localStorage.getItem(USERS_KEY)).length}
-                    </p>
-                </div>
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Tutors
-                    </h3>
-
-                    <p class="text-5xl font-extrabold text-sky-400">
-                        ${
-                            JSON.parse(localStorage.getItem(USERS_KEY))
-                            .filter(user => user.role === "tutor").length
-                        }
-                    </p>
-                </div>
-
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-2xl font-bold mb-4">
-                        Students
-                    </h3>
-
-                    <p class="text-5xl font-extrabold text-emerald-400">
-                        ${
-                            JSON.parse(localStorage.getItem(USERS_KEY))
-                            .filter(user => user.role === "student").length
-                        }
-                    </p>
-                </div>
-
-            </div>
-
-            <div class="glass rounded-3xl p-8 mt-10">
-                <h3 class="text-3xl font-bold mb-6">
-                    Session Bookings
-                </h3>
-
-                <div class="space-y-4">
-                    ${bookingHTML}
-                </div>
-            </div>
-
-        </div>
-        `;
+    function openAuthModal(mode) {
+        authMode = mode;
+        authTitle.textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
+        authSubtitle.textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
+        authSubmit.textContent = mode === 'signup' ? 'Sign Up' : 'Login';
+        authPassword.autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+        authMessage.classList.add('hidden');
+        authForm.reset();
+        authModal.classList.add('active');
+        setTimeout(() => authEmail.focus(), 100);
     }
 
-    dashboard.innerHTML = content;
+    loginBtn.addEventListener('click', async () => {
+        if (firebaseAuth && firebaseAuth.currentUser) {
+            await signOut(firebaseAuth);
+            return;
+        }
 
-    document.body.appendChild(dashboard);
-}
+        openAuthModal('login');
+    });
 
-/* =========================
-   REMOVE DASHBOARD
-========================= */
+    signupBtn.addEventListener('click', () => openAuthModal('signup'));
 
-function removeExistingDashboard() {
+    closeModal.addEventListener('click', () => {
+        authModal.classList.remove('active');
+    });
 
-    const existing =
-        document.getElementById("dynamicDashboard");
+    window.addEventListener('click', (e) => {
+        if (e.target === authModal) {
+            authModal.classList.remove('active');
+        }
+    });
 
-    if (existing) {
-        existing.remove();
-    }
-}
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-/* =========================
-   LOGOUT
-========================= */
+        const email = authEmail.value.trim().toLowerCase();
+        const password = authPassword.value;
 
-function logoutUser() {
+        if (!email || !password) {
+            showAuthMessage('Please enter your email and password.');
+            return;
+        }
 
-    localStorage.removeItem(CURRENT_USER_KEY);
+        if (password.length < 6) {
+            showAuthMessage('Password must be at least 6 characters.');
+            return;
+        }
 
-    removeExistingDashboard();
+        if (!(await initializeFirebaseAuth())) return;
 
-    alert("Logged out successfully.");
-}
+        authSubmit.disabled = true;
+        authSubmit.textContent = authMode === 'signup' ? 'Creating Account...' : 'Logging In...';
 
-/* =========================
-   AUTO LOGIN
-========================= */
+        try {
+            if (authMode === 'signup') {
+                await createUserWithEmailAndPassword(firebaseAuth, email, password);
+                showAuthMessage('Account created successfully. You are now logged in.', 'success');
+            } else {
+                await signInWithEmailAndPassword(firebaseAuth, email, password);
+                showAuthMessage('Login successful. Welcome back.', 'success');
+            }
 
-const savedUser =
-    JSON.parse(localStorage.getItem(CURRENT_USER_KEY));
+            setTimeout(() => authModal.classList.remove('active'), 1000);
+        } catch (error) {
+            showAuthMessage(friendlyAuthError(error));
+        } finally {
+            authSubmit.disabled = false;
+            authSubmit.textContent = authMode === 'signup' ? 'Sign Up' : 'Login';
+        }
+    });
 
-if (savedUser) {
-    loadDashboard(savedUser);
-}
+    googleAuthBtn.addEventListener('click', async () => {
+        if (!(await initializeFirebaseAuth())) return;
 
-/* =========================
-   MOBILE MENU
-========================= */
+        try {
+            await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
+            showAuthMessage('Google login successful. Welcome.', 'success');
+            setTimeout(() => authModal.classList.remove('active'), 1000);
+        } catch (error) {
+            showAuthMessage(friendlyAuthError(error));
+        }
+    });
 
-const menuBtn = document.getElementById('menuBtn');
-const mobileMenu = document.getElementById('mobileMenu');
+    initializeFirebaseAuth();
 
-if (menuBtn && mobileMenu) {
-
+    // MOBILE MENU
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
     const menuIcon = menuBtn.querySelector('i');
 
     menuBtn.addEventListener('click', () => {
-
         mobileMenu.classList.toggle('active');
 
         if (mobileMenu.classList.contains('active')) {
-
             menuIcon.className = 'fa-solid fa-xmark';
-
         } else {
-
             menuIcon.className = 'fa-solid fa-bars';
         }
     });
-}
 
-/* =========================
-   TESTIMONIALS
-========================= */
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            menuIcon.className = 'fa-solid fa-bars';
+        });
+    });
 
-let currentTestimonial = 0;
+    // TESTIMONIALS CAROUSEL
+    let currentTestimonial = 0;
+    const testimonials = document.querySelectorAll('.testimonial-slide');
 
-const testimonials =
-    document.querySelectorAll('.testimonial-slide');
+    function changeTestimonial(index) {
+        testimonials[currentTestimonial].classList.add('hidden');
+        testimonials[currentTestimonial].classList.remove('active');
+        
+        testimonials[index].classList.remove('hidden');
+        testimonials[index].classList.add('active');
+        
+        // Update dots
+        document.querySelectorAll('[onclick^="changeTestimonial"]').forEach((dot, i) => {
+            if (i === index) {
+                dot.classList.remove('bg-white/30');
+                dot.classList.add('bg-orange-400');
+            } else {
+                dot.classList.remove('bg-orange-400');
+                dot.classList.add('bg-white/30');
+            }
+        });
+        
+        currentTestimonial = index;
+    }
 
-function changeTestimonial(index) {
+    // Auto-rotate testimonials every 6 seconds
+    setInterval(() => {
+        const nextIndex = (currentTestimonial + 1) % testimonials.length;
+        changeTestimonial(nextIndex);
+    }, 6000);
 
-    testimonials[currentTestimonial]
-        .classList.add('hidden');
-
-    testimonials[index]
-        .classList.remove('hidden');
-
-    currentTestimonial = index;
-
-    updateDots();
-}
-
-function updateDots() {
-
-    document
-    .querySelectorAll('[onclick^="changeTestimonial"]')
-    .forEach((dot, i) => {
-
-        if (i === currentTestimonial) {
-
-            dot.classList.add('bg-orange-400');
-            dot.classList.remove('bg-white/30');
-
-        } else {
-
-            dot.classList.remove('bg-orange-400');
-            dot.classList.add('bg-white/30');
+    // TUTOR PROFILE MODALS
+    function openTutorProfile(tutor) {
+        const modalId = tutor + 'Modal';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
-    });
-}
-
-setInterval(() => {
-
-    currentTestimonial++;
-
-    if (currentTestimonial >= testimonials.length) {
-        currentTestimonial = 0;
     }
 
-    changeTestimonial(currentTestimonial);
-
-}, 6000);
-
-/* =========================
-   BOOKING SYSTEM
-========================= */
-
-const bookingForm =
-    document.querySelector('#booking form');
-
-if (bookingForm) {
-
-bookingForm.addEventListener('submit', (e) => {
-
-    e.preventDefault();
-
-    const name =
-        bookingForm.querySelector('input[type="text"]').value;
-
-    const tutor =
-        bookingForm.querySelector('select').value;
-
-    const date =
-        bookingForm.querySelector('input[type="date"]').value;
-
-    if (!name || !date || tutor === "Choose a tutor...") {
-
-        alert("Please complete booking form.");
-
-        return;
+    function closeTutorProfile(tutor) {
+        const modalId = tutor + 'Modal';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
     }
 
-    let bookings =
-        JSON.parse(localStorage.getItem(BOOKINGS_KEY))
-        || [];
-
-    bookings.push({
-        name,
-        tutor,
-        date
+    // Close modal when clicking outside
+    document.querySelectorAll('.profile-modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                const tutor = modal.id.replace('Modal', '');
+                closeTutorProfile(tutor);
+            }
+        });
     });
 
-    localStorage.setItem(
-        BOOKINGS_KEY,
-        JSON.stringify(bookings)
-    );
-
-    alert("Booking submitted successfully!");
-
-    bookingForm.reset();
-});
-
-}
-/* =========================
-   THEME TOGGLE
-========================= */
-
-const themeToggle =
-    document.getElementById('themeToggle');
-
-if (themeToggle) {
-
-    const savedTheme =
-        localStorage.getItem("theme");
-
-    if (savedTheme === "light") {
-
-        document.body.classList.add("light-mode");
-
-        themeToggle.innerHTML =
-            '<i class="fa-solid fa-sun"></i>';
-    }
+    // THEME TOGGLE
+    const themeToggle = document.getElementById('themeToggle');
+    let isDarkMode = true;
 
     themeToggle.addEventListener('click', () => {
-
+        isDarkMode = !isDarkMode;
         document.body.classList.toggle('light-mode');
-
-        if (
-            document.body.classList.contains('light-mode')
-        ) {
-
-            localStorage.setItem("theme", "light");
-
-            themeToggle.innerHTML =
-                '<i class="fa-solid fa-sun"></i>';
-
-        } else {
-
-            localStorage.setItem("theme", "dark");
-
-            themeToggle.innerHTML =
-                '<i class="fa-solid fa-moon"></i>';
-        }
+        themeToggle.innerHTML = isDarkMode ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
     });
-}
-/* =========================
-   TUTOR MODALS
-========================= */
-
-function openTutorProfile(tutor) {
-
-    const modal =
-        document.getElementById(tutor + 'Modal');
-
-    if (modal) {
-
-        modal.classList.add('active');
-
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-function closeTutorProfile(tutor) {
-
-    const modal =
-        document.getElementById(tutor + 'Modal');
-
-    if (modal) {
-
-        modal.classList.remove('active');
-
-        document.body.style.overflow = 'auto';
-    }
-}
-
-/* =========================
-   CLOSE PROFILE MODALS
-========================= */
-
-document.querySelectorAll('.profile-modal')
-.forEach(modal => {
-
-    modal.addEventListener('click', (e) => {
-
-        if (e.target === modal) {
-
-            const tutor =
-                modal.id.replace('Modal', '');
-
-            closeTutorProfile(tutor);
-        }
-    });
-});
-
 </script>
+
 </body>
 </html>
+
+
