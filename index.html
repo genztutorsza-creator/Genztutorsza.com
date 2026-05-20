@@ -325,6 +325,15 @@
             <a href="#tutors" class="drawer-link hover:text-orange-400">Tutors</a>
             <a href="#contact" class="drawer-link hover:text-orange-400">Contact</a>
 
+            <div class="drawer-link grid grid-cols-2 gap-3 mt-2">
+                <button id="mobileLoginBtn" type="button" class="border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">
+                    Login
+                </button>
+                <button id="mobileSignupBtn" type="button" class="bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">
+                    Sign Up
+                </button>
+            </div>
+
             <a href="https://wa.me/27679256394"
                target="_blank"
                class="drawer-link bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-center mt-2">
@@ -336,7 +345,7 @@
 
 <!-- AUTH MODAL -->
 <div id="authModal" class="auth-modal">
-    <div class="glass rounded-3xl p-10 w-[95%] max-w-md relative">
+    <div class="glass rounded-3xl p-6 sm:p-10 w-[95%] max-w-md max-h-[92vh] overflow-y-auto my-4 relative">
 
         <button id="closeModal"
                 class="absolute top-5 right-5 text-white text-2xl hover:text-orange-400 transition">
@@ -1032,6 +1041,8 @@
     const loginBtn = document.getElementById('loginBtn');
     const signupBtn = document.getElementById('signupBtn');
     const closeModal = document.getElementById('closeModal');
+    const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+    const mobileSignupBtn = document.getElementById('mobileSignupBtn');
     const authForm = document.getElementById('authForm');
     const authTitle = document.getElementById('authTitle');
     const authSubtitle = document.getElementById('authSubtitle');
@@ -1043,6 +1054,7 @@
     let authMode = 'login';
     let firebaseAuth;
     let firebaseReady = false;
+    let firebaseInitPromise;
     let createUserWithEmailAndPassword;
     let signInWithEmailAndPassword;
     let signInWithPopup;
@@ -1061,7 +1073,7 @@
     };
 
     function hasFirebaseConfig() {
-        return !Object.values(firebaseConfig).some(value => value.includes('PASTE_YOUR'));
+        return !Object.values(firebaseConfig).some(value => String(value).includes('PASTE_YOUR'));
     }
 
     function showAuthMessage(message, type = 'error') {
@@ -1078,11 +1090,19 @@
 
     function friendlyAuthError(error) {
         const messages = {
+            'auth/admin-restricted-operation': 'Email/password login is not enabled yet. Enable it in Firebase Authentication > Sign-in method.',
+            'auth/api-key-not-valid': 'Firebase rejected this API key. Check the Firebase config in the page.',
+            'auth/app-not-authorized': 'This website domain is not authorized in Firebase. Add it under Authentication > Settings > Authorized domains.',
+            'auth/configuration-not-found': 'Firebase Authentication is not enabled yet. Open Firebase Console > Authentication and click Get started.',
             'auth/email-already-in-use': 'This account already exists. Please login instead.',
             'auth/invalid-email': 'Please enter a valid email address.',
             'auth/invalid-credential': 'Incorrect email or password.',
+            'auth/network-request-failed': 'Firebase could not be reached from this page. Use http://localhost while testing, then add your live domain in Firebase Authorized domains.',
+            'auth/operation-not-allowed': 'This sign-in method is disabled. Enable Email/Password or Google in Firebase Authentication > Sign-in method.',
+            'auth/popup-blocked': 'The Google popup was blocked. Allow popups for this site and try again.',
             'auth/popup-closed-by-user': 'Google login was closed before it finished.',
             'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+            'auth/unauthorized-domain': 'This domain is not authorized for Firebase login. Add it in Firebase Authentication > Settings > Authorized domains.',
             'auth/user-not-found': 'No account found with that email. Please sign up first.',
             'auth/weak-password': 'Password must be at least 6 characters.',
             'auth/wrong-password': 'Incorrect email or password.'
@@ -1091,71 +1111,115 @@
         return messages[error.code] || error.message || 'Something went wrong. Please try again.';
     }
 
-    async function initializeFirebaseAuth() {
+    async function initializeFirebaseAuth(showErrors = false) {
         if (firebaseReady) return true;
+        if (firebaseInitPromise) return firebaseInitPromise;
 
-        if (!hasFirebaseConfig()) {
-            showAuthMessage('Firebase is ready in the code, but you still need to paste your Firebase config values first.');
-            return false;
-        }
+        firebaseInitPromise = (async () => {
+            if (!hasFirebaseConfig()) {
+                if (showErrors) showAuthMessage('Firebase is ready in the code, but the Firebase config values are still missing.');
+                return false;
+            }
 
-        try {
-            const appModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js');
-            const authModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js');
-            const app = appModule.initializeApp(firebaseConfig);
+            if (window.location.protocol === 'file:') {
+                if (showErrors) showAuthMessage('Firebase login must run from a website URL. Test with http://localhost or publish the site online.');
+                return false;
+            }
 
-            firebaseAuth = authModule.getAuth(app);
-            createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
-            signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
-            signInWithPopup = authModule.signInWithPopup;
-            GoogleAuthProvider = authModule.GoogleAuthProvider;
-            onAuthStateChanged = authModule.onAuthStateChanged;
-            signOut = authModule.signOut;
-            firebaseReady = true;
+            try {
+                const appModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js');
+                const authModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js');
+                const app = appModule.initializeApp(firebaseConfig);
 
-            onAuthStateChanged(firebaseAuth, (user) => {
-                if (user) {
-                    loginBtn.textContent = 'Logout';
-                    signupBtn.textContent = user.email || 'Account';
-                    signupBtn.disabled = true;
-                    signupBtn.classList.add('opacity-70', 'cursor-not-allowed');
-                } else {
-                    loginBtn.textContent = 'Login';
-                    signupBtn.textContent = 'Sign Up';
-                    signupBtn.disabled = false;
-                    signupBtn.classList.remove('opacity-70', 'cursor-not-allowed');
-                }
-            });
+                firebaseAuth = authModule.getAuth(app);
+                createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
+                signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
+                signInWithPopup = authModule.signInWithPopup;
+                GoogleAuthProvider = authModule.GoogleAuthProvider;
+                onAuthStateChanged = authModule.onAuthStateChanged;
+                signOut = authModule.signOut;
 
-            return true;
-        } catch (error) {
-            showAuthMessage('Firebase could not load. Check your internet connection and Firebase config.');
-            return false;
-        }
+                await authModule.setPersistence(firebaseAuth, authModule.browserLocalPersistence);
+                firebaseReady = true;
+
+                onAuthStateChanged(firebaseAuth, (user) => {
+                    if (user) {
+                        loginBtn.textContent = 'Logout';
+                        mobileLoginBtn.textContent = 'Logout';
+                        signupBtn.textContent = 'Account';
+                        mobileSignupBtn.textContent = 'Account';
+                        signupBtn.title = user.email || 'Signed in';
+                        mobileSignupBtn.title = user.email || 'Signed in';
+                        signupBtn.disabled = true;
+                        mobileSignupBtn.disabled = true;
+                        signupBtn.classList.add('opacity-70', 'cursor-not-allowed');
+                        mobileSignupBtn.classList.add('opacity-70', 'cursor-not-allowed');
+                    } else {
+                        loginBtn.textContent = 'Login';
+                        mobileLoginBtn.textContent = 'Login';
+                        signupBtn.textContent = 'Sign Up';
+                        mobileSignupBtn.textContent = 'Sign Up';
+                        signupBtn.title = '';
+                        mobileSignupBtn.title = '';
+                        signupBtn.disabled = false;
+                        mobileSignupBtn.disabled = false;
+                        signupBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                        mobileSignupBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                    }
+                });
+
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization failed:', error);
+                if (showErrors) showAuthMessage(friendlyAuthError(error));
+                return false;
+            } finally {
+                firebaseInitPromise = null;
+            }
+        })();
+
+        return firebaseInitPromise;
+    }
+
+    function closeMobileMenuIfOpen() {
+        const menu = document.getElementById('mobileMenu');
+        const icon = document.querySelector('#menuBtn i');
+        if (menu) menu.classList.remove('active');
+        if (icon) icon.className = 'fa-solid fa-bars';
     }
 
     function openAuthModal(mode) {
+        closeMobileMenuIfOpen();
         authMode = mode;
         authTitle.textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
         authSubtitle.textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
         authSubmit.textContent = mode === 'signup' ? 'Sign Up' : 'Login';
         authPassword.autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+        authSubmit.disabled = false;
         authMessage.classList.add('hidden');
         authForm.reset();
         authModal.classList.add('active');
         setTimeout(() => authEmail.focus(), 100);
     }
 
-    loginBtn.addEventListener('click', async () => {
+    async function handleLoginClick() {
         if (firebaseAuth && firebaseAuth.currentUser) {
             await signOut(firebaseAuth);
+            closeMobileMenuIfOpen();
             return;
         }
 
         openAuthModal('login');
-    });
+    }
 
-    signupBtn.addEventListener('click', () => openAuthModal('signup'));
+    function handleSignupClick() {
+        openAuthModal('signup');
+    }
+
+    loginBtn.addEventListener('click', handleLoginClick);
+    mobileLoginBtn.addEventListener('click', handleLoginClick);
+    signupBtn.addEventListener('click', handleSignupClick);
+    mobileSignupBtn.addEventListener('click', handleSignupClick);
 
     closeModal.addEventListener('click', () => {
         authModal.classList.remove('active');
@@ -1183,12 +1247,12 @@
             return;
         }
 
-        if (!(await initializeFirebaseAuth())) return;
-
         authSubmit.disabled = true;
         authSubmit.textContent = authMode === 'signup' ? 'Creating Account...' : 'Logging In...';
 
         try {
+            if (!(await initializeFirebaseAuth(true))) return;
+
             if (authMode === 'signup') {
                 await createUserWithEmailAndPassword(firebaseAuth, email, password);
                 showAuthMessage('Account created successfully. You are now logged in.', 'success');
@@ -1207,7 +1271,7 @@
     });
 
     googleAuthBtn.addEventListener('click', async () => {
-        if (!(await initializeFirebaseAuth())) return;
+        if (!(await initializeFirebaseAuth(true))) return;
 
         try {
             await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
@@ -1218,7 +1282,7 @@
         }
     });
 
-    initializeFirebaseAuth();
+    initializeFirebaseAuth(false);
 
     // MOBILE MENU
     const menuBtn = document.getElementById('menuBtn');
@@ -1315,5 +1379,11 @@
 
 </body>
 </html>
+
+
+
+
+
+
 
 
