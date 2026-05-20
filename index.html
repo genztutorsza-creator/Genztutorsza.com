@@ -185,23 +185,37 @@ document.getElementById("realLoginBtn").addEventListener("click", () => {
    GOOGLE LOGIN
 ========================= */
 
-document.querySelector(".fa-google").parentElement.addEventListener("click", () => {
+setTimeout(() => {
 
-    const googleUser = {
-        name: "Google Student",
-        email: "googleuser@gmail.com",
-        role: "student"
-    };
+    const googleBtn = document.querySelector(
+        '#authModal button:last-of-type'
+    );
 
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(googleUser));
+    if (googleBtn) {
 
-    alert("Signed in with Google!");
+        googleBtn.addEventListener("click", () => {
 
-    authModal.classList.remove("active");
+            const googleUser = {
+                name: "Google Student",
+                email: "googleuser@gmail.com",
+                role: "student"
+            };
 
-    loadDashboard(googleUser);
-});
+            localStorage.setItem(
+                CURRENT_USER_KEY,
+                JSON.stringify(googleUser)
+            );
 
+            alert("Signed in with Google!");
+
+            authModal.classList.remove("active");
+
+            loadDashboard(googleUser);
+        });
+    }
+
+}, 100);
+   
 /* =========================
    DASHBOARDS
 ========================= */
@@ -472,18 +486,25 @@ if (savedUser) {
 
 const menuBtn = document.getElementById('menuBtn');
 const mobileMenu = document.getElementById('mobileMenu');
-const menuIcon = menuBtn.querySelector('i');
 
-menuBtn.addEventListener('click', () => {
+if (menuBtn && mobileMenu) {
 
-    mobileMenu.classList.toggle('active');
+    const menuIcon = menuBtn.querySelector('i');
 
-    if (mobileMenu.classList.contains('active')) {
-        menuIcon.className = 'fa-solid fa-xmark';
-    } else {
-        menuIcon.className = 'fa-solid fa-bars';
-    }
-});
+    menuBtn.addEventListener('click', () => {
+
+        mobileMenu.classList.toggle('active');
+
+        if (mobileMenu.classList.contains('active')) {
+
+            menuIcon.className = 'fa-solid fa-xmark';
+
+        } else {
+
+            menuIcon.className = 'fa-solid fa-bars';
+        }
+    });
+}
 
 /* =========================
    TESTIMONIALS
@@ -545,6 +566,8 @@ setInterval(() => {
 const bookingForm =
     document.querySelector('#booking form');
 
+if (bookingForm) {
+
 bookingForm.addEventListener('submit', (e) => {
 
     e.preventDefault();
@@ -585,6 +608,7 @@ bookingForm.addEventListener('submit', (e) => {
     bookingForm.reset();
 });
 
+}
 /* =========================
    THEME TOGGLE
 ========================= */
@@ -592,39 +616,41 @@ bookingForm.addEventListener('submit', (e) => {
 const themeToggle =
     document.getElementById('themeToggle');
 
-const savedTheme =
-    localStorage.getItem("theme");
+if (themeToggle) {
 
-if (savedTheme === "light") {
+    const savedTheme =
+        localStorage.getItem("theme");
 
-    document.body.classList.add("light-mode");
+    if (savedTheme === "light") {
 
-    themeToggle.innerHTML =
-        '<i class="fa-solid fa-sun"></i>';
-}
-
-themeToggle.addEventListener('click', () => {
-
-    document.body.classList.toggle('light-mode');
-
-    if (
-        document.body.classList.contains('light-mode')
-    ) {
-
-        localStorage.setItem("theme", "light");
+        document.body.classList.add("light-mode");
 
         themeToggle.innerHTML =
             '<i class="fa-solid fa-sun"></i>';
-
-    } else {
-
-        localStorage.setItem("theme", "dark");
-
-        themeToggle.innerHTML =
-            '<i class="fa-solid fa-moon"></i>';
     }
-});
 
+    themeToggle.addEventListener('click', () => {
+
+        document.body.classList.toggle('light-mode');
+
+        if (
+            document.body.classList.contains('light-mode')
+        ) {
+
+            localStorage.setItem("theme", "light");
+
+            themeToggle.innerHTML =
+                '<i class="fa-solid fa-sun"></i>';
+
+        } else {
+
+            localStorage.setItem("theme", "dark");
+
+            themeToggle.innerHTML =
+                '<i class="fa-solid fa-moon"></i>';
+        }
+    });
+}
 /* =========================
    TUTOR MODALS
 ========================= */
@@ -675,3 +701,5 @@ document.querySelectorAll('.profile-modal')
 });
 
 </script>
+</body>
+</html>
