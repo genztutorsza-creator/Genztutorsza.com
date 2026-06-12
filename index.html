@@ -64,7 +64,7 @@
 </head>
 <body>
 
-<header class="fixed top-0 w-full z-40 glass">
+<header id="mainHeader" class="fixed top-0 w-full z-40 glass transition-opacity duration-300">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="h-12 w-12 navbar-logo-placeholder">
@@ -91,14 +91,13 @@
         <div class="hidden md:flex items-center gap-4" id="navAuthArea">
             <button id="loginBtn" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button>
             <button id="signupBtn" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Sign Up</button>
-            <a href="#booking" class="bg-orange-500 hover:bg-orange-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Book Now</a>
         </div>
     </div>
 </header>
 
-<div id="appDashboard" class="hidden fixed inset-0 z-50 bg-[#08111f] flex text-white">
+<div id="appDashboard" class="hidden h-screen w-full bg-[#08111f] flex text-white overflow-hidden">
     
-    <aside class="w-64 bg-[#0d1728] border-r border-white/10 flex flex-col hidden md:flex">
+    <aside class="w-64 bg-[#0d1728] border-r border-white/10 flex flex-col hidden md:flex h-full">
         <div class="p-6 border-b border-white/10">
             <div class="flex items-center gap-3 mb-2">
                 <img src="https://i.imgur.com/eYjP9kK.png" class="h-8 w-8 bg-white rounded p-1" alt="Logo">
@@ -112,24 +111,177 @@
             </nav>
         
         <div class="p-4 border-t border-white/10 space-y-3">
-            <button id="dashCloseBtn" class="w-full flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 px-4 py-2 rounded-xl transition text-sm">
-                <i class="fa-solid fa-house"></i> Back to Website
+            <button onclick="goToHome()" class="w-full flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 px-4 py-2 rounded-xl transition text-sm">
+                <i class="fa-solid fa-house"></i> Home
             </button>
-            <button id="dashLogoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-xl transition text-sm">
+            <button onclick="logoutUser()" class="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-xl transition text-sm font-bold">
                 <i class="fa-solid fa-right-from-bracket"></i> Logout
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto relative bg-[#08111f]">
+    <main class="flex-1 overflow-y-auto relative bg-[#08111f] h-full">
         <div class="md:hidden p-4 border-b border-white/10 flex justify-between items-center bg-[#0d1728]">
             <h2 class="font-bold">Gen Z Portal</h2>
-            <button id="dashCloseMobileBtn" class="text-slate-300 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+            <button onclick="goToHome()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-house text-xl"></i></button>
         </div>
 
         <div class="p-6 md:p-10 max-w-6xl mx-auto" id="dashContentArea">
             </div>
     </main>
+</div>
+
+<div id="landingPageContent" class="transition-opacity duration-300">
+    <section id="home" class="hero-bg min-h-screen flex items-center pt-20">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <span class="bg-sky-500/20 border border-sky-400/20 text-sky-300 px-4 py-2 rounded-full text-sm">Academic Excellence Redefined</span>
+                <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mt-6 mb-6">Learn Smarter With <span class="gradient-text">Gen Z Tutors</span></h1>
+                <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">We help university students master Accounting, Economics, Financial Management, Taxation, and Commerce modules through relatable, high-performance tutoring.</p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="#tutors" class="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-xl font-semibold transition">Meet The Tutors</a>
+                    <a href="https://wa.me/27679256394" target="_blank" class="border border-white/20 hover:bg-white/10 px-8 py-4 rounded-xl font-semibold transition">WhatsApp Us</a>
+                </div>
+            </div>
+            <div class="glass rounded-3xl p-8 hero-image-placeholder">
+                <img src="https://i.imgur.com/9B8k2qL.png" alt="Gen Z Tutors Banner">
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="py-24">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="section-title">About <span class="gradient-text">Gen Z Tutors</span></h2>
+            <p class="text-slate-300 max-w-3xl mx-auto leading-relaxed text-lg mt-6">Gen Z Tutors is a student-centered tutoring organization focused on helping learners unlock confidence, improve grades, and fully understand their academic modules. Our tutoring approach blends modern learning techniques, mentorship, and real-life academic experience.</p>
+            <div class="grid md:grid-cols-3 gap-8 mt-16">
+                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-book-open text-4xl text-sky-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Quality Learning</h3><p class="text-slate-300">Simplifying difficult concepts into understandable lessons.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-user-graduate text-4xl text-orange-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Student Focused</h3><p class="text-slate-300">We build confidence and help students feel capable academically.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-chart-line text-4xl text-emerald-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Results Driven</h3><p class="text-slate-300">Structured tutoring aimed at distinctions and long-term understanding.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="py-24 bg-[#0d1728]">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16"><h2 class="section-title">Our Services</h2><p class="text-slate-300 max-w-2xl mx-auto">Specialized academic support built for university students.</p></div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass p-8 rounded-2xl card-hover"><h3 class="font-bold text-2xl mb-4">Accounting</h3><p class="text-slate-300 leading-relaxed">Financial Accounting, IFRS, IAS frameworks and reporting standards.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><h3 class="font-bold text-2xl mb-4">Economics & Finance</h3><p class="text-slate-300 leading-relaxed">Financial management, market structures and economic systems.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><h3 class="font-bold text-2xl mb-4">Taxation</h3><p class="text-slate-300 leading-relaxed">Corporate taxation systems and practical commerce applications.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="py-24 bg-[#08111f] overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="section-title mb-4">Student Testimonials</h2>
+            <p class="text-slate-300 mb-14">What Gen Z Tutors students are saying.</p>
+            <div class="relative max-w-3xl mx-auto glass rounded-3xl p-10 min-h-[280px]">
+                <div id="testimonialContainer">
+                    <div class="testimonial-slide active">
+                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"Gen Z Tutors completely changed how I understood accounting. I went from struggling to passing confidently."</p>
+                        <h4 class="font-bold text-orange-400">Commerce Student</h4>
+                    </div>
+                    <div class="testimonial-slide hidden">
+                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"The tutors are relatable, patient and actually make difficult concepts easy."</p>
+                        <h4 class="font-bold text-sky-400">Financial Accounting Student</h4>
+                    </div>
+                    <div class="testimonial-slide hidden">
+                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"The online sessions and mentorship helped improve my confidence massively."</p>
+                        <h4 class="font-bold text-emerald-400">University Student</h4>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-3 mt-6">
+                    <button class="w-3 h-3 rounded-full bg-orange-400 transition" onclick="changeTestimonial(0)"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(1)"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(2)"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tutors" class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16"><h2 class="section-title">Meet Your <span class="gradient-text">Gen Z Tutors</span></h2><p class="text-slate-300 max-w-2xl mx-auto">Passionate university tutors dedicated to helping students succeed. Click on any tutor to learn more!</p></div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('tyren')">
+                    <div class="h-80 image-placeholder"><img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren"></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Tyren Majola</h3><p class="text-orange-400 font-medium mb-4">Founder & CEO</p><p class="text-slate-300 leading-relaxed">Founder of Gen Z Tutors focused on making learning relatable, empowering and effective.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                </div>
+                <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('thapelo')">
+                    <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo"></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Thapelo</h3><p class="text-orange-400 font-medium mb-4">Commerce Tutor</p><p class="text-slate-300 leading-relaxed">Passionate about helping students build confidence and master difficult concepts.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                </div>
+                <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('mike')">
+                    <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8k2qL.png" alt="Mike"></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Mike</h3><p class="text-sky-400 font-medium mb-4">Academic Mentor</p><p class="text-slate-300 leading-relaxed">Dedicated to creating engaging lessons that help students achieve excellence.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                </div>
+                <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('lilonke')">
+                    <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke"></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Lilonke Breakfast</h3><p class="text-emerald-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Committed to helping students realize their potential and succeed academically.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                </div>
+                <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('fulufhelo')">
+                    <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo"></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Fulufhelo</h3><p class="text-orange-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Encouraging discipline, consistency and academic growth for every learner.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="portal" class="py-24 bg-[#0d1728]">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16"><h2 class="section-title">Student Portal</h2><p class="text-slate-300">A dedicated learning space for Gen Z Tutors students.</p></div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-book text-4xl text-sky-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Session Notes</h3><p class="text-slate-300">Access tutor summaries, revision packs and lesson resources.</p></div>
+                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-list-check text-4xl text-orange-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Assignments</h3><p class="text-slate-300">Submit tasks, download exercises and practice questions.</p></div>
+                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-chart-bar text-4xl text-emerald-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Performance Tracking</h3><p class="text-slate-300">Monitor progress and academic performance over time.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="booking" class="py-24 bg-[#08111f]">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-12"><h2 class="section-title">Book Your Lesson</h2><p class="text-slate-300 max-w-2xl mx-auto">Select your modules, choose a tutor, and pick an available weekend time slot.</p></div>
+            
+            <div id="bookingAuthNotice" class="glass rounded-3xl p-8 text-center hidden">
+                <i class="fa-solid fa-lock text-4xl text-orange-400 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-3">Sign In Required</h3>
+                <p class="text-slate-300 mb-6">You need to be logged in to book a lesson with Gen Z Tutors.</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button type="button" class="auth-trigger bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-xl font-semibold transition">Login / Sign Up</button>
+                </div>
+            </div>
+
+            <div id="bookingApp" class="glass rounded-3xl p-6 md:p-10">
+                <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center">
+                    <h3 class="text-2xl font-bold text-emerald-400 mb-2">Ready to Book?</h3>
+                    <p class="text-slate-300 mb-6">Head to your Student Dashboard to schedule new lessons with your tutors!</p>
+                    <button onclick="openDashboard()" class="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-xl font-bold transition">Open Dashboard to Book</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 bg-[#0d1728]">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="section-title">Contact Us</h2>
+            <p class="text-slate-300 max-w-2xl mx-auto mb-10">Ready to improve your grades and confidence? Reach out to Gen Z Tutors today.</p>
+            <div class="glass rounded-3xl p-10 max-w-2xl mx-auto">
+                <div class="space-y-6 text-left">
+                    <div class="flex items-center gap-4"><div class="bg-orange-500/20 p-4 rounded-xl"><i class="fa-solid fa-phone text-orange-400"></i></div><div><p class="text-slate-400 text-sm">WhatsApp</p><p class="font-bold text-lg">067 925 6394</p></div></div>
+                    <div class="flex items-center gap-4"><div class="bg-sky-500/20 p-4 rounded-xl"><i class="fa-solid fa-envelope text-sky-400"></i></div><div><p class="text-slate-400 text-sm">Email</p><p class="font-bold text-lg">GenZTutorsza@gmail.com</p></div></div>
+                </div>
+                <a href="https://wa.me/27679256394" target="_blank" class="inline-block mt-10 bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-bold text-lg transition"><i class="fa-brands fa-whatsapp mr-2"></i> Chat on WhatsApp</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-10 border-t border-white/10 text-center text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <p>&copy; 2026 Gen Z Tutors. All rights reserved.</p>
+            <p class="mt-2">Learn differently. Your success is our No.1 priority ✅</p>
+        </div>
+    </footer>
 </div>
 
 <div id="authModal" class="auth-modal">
@@ -151,39 +303,22 @@
             <p id="authMessage" class="hidden rounded-xl px-4 py-3 text-sm font-medium"></p>
             <button id="authSubmit" type="submit" class="w-full bg-orange-500 hover:bg-orange-600 transition py-4 rounded-xl font-bold text-lg">Login</button>
         </form>
+        <div class="flex items-center gap-4 my-8">
+            <div class="flex-1 h-px bg-white/10"></div><span class="text-slate-400 text-sm">OR</span><div class="flex-1 h-px bg-white/10"></div>
+        </div>
+        <button id="googleAuthBtn" type="button" class="w-full bg-white hover:bg-slate-200 text-black transition py-4 rounded-xl font-bold flex items-center justify-center gap-3">
+            <i class="fa-brands fa-google text-xl"></i> Continue with Google
+        </button>
     </div>
 </div>
 
-<section id="home" class="hero-bg min-h-screen flex items-center pt-20">
-    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-            <span class="bg-sky-500/20 border border-sky-400/20 text-sky-300 px-4 py-2 rounded-full text-sm">Academic Excellence Redefined</span>
-            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mt-6 mb-6">Learn Smarter With <span class="gradient-text">Gen Z Tutors</span></h1>
-            <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">We help university students master Accounting, Economics, Financial Management, Taxation, and Commerce modules through relatable, high-performance tutoring.</p>
-            <div class="flex flex-wrap gap-4">
-                <a href="#tutors" class="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-xl font-semibold transition">Meet The Tutors</a>
-                <a href="https://wa.me/27679256394" target="_blank" class="border border-white/20 hover:bg-white/10 px-8 py-4 rounded-xl font-semibold transition">WhatsApp Us</a>
-            </div>
-        </div>
-        <div class="glass rounded-3xl p-8 hero-image-placeholder">
-            <img src="https://i.imgur.com/9B8k2qL.png" alt="Gen Z Tutors Banner">
-        </div>
-    </div>
-</section>
-
-<footer class="py-10 border-t border-white/10 text-center text-slate-400 text-sm mt-24">
-    <div class="max-w-7xl mx-auto px-6">
-        <p>&copy; 2026 Gen Z Tutors. All rights reserved.</p>
-        <p class="mt-2">Learn differently. Your success is our No.1 priority ✅</p>
-    </div>
-</footer>
-
 <script>
     // -----------------------------------------
-    // FIREBASE & AUTH LOGIC
+    // FIREBASE, DASHBOARD, & VIEW TOGGLE LOGIC
     // -----------------------------------------
     let firebaseAuth;
     let currentUserData = null;
+    let signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider;
 
     const firebaseConfig = {
         apiKey: 'AIzaSyAGG8S44RzRP129Caj5QfyVkT8dffH0ip0',
@@ -195,16 +330,38 @@
         measurementId: 'G-CL8NS75JGJ'
     };
 
-    // UI Elements
+    // Core UI Elements
     const authModal = document.getElementById('authModal');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authMessage = document.getElementById('authMessage');
+    const authSubmit = document.getElementById('authSubmit');
+    
     const navAuthArea = document.getElementById('navAuthArea');
+    const mainHeader = document.getElementById('mainHeader');
     const appDashboard = document.getElementById('appDashboard');
+    const landingPageContent = document.getElementById('landingPageContent');
     const dashContentArea = document.getElementById('dashContentArea');
     const dashNav = document.getElementById('dashNav');
+    
+    let authMode = 'login'; // 'login' or 'signup'
 
-    // Dashboard Logic
+    // Open/Close Modal
+    function openAuthModal(mode) {
+        authMode = mode;
+        document.getElementById('authTitle').textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
+        document.getElementById('authSubtitle').textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
+        document.getElementById('authSubmit').textContent = mode === 'signup' ? 'Sign Up' : 'Login';
+        authMessage.classList.add('hidden');
+        authForm.reset();
+        authModal.classList.add('active');
+    }
+
+    document.getElementById('closeModal').addEventListener('click', () => authModal.classList.remove('active'));
+    document.querySelectorAll('.auth-trigger').forEach(btn => btn.addEventListener('click', () => openAuthModal('login')));
+
+    // Determine Role
     function getRoleFromEmail(email) {
         if (!email) return 'student';
         const e = email.toLowerCase();
@@ -213,6 +370,121 @@
         return 'student'; // Default
     }
 
+    // View Toggles: Landing Page vs Dashboard
+    function openDashboard() {
+        if (!currentUserData) return;
+        
+        // Hide Landing Page and Header, Show Dashboard Fullscreen
+        mainHeader.classList.add('hidden');
+        landingPageContent.classList.add('hidden');
+        appDashboard.classList.remove('hidden');
+        window.scrollTo(0, 0);
+
+        const role = getRoleFromEmail(currentUserData.email);
+        document.getElementById('dashUserRole').textContent = role;
+        document.getElementById('dashUserEmail').textContent = currentUserData.email;
+        
+        renderDashboardNavigation(role);
+        renderDashView(`${role}-home`);
+    }
+
+    function goToHome() {
+        // Hide Dashboard, Show Landing Page and Header
+        appDashboard.classList.add('hidden');
+        mainHeader.classList.remove('hidden');
+        landingPageContent.classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    window.logoutUser = async function() {
+        if(firebaseAuth) await window.signOut(firebaseAuth);
+        goToHome();
+    };
+
+    // Firebase Initialization
+    async function initializeFirebaseAuth() {
+        try {
+            const appModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js');
+            const authModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js');
+            const app = appModule.initializeApp(firebaseConfig);
+            
+            firebaseAuth = authModule.getAuth(app);
+            window.signOut = authModule.signOut;
+            signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
+            createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
+            signInWithPopup = authModule.signInWithPopup;
+            GoogleAuthProvider = authModule.GoogleAuthProvider;
+
+            authModule.onAuthStateChanged(firebaseAuth, (user) => {
+                if (user) {
+                    currentUserData = user;
+                    // Update Landing Page Navigation to highly-visible Dashboard & Logout
+                    navAuthArea.innerHTML = `
+                        <button onclick="openDashboard()" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">
+                            Dashboard
+                        </button>
+                        <button onclick="logoutUser()" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition px-6 py-3 rounded-xl font-bold text-sm">
+                            Logout
+                        </button>
+                    `;
+                    document.getElementById('bookingAuthNotice').classList.add('hidden');
+                    document.getElementById('bookingApp').classList.remove('hidden');
+                } else {
+                    currentUserData = null;
+                    // Revert to Login / Sign up
+                    navAuthArea.innerHTML = `
+                        <button onclick="openAuthModal('login')" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button>
+                        <button onclick="openAuthModal('signup')" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Sign Up</button>
+                    `;
+                    document.getElementById('bookingAuthNotice').classList.remove('hidden');
+                    document.getElementById('bookingApp').classList.add('hidden');
+                    goToHome(); // Force back to home if they log out
+                }
+            });
+        } catch (error) {
+            console.error('Firebase Error:', error);
+        }
+    }
+
+    // Handle Login/Signup Form Submits
+    function showAuthMessage(message) {
+        authMessage.textContent = message;
+        authMessage.classList.remove('hidden');
+        authMessage.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
+    }
+
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+        authSubmit.disabled = true;
+
+        try {
+            if (authMode === 'signup') {
+                await createUserWithEmailAndPassword(firebaseAuth, email, password);
+            } else {
+                await signInWithEmailAndPassword(firebaseAuth, email, password);
+            }
+            authModal.classList.remove('active');
+            setTimeout(() => openDashboard(), 300); // Auto-open dashboard on fresh login
+        } catch (error) {
+            showAuthMessage(error.message);
+        } finally {
+            authSubmit.disabled = false;
+        }
+    });
+
+    document.getElementById('googleAuthBtn').addEventListener('click', async () => {
+        try {
+            await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
+            authModal.classList.remove('active');
+            setTimeout(() => openDashboard(), 300);
+        } catch (error) {
+            showAuthMessage(error.message);
+        }
+    });
+
+    // Render Dashboard Nav
     function renderDashboardNavigation(role) {
         let links = '';
         if (role === 'student') {
@@ -221,7 +493,6 @@
                 <a class="dash-sidebar-link" onclick="renderDashView('student-schedule', this)"><i class="fa-solid fa-calendar"></i> My Schedule</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('student-materials', this)"><i class="fa-solid fa-folder-open"></i> Study Materials</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('student-finance', this)"><i class="fa-solid fa-wallet"></i> Finances & Credits</a>
-                <a class="dash-sidebar-link" onclick="document.getElementById('dashCloseBtn').click(); window.location.href='#booking';"><i class="fa-solid fa-plus-circle"></i> Book New Lesson</a>
             `;
         } else if (role === 'tutor') {
             links = `
@@ -241,6 +512,7 @@
         dashNav.innerHTML = links;
     }
 
+    // Render Dashboard Content
     window.renderDashView = function(view, element = null) {
         if(element) {
             document.querySelectorAll('.dash-sidebar-link').forEach(el => el.classList.remove('active'));
@@ -249,7 +521,6 @@
 
         let html = '';
         
-        // --- STUDENT VIEWS ---
         if (view === 'student-home') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Welcome back, ${currentUserData.email.split('@')[0]}!</h2>
@@ -268,11 +539,13 @@
                         <button class="bg-sky-500 hover:bg-sky-600 px-4 py-2 rounded-lg font-bold text-sm">Join Link</button>
                     </div>
                 </div>
+                <div class="mt-8">
+                    <button class="bg-orange-500 hover:bg-orange-600 transition px-8 py-4 rounded-xl font-bold shadow-lg shadow-orange-500/20 text-lg">
+                        <i class="fa-solid fa-calendar-plus mr-2"></i> Schedule a New Lesson
+                    </button>
+                </div>
             `;
-        }
-        
-        // --- TUTOR VIEWS ---
-        else if (view === 'tutor-home') {
+        } else if (view === 'tutor-home') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Tutor Dashboard</h2>
                 <div class="grid md:grid-cols-3 gap-6 mb-8">
@@ -301,8 +574,7 @@
                     </div>
                 </div>
             `;
-        }
-        else if (view === 'tutor-tools') {
+        } else if (view === 'tutor-tools') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Platform Tools & Resources</h2>
                 <div class="grid md:grid-cols-2 gap-6">
@@ -321,10 +593,7 @@
                     </div>
                 </div>
             `;
-        }
-
-        // --- ADMIN VIEWS ---
-        else if (view === 'admin-home') {
+        } else if (view === 'admin-home') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Admin Overview</h2>
                 <div class="grid md:grid-cols-4 gap-4 mb-8">
@@ -339,83 +608,13 @@
                 </div>
             `;
         } else {
-            // Fallbacks for undeveloped tabs
             html = `<div class="dash-card text-center py-20"><i class="fa-solid fa-person-digging text-4xl text-slate-500 mb-4"></i><h2 class="text-2xl font-bold">Module in Development</h2><p class="text-slate-400">This feature is coming in the next update.</p></div>`;
         }
-
         dashContentArea.innerHTML = html;
     };
 
-    function openDashboard() {
-        if (!currentUserData) return;
-        const role = getRoleFromEmail(currentUserData.email);
-        
-        document.getElementById('dashUserRole').textContent = role;
-        document.getElementById('dashUserEmail').textContent = currentUserData.email;
-        
-        renderDashboardNavigation(role);
-        renderDashView(`${role}-home`); // load default view
-        
-        appDashboard.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    document.getElementById('dashCloseBtn').addEventListener('click', () => {
-        appDashboard.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    });
-    document.getElementById('dashCloseMobileBtn').addEventListener('click', () => {
-        appDashboard.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    });
-
-    // Replace your original Initialization Code with this updated one:
-    async function initializeFirebaseAuth() {
-        try {
-            const appModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js');
-            const authModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js');
-            const app = appModule.initializeApp(firebaseConfig);
-            
-            firebaseAuth = authModule.getAuth(app);
-            window.signOut = authModule.signOut; // make available globally
-
-            authModule.onAuthStateChanged(firebaseAuth, (user) => {
-                if (user) {
-                    currentUserData = user;
-                    // Change Nav Buttons
-                    navAuthArea.innerHTML = `
-                        <button onclick="openDashboard()" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-sky-500/20">
-                            <i class="fa-solid fa-grip"></i> Portal
-                        </button>
-                    `;
-                    // Setup Booking system to recognize user
-                    if(typeof window.renderBookingAuthState === 'function') window.renderBookingAuthState(user);
-                } else {
-                    currentUserData = null;
-                    navAuthArea.innerHTML = `
-                        <button id="loginBtn" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button>
-                        <button id="signupBtn" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Sign Up</button>
-                    `;
-                    // Re-bind auth modal events
-                    document.getElementById('loginBtn').addEventListener('click', () => { document.getElementById('authModal').classList.add('active'); });
-                    document.getElementById('signupBtn').addEventListener('click', () => { document.getElementById('authModal').classList.add('active'); });
-                    if(typeof window.renderBookingAuthState === 'function') window.renderBookingAuthState(null);
-                }
-            });
-        } catch (error) {
-            console.error('Firebase Error:', error);
-        }
-    }
-
-    document.getElementById('dashLogoutBtn').addEventListener('click', async () => {
-        if(firebaseAuth) await window.signOut(firebaseAuth);
-        appDashboard.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    });
-
     // Run initializer
     initializeFirebaseAuth();
-
 </script>
 
 </body>
