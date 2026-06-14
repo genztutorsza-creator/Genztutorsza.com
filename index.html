@@ -2,11 +2,22 @@
 <html lang="en">
 <head>
 
-     <script>
+    <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./coop-sw.js')
       .then(reg => {
-        // If the service worker just took control, reload once to apply headers
+        // Check if there's an update available
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available - notify user or reload
+              console.log('New service worker available');
+            }
+          });
+        });
+        
+        // Reload only if service worker just became the controller
         if (!navigator.serviceWorker.controller) {
           window.location.reload();
         }
