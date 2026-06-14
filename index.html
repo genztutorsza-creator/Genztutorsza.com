@@ -1010,7 +1010,7 @@
         alert(`In a real app, this downloads: ${filename}`);
     };
 
-    async function loadLiveChat() {
+async function loadLiveChat() {
         const msgsArea = document.getElementById('chatMessagesArea'); 
         if (!msgsArea || !currentChatContactEmail || !currentUserData) return;
         
@@ -1018,30 +1018,28 @@
 
         const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
         const db = firestoreModule.getFirestore(firebaseAuth.app);
+        
         const myEmail = currentUserData.email.toLowerCase();
+        const isAdmin = getRoleFromEmail(myEmail) === 'admin';
+        // ADMIN MASKING: If admin, listen to the main support channel instead of personal email
+        const listenerEmail = isAdmin ? 'admin@genztutors.com' : myEmail;
 
-        // Stop listening to the previous chat if the user switches contacts
         if (chatUnsubscribe) chatUnsubscribe();
 
-        // Query Firestore for messages where the current user is a participant
         const q = firestoreModule.query(
             firestoreModule.collection(db, 'messages'),
-            firestoreModule.where('participants', 'array-contains', myEmail)
+            firestoreModule.where('participants', 'array-contains', listenerEmail)
         );
 
-        // onSnapshot creates a live, real-time connection to the database
         chatUnsubscribe = firestoreModule.onSnapshot(q, (snapshot) => {
             const allMessages = [];
             snapshot.forEach(doc => allMessages.push({ id: doc.id, ...doc.data() }));
-
-            // Sort messages chronologically
             allMessages.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-            // Filter out messages to ensure we only see the ones with the currently selected contact
             const chatHistory = allMessages.filter(m => 
-                (m.sender === myEmail && m.receiver === currentChatContactEmail) || 
-                (m.sender === currentChatContactEmail && m.receiver === myEmail) || 
-                (m.receiver === 'broadcast_tutors' && (myEmail.includes('tutor') || myEmail.includes('admin') || currentChatContactEmail === 'broadcast_tutors'))
+                (m.sender === listenerEmail && m.receiver === currentChatContactEmail) || 
+                (m.sender === currentChatContactEmail && m.receiver === listenerEmail) || 
+                (m.receiver === 'broadcast_tutors' && (isAdmin || myEmail.includes('tutor') || currentChatContactEmail === 'broadcast_tutors'))
             );
 
             if (chatHistory.length === 0) { 
@@ -1051,7 +1049,7 @@
             
             let html = '';
             chatHistory.forEach(msg => {
-                const isMe = msg.sender === myEmail; 
+                const isMe = msg.sender === listenerEmail; 
                 const timeStr = new Date(msg.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 let attachmentHtml = '';
                 if (msg.attachment) {
@@ -1061,7 +1059,7 @@
                 
                 if (isMe) html += `<div class="chat-message-sent"><p class="text-sm text-white">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-sky-200/50 mt-1 text-right">${timeStr}</p></div>`;
                 else { 
-                    let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast from Admin • ` : ''; 
+                    let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast • ` : ''; 
                     html += `<div class="chat-message-received"><p class="text-sm text-slate-200">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-slate-500 mt-1">${senderLabel}${timeStr}</p></div>`; 
                 }
             });
@@ -1081,12 +1079,14 @@
         sendBtn.disabled = true;
 
         const myEmail = currentUserData.email.toLowerCase();
+        const isAdmin = getRoleFromEmail(myEmail) === 'admin';
+        // ADMIN MASKING: Send as the main support channel
+        const senderEmail = isAdmin ? 'admin@genztutors.com' : myEmail;
         
-        // We add a 'participants' array to make real-time querying highly efficient
         const newMsg = { 
-            sender: myEmail, 
+            sender: senderEmail, 
             receiver: currentChatContactEmail, 
-            participants: [myEmail, currentChatContactEmail],
+            participants: [senderEmail, currentChatContactEmail],
             text: text, 
             attachment: pendingAttachmentData, 
             time: new Date().toISOString() 
@@ -1099,7 +1099,6 @@
             
             inputEl.value = ''; 
             removeAttachment(); 
-            // We don't need to manually call render here because the onSnapshot listener will detect the new database entry and instantly update the UI!
         } catch (error) {
             console.error("Error sending live message:", error);
             showToast("Failed to send message. Please check your connection.");
@@ -1153,13 +1152,65 @@
         dashNav.innerHTML = links;
     }
 
-    function generateDynamicTutorContacts() {
+    function generateDynamicTutorContacts(allBookings) {
         if(!currentUserData) return '';
-        const allBookings = safeJSONParse('genZTutorsBookings', []); const myTutorName = getTutorNameFromEmail(currentUserData.email); const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-        const uniqueStudents = {}; myBookings.forEach(b => { uniqueStudents[b.student.email] = `${b.student.firstName} ${b.student.lastName}`; });
+        const myTutorName = getTutorNameFromEmail(currentUserData.email);
+        const myBookings = allBookings.filter(b => b.tutors && b.tutors.some(t => t.name === myTutorName));
+        const uniqueStudents = {};
+        
+        myBookings.forEach(b => {
+            if(b.student && b.student.email) {
+                uniqueStudents[b.student.email.toLowerCase()] = `${b.student.firstName} ${b.student.lastName}`;
+            }
+        });
+        
         let contactsHtml = '';
-        for (const [email, name] of Object.entries(uniqueStudents)) contactsHtml += `<button onclick="selectChat('${escapeHTML(name)}', '${escapeHTML(email)}')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div><div><p class="font-bold">${escapeHTML(name)}</p><p class="text-xs text-slate-400">Student</p></div></button>`;
-        if (contactsHtml === '') contactsHtml = '<p class="text-xs text-slate-500 italic p-2">You have no booked students yet.</p>'; return contactsHtml;
+        for (const [email, name] of Object.entries(uniqueStudents)) {
+            contactsHtml += `<button onclick="selectChat('${escapeHTML(name)}', '${escapeHTML(email)}')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3 mt-1"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user text-slate-300"></i></div><div class="overflow-hidden"><p class="font-bold truncate text-white">${escapeHTML(name)}</p><p class="text-xs text-slate-400 truncate">Student</p></div></button>`;
+        }
+        return contactsHtml || '<p class="text-xs text-slate-500 italic p-2">You have no booked students yet.</p>';
+    }
+
+    async function generateDynamicAdminContacts(allBookings) {
+        if(!currentUserData) return '';
+        const contacts = {};
+
+        // 1. Automatically add your known active tutors
+        const knownTutors = [
+            { email: 'lilonke@genztutors.com', name: 'Lilonke Breakfast' },
+            { email: 'fulufhelo@genztutors.com', name: 'Fulufhelo Masevhe' },
+            { email: 'thapelo@genztutors.com', name: 'Thapelo' },
+            { email: 'mike@genztutors.com', name: 'Mike' }
+        ];
+        knownTutors.forEach(t => contacts[t.email] = { name: t.name, role: 'Tutor', color: 'sky' });
+
+        // 2. Add all students who have booked lessons
+        allBookings.forEach(b => {
+            if (b.student && b.student.email) {
+                contacts[b.student.email.toLowerCase()] = { name: `${b.student.firstName} ${b.student.lastName}`, role: 'Student', color: 'slate' };
+            }
+        });
+
+        // 3. Scan the live messages database for ANY user who tried to contact support (even if they didn't book)
+        try {
+            const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
+            const db = firestoreModule.getFirestore(firebaseAuth.app);
+            const q = firestoreModule.query(firestoreModule.collection(db, 'messages'), firestoreModule.where('receiver', '==', 'admin@genztutors.com'));
+            const snapshot = await firestoreModule.getDocs(q);
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.sender && !contacts[data.sender] && data.sender !== currentUserData.email.toLowerCase()) {
+                    contacts[data.sender] = { name: data.sender.split('@')[0], role: 'User', color: 'slate' };
+                }
+            });
+        } catch(e) { console.warn("Could not fetch extra message contacts"); }
+
+        let html = '';
+        for (const [email, info] of Object.entries(contacts)) {
+            if(email === currentUserData.email.toLowerCase()) continue;
+            html += `<button onclick="selectChat('${escapeHTML(info.name)}', '${escapeHTML(email)}')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3 mt-1"><div class="w-10 h-10 rounded-full bg-${info.color}-500/20 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user text-${info.color}-400"></i></div><div class="overflow-hidden"><p class="font-bold truncate text-white">${escapeHTML(info.name)}</p><p class="text-xs text-slate-400 truncate">${escapeHTML(info.role)}</p></div></button>`;
+        }
+        return html || '<p class="text-xs text-slate-500 italic p-2">No user contacts found.</p>';
     }
 
        window.renderDashView = async function(view) {
