@@ -628,6 +628,32 @@
     </div>
 </div>
 
+<div id="paymentModal" class="hidden fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0d1728] border border-white/10 rounded-3xl p-8 max-w-md w-full text-center relative overflow-hidden shadow-2xl shadow-sky-500/10">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-400 to-orange-400"></div>
+        <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+        
+        <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 mt-2">
+            <i class="fa-solid fa-check text-4xl text-emerald-400"></i>
+        </div>
+        
+        <h3 class="text-2xl font-bold mb-2">Booking Confirmed!</h3>
+        <p class="text-slate-300 mb-6">Your lesson is secured. How would you like to complete your payment of <strong class="text-white text-lg" id="paymentModalAmount">R0</strong>?</p>
+        
+        <div class="space-y-3">
+            <button onclick="initiatePayFast()" class="w-full bg-white hover:bg-slate-200 text-black px-6 py-4 rounded-xl font-bold transition flex items-center justify-center gap-3 group">
+                <i class="fa-solid fa-credit-card text-xl text-slate-700 group-hover:text-black"></i> Pay Securely Online
+            </button>
+            <button onclick="payViaWhatsApp()" class="w-full border border-white/20 hover:bg-white/10 px-6 py-4 rounded-xl font-bold transition flex items-center justify-center gap-3 text-slate-300 hover:text-white">
+                <i class="fa-brands fa-whatsapp text-xl text-green-500"></i> Arrange EFT via WhatsApp
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-6 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-lock"></i> Secure payments powered by PayFast
+        </p>
+    </div>
+</div>
+    
 <div id="tyrenModal" class="profile-modal">
     <div class="profile-modal-content">
         <button class="close-profile-btn" onclick="closeTutorProfile('tyren')"><i class="fa-solid fa-xmark"></i></button>
@@ -1511,16 +1537,93 @@ async function loadLiveChat() {
     
     function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
 
+    // Global variables to hold the booking temporarily for the payment modal
+    let pendingPaymentBooking = null;
+    let pendingPaymentSavedOnline = false;
+
     async function submitBookingRequest() {
         const els = bookingEls(); bookingState.notes = els.notes.value.trim(); const student = { firstName: els.firstName.value.trim(), lastName: els.lastName.value.trim(), email: els.email.value.trim(), phone: els.phone.value.trim(), idNumber: els.idNumber.value.trim() };
         if (!student.firstName || !student.lastName || !student.email || !student.phone || !student.idNumber) { showBookingMessage('Please complete all required student details.'); return; }
-        const booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, duration: bookingState.duration, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: bookingState.tutors.length * bookingRatePerTutor, createdAt: new Date().toISOString() };
-        const submitBtn = document.getElementById('submitBookingRequest'); submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
-        const savedOnline = await saveBookingToFirebase(booking); 
+        
+        const booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, package: bookingState.package, extraTimeSlots: bookingState.extraTimeSlots, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: calculateTotal(), createdAt: new Date().toISOString() };
+        
+        const submitBtn = document.getElementById('submitBookingRequest'); submitBtn.disabled = true; submitBtn.textContent = 'Processing...';
+        
+        const savedOnline = await saveBookingToFirebase(booking);
         const existingBookings = safeJSONParse('genZTutorsBookings', []); existingBookings.push({ ...booking, savedOnline }); localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
-        saveBookedSlot(booking.date, booking.time); showBookingMessage(savedOnline ? 'Booking saved. Opening WhatsApp...' : 'Booking saved locally. Opening WhatsApp...', 'success'); renderTimeSlots();
+        
+        // Save the time slots
+        saveBookedSlot(booking.date, booking.time); 
+        if(booking.package === 'bootcamp') {
+             const timeIndex = timeSlots.indexOf(booking.time);
+             if(timeIndex !== -1 && timeIndex < timeSlots.length - 1) saveBookedSlot(booking.date, timeSlots[timeIndex + 1]);
+        }
+        
+        renderTimeSlots();
         if(localStorage.getItem('activeDashView')) renderDashView(localStorage.getItem('activeDashView'));
-        setTimeout(() => { window.open(buildWhatsAppBookingUrl(booking, savedOnline), '_blank'); resetBooking(); submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request'; }, 700);
+        
+        // Intercept: Store the booking and show the Payment Modal instead of opening WhatsApp immediately
+        pendingPaymentBooking = booking;
+        pendingPaymentSavedOnline = savedOnline;
+        
+        document.getElementById('paymentModalAmount').textContent = `R${booking.total}`;
+        document.getElementById('paymentModal').classList.remove('hidden');
+        
+        submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request';
+    }
+
+    // --- PAYMENT INTEGRATION FUNCTIONS ---
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.add('hidden');
+        resetBooking();
+    }
+
+    function payViaWhatsApp() {
+        if(!pendingPaymentBooking) return;
+        window.open(buildWhatsAppBookingUrl(pendingPaymentBooking, pendingPaymentSavedOnline), '_blank');
+        closePaymentModal();
+    }
+
+    function initiatePayFast() {
+        if(!pendingPaymentBooking) return;
+        
+        // PayFast Sandbox Credentials (FOR TESTING). 
+        // When you are ready for real money, replace these with your LIVE Merchant ID and Key, 
+        // and change the URL from 'sandbox.payfast.co.za' to 'www.payfast.co.za'
+        const merchant_id = '10000100'; 
+        const merchant_key = '46f0cd694581a';
+        
+        // Create a hidden form to POST data securely to PayFast
+        const form = document.createElement('form');
+        form.action = 'https://sandbox.payfast.co.za/eng/process';
+        form.method = 'POST';
+        
+        const params = {
+            merchant_id: merchant_id,
+            merchant_key: merchant_key,
+            return_url: window.location.href, // Sends them back to your site after payment
+            cancel_url: window.location.href,
+            name_first: pendingPaymentBooking.student.firstName,
+            name_last: pendingPaymentBooking.student.lastName,
+            email_address: pendingPaymentBooking.student.email,
+            cell_number: pendingPaymentBooking.student.phone,
+            amount: pendingPaymentBooking.total.toFixed(2),
+            item_name: `Gen Z Tutors - ${pendingPaymentBooking.package} Package`
+        };
+
+        // Append inputs to the hidden form
+        for (const key in params) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = params[key];
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit(); // Automatically submit the form to redirect the user
+        
+        closePaymentModal();
     }
     async function fetchLiveBookings() {
         // If not logged in, just return the local storage data as a fallback
