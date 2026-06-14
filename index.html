@@ -60,6 +60,8 @@
         .dash-sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
         .dash-sidebar-link.active { background: rgba(56,189,248,0.15); color: #38bdf8; font-weight: 600; }
         .dash-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 1.5rem; padding: 1.5rem; }
+        .chat-message-sent { background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 1rem 1rem 0 1rem; padding: 0.75rem 1rem; margin-left: auto; max-width: 80%; }
+        .chat-message-received { background: #09111d; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem 1rem 1rem 0; padding: 0.75rem 1rem; max-width: 80%; }
     </style>
 </head>
 <body>
@@ -369,12 +371,10 @@
         clearTimeout(warningTimer);
         clearTimeout(logoutTimer);
         
-        // Hide warning if visible
         if (inactivityWarningModal) {
             inactivityWarningModal.classList.add('hidden');
         }
 
-        // Only run timer if a user is currently logged in
         if (currentUserData) {
             warningTimer = setTimeout(showInactivityWarning, INACTIVITY_WARNING_LIMIT);
             logoutTimer = setTimeout(handleAutoLogout, INACTIVITY_LOGOUT_LIMIT);
@@ -396,7 +396,6 @@
         }
     }
 
-    // Listen for general page interaction to reset the timer (including clicking "Keep Me Logged In")
     ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(event => {
         document.addEventListener(event, window.resetInactivityTimer, true);
     });
@@ -471,7 +470,6 @@
             authModule.onAuthStateChanged(firebaseAuth, (user) => {
                 if (user) {
                     currentUserData = user;
-                    // Start inactivity timer on login
                     window.resetInactivityTimer();
                     
                     navAuthArea.innerHTML = `
@@ -486,7 +484,6 @@
                     document.getElementById('bookingApp').classList.remove('hidden');
                 } else {
                     currentUserData = null;
-                    // Clear inactivity timers on manual logout
                     clearTimeout(warningTimer);
                     clearTimeout(logoutTimer);
                     if (inactivityWarningModal) inactivityWarningModal.classList.add('hidden');
@@ -552,6 +549,7 @@
                 <a class="dash-sidebar-link" onclick="renderDashView('student-schedule', this)"><i class="fa-solid fa-calendar"></i> My Schedule</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('student-materials', this)"><i class="fa-solid fa-folder-open"></i> Study Materials</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('student-finance', this)"><i class="fa-solid fa-wallet"></i> Finances & Credits</a>
+                <a class="dash-sidebar-link" onclick="renderDashView('student-messages', this)"><i class="fa-solid fa-comments"></i> Messages</a>
             `;
         } else if (role === 'tutor') {
             links = `
@@ -559,6 +557,7 @@
                 <a class="dash-sidebar-link" onclick="renderDashView('tutor-schedule', this)"><i class="fa-solid fa-calendar-check"></i> Lesson Roster</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('tutor-finance', this)"><i class="fa-solid fa-money-bill-trend-up"></i> Income & Earnings</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('tutor-tools', this)"><i class="fa-solid fa-toolbox"></i> Platform Tools</a>
+                <a class="dash-sidebar-link" onclick="renderDashView('tutor-messages', this)"><i class="fa-solid fa-comments"></i> Messages</a>
             `;
         } else if (role === 'admin') {
             links = `
@@ -566,6 +565,7 @@
                 <a class="dash-sidebar-link" onclick="renderDashView('admin-bookings', this)"><i class="fa-solid fa-list-check"></i> All Bookings</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('admin-users', this)"><i class="fa-solid fa-users"></i> Manage Users</a>
                 <a class="dash-sidebar-link" onclick="renderDashView('admin-finance', this)"><i class="fa-solid fa-vault"></i> Master Financials</a>
+                <a class="dash-sidebar-link" onclick="renderDashView('admin-messages', this)"><i class="fa-solid fa-comments"></i> Communications</a>
             `;
         }
         dashNav.innerHTML = links;
@@ -580,6 +580,7 @@
 
         let html = '';
         
+        // ------------- STUDENT VIEWS -------------
         if (view === 'student-home') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Welcome back, ${currentUserData.email.split('@')[0]}!</h2>
@@ -604,7 +605,49 @@
                     </button>
                 </div>
             `;
-        } else if (view === 'tutor-home') {
+        } 
+        else if (view === 'student-messages') {
+            html = `
+                <h2 class="text-3xl font-bold mb-6">Messages</h2>
+                <div class="grid md:grid-cols-3 gap-6 h-[500px]">
+                    <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
+                        <h3 class="font-bold mb-4 text-slate-300">Your Contacts</h3>
+                        
+                        <button class="w-full text-left p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center"><i class="fa-solid fa-chalkboard-user text-sky-400"></i></div>
+                            <div><p class="font-bold">Lilonke</p><p class="text-xs text-sky-400">Accounting Tutor</p></div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-crown text-slate-300"></i></div>
+                            <div><p class="font-bold">Tyren M.</p><p class="text-xs text-slate-400">Commerce Tutor</p></div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 rounded-xl bg-orange-500/5 hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mt-4">
+                            <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-headset text-orange-400"></i></div>
+                            <div><p class="font-bold text-orange-400">Admin Support</p><p class="text-xs text-slate-400">Billing & Issues</p></div>
+                        </button>
+                    </div>
+                    
+                    <div class="dash-card col-span-2 flex flex-col p-6">
+                        <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
+                            <h3 class="font-bold text-lg"><i class="fa-solid fa-circle text-emerald-400 text-xs mr-2"></i> Lilonke</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-4 mb-4">
+                            <div class="chat-message-received"><p class="text-sm">Hi! Don't forget to review the IAS 1 frameworks before our lesson tomorrow at 10 AM.</p><p class="text-[10px] text-slate-500 mt-1">Yesterday, 14:30</p></div>
+                            <div class="chat-message-sent"><p class="text-sm">Thanks Lilonke! I have the PDF open now. Will see you on Zoom tomorrow.</p><p class="text-[10px] text-sky-200/50 mt-1">Yesterday, 15:00</p></div>
+                        </div>
+                        <div class="mt-auto flex gap-2">
+                            <input type="text" placeholder="Type your message..." class="booking-input flex-1 py-3">
+                            <button class="bg-sky-500 hover:bg-sky-600 px-6 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ------------- TUTOR VIEWS -------------
+        else if (view === 'tutor-home') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Tutor Dashboard</h2>
                 <div class="grid md:grid-cols-3 gap-6 mb-8">
@@ -633,7 +676,8 @@
                     </div>
                 </div>
             `;
-        } else if (view === 'tutor-tools') {
+        } 
+        else if (view === 'tutor-tools') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Platform Tools & Resources</h2>
                 <div class="grid md:grid-cols-2 gap-6">
@@ -652,7 +696,48 @@
                     </div>
                 </div>
             `;
-        } else if (view === 'admin-home') {
+        }
+        else if (view === 'tutor-messages') {
+            html = `
+                <h2 class="text-3xl font-bold mb-6">Tutor Communications</h2>
+                <div class="grid md:grid-cols-3 gap-6 h-[500px]">
+                    <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
+                        <h3 class="font-bold mb-4 text-slate-300">Management</h3>
+                        <button class="w-full text-left p-3 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-orange-400"></i></div>
+                            <div><p class="font-bold text-orange-400">Admin / System</p><p class="text-xs text-slate-400">Priority Channel</p></div>
+                        </button>
+
+                        <h3 class="font-bold mb-4 text-slate-300">Your Students</h3>
+                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div>
+                            <div><p class="font-bold">John Doe</p><p class="text-xs text-slate-400">Commerce 1st Year</p></div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div>
+                            <div><p class="font-bold">Sarah Smith</p><p class="text-xs text-slate-400">Accounting 2nd Year</p></div>
+                        </button>
+                    </div>
+                    
+                    <div class="dash-card col-span-2 flex flex-col p-6 border-orange-500/30">
+                        <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-orange-400"><i class="fa-solid fa-shield-halved mr-2"></i> Direct Admin Channel</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-4 mb-4">
+                            <div class="chat-message-received"><p class="text-sm">Please ensure you submit the timesheet for this weekend by Sunday night.</p><p class="text-[10px] text-slate-500 mt-1">Admin &bull; Today, 09:00</p></div>
+                        </div>
+                        <div class="mt-auto flex gap-2">
+                            <input type="text" placeholder="Message admin..." class="booking-input flex-1 py-3 focus:outline-orange-500/50 focus:border-orange-500/50">
+                            <button class="bg-orange-500 hover:bg-orange-600 px-6 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ------------- ADMIN VIEWS -------------
+        else if (view === 'admin-home') {
             html = `
                 <h2 class="text-3xl font-bold mb-6">Admin Overview</h2>
                 <div class="grid md:grid-cols-4 gap-4 mb-8">
@@ -666,7 +751,47 @@
                     <p class="text-slate-400 italic">No critical alerts. System running efficiently.</p>
                 </div>
             `;
-        } else {
+        } 
+        else if (view === 'admin-messages') {
+            html = `
+                <h2 class="text-3xl font-bold mb-6">Master Communications</h2>
+                <div class="grid md:grid-cols-3 gap-6 h-[500px]">
+                    <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
+                        <h3 class="font-bold mb-4 text-slate-300">Broadcasts</h3>
+                        <button class="w-full text-left p-3 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-bullhorn text-orange-400"></i></div>
+                            <div><p class="font-bold text-orange-400">All Tutors</p><p class="text-xs text-slate-400">Announcements</p></div>
+                        </button>
+
+                        <h3 class="font-bold mb-4 text-slate-300">Tutors</h3>
+                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user-tie text-slate-300"></i></div>
+                            <div><p class="font-bold">Lilonke</p><p class="text-xs text-slate-400">Online now</p></div>
+                        </button>
+                        
+                        <h3 class="font-bold mb-4 text-slate-300 mt-6">Support Tickets (Students)</h3>
+                        <button class="w-full text-left p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center"><i class="fa-solid fa-circle-exclamation text-emerald-400"></i></div>
+                            <div><p class="font-bold text-emerald-400">John Doe</p><p class="text-xs text-slate-400">Billing inquiry</p></div>
+                        </button>
+                    </div>
+                    
+                    <div class="dash-card col-span-2 flex flex-col p-6 border-orange-500/30">
+                        <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-orange-400"><i class="fa-solid fa-bullhorn mr-2"></i> Broadcast to All Tutors</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-4 mb-4">
+                            <div class="chat-message-sent bg-orange-500/20 border-orange-500/30"><p class="text-sm">Reminder: All end-of-month progress reports for your students are due this Friday.</p><p class="text-[10px] text-orange-200/50 mt-1">Admin Broadcast &bull; Tuesday, 10:00</p></div>
+                        </div>
+                        <div class="mt-auto flex gap-2">
+                            <input type="text" placeholder="Type announcement..." class="booking-input flex-1 py-3 focus:outline-orange-500/50 focus:border-orange-500/50">
+                            <button class="bg-orange-500 hover:bg-orange-600 px-6 rounded-xl font-bold transition">Send to All</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        else {
             html = `<div class="dash-card text-center py-20"><i class="fa-solid fa-person-digging text-4xl text-slate-500 mb-4"></i><h2 class="text-2xl font-bold">Module in Development</h2><p class="text-slate-400">This feature is coming in the next update.</p></div>`;
         }
         dashContentArea.innerHTML = html;
