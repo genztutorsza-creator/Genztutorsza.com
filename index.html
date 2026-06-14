@@ -312,6 +312,17 @@
     </div>
 </div>
 
+<div id="inactivityWarningModal" class="hidden fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-[#0d1728] border border-orange-500/30 rounded-2xl p-8 max-w-md w-[90%] text-center shadow-2xl shadow-orange-500/10">
+        <i class="fa-solid fa-triangle-exclamation text-5xl text-orange-400 mb-4"></i>
+        <h3 class="text-2xl font-bold mb-2 text-white">Are you still there?</h3>
+        <p class="text-slate-300 mb-6">You have been inactive for a while. You will be automatically logged out in <strong>5 minutes</strong> to protect your account.</p>
+        <button onclick="window.resetInactivityTimer()" class="w-full bg-orange-500 hover:bg-orange-600 transition py-3 rounded-xl font-bold text-lg text-white">
+            Keep Me Logged In
+        </button>
+    </div>
+</div>
+
 <script>
     // -----------------------------------------
     // FIREBASE, DASHBOARD, VIEW TOGGLE, & AUTO-LOGOUT
@@ -344,18 +355,35 @@
     const landingPageContent = document.getElementById('landingPageContent');
     const dashContentArea = document.getElementById('dashContentArea');
     const dashNav = document.getElementById('dashNav');
+    const inactivityWarningModal = document.getElementById('inactivityWarningModal');
     
     let authMode = 'login';
 
     // --- AUTO-LOGOUT LOGIC ---
-    let inactivityTimer;
-    const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutes in milliseconds
+    let warningTimer;
+    let logoutTimer;
+    const INACTIVITY_WARNING_LIMIT = 10 * 60 * 1000; // Trigger warning at 10 minutes
+    const INACTIVITY_LOGOUT_LIMIT = 15 * 60 * 1000;  // Actual logout at 15 minutes
 
-    function resetInactivityTimer() {
-        clearTimeout(inactivityTimer);
+    window.resetInactivityTimer = function() {
+        clearTimeout(warningTimer);
+        clearTimeout(logoutTimer);
+        
+        // Hide warning if visible
+        if (inactivityWarningModal) {
+            inactivityWarningModal.classList.add('hidden');
+        }
+
         // Only run timer if a user is currently logged in
         if (currentUserData) {
-            inactivityTimer = setTimeout(handleAutoLogout, INACTIVITY_LIMIT);
+            warningTimer = setTimeout(showInactivityWarning, INACTIVITY_WARNING_LIMIT);
+            logoutTimer = setTimeout(handleAutoLogout, INACTIVITY_LOGOUT_LIMIT);
+        }
+    }
+
+    function showInactivityWarning() {
+        if (currentUserData && inactivityWarningModal) {
+            inactivityWarningModal.classList.remove('hidden');
         }
     }
 
@@ -363,15 +391,15 @@
         if (currentUserData) {
             if (firebaseAuth) await window.signOut(firebaseAuth);
             goToHome();
+            if (inactivityWarningModal) inactivityWarningModal.classList.add('hidden');
             alert("You have been automatically logged out due to 15 minutes of inactivity.");
         }
     }
 
-    // Listen for general page interaction to reset the timer
+    // Listen for general page interaction to reset the timer (including clicking "Keep Me Logged In")
     ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(event => {
-        document.addEventListener(event, resetInactivityTimer, true);
+        document.addEventListener(event, window.resetInactivityTimer, true);
     });
-
     // --- END AUTO-LOGOUT LOGIC ---
 
     // Open/Close Modal
@@ -444,7 +472,7 @@
                 if (user) {
                     currentUserData = user;
                     // Start inactivity timer on login
-                    resetInactivityTimer();
+                    window.resetInactivityTimer();
                     
                     navAuthArea.innerHTML = `
                         <button onclick="openDashboard()" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">
@@ -458,8 +486,10 @@
                     document.getElementById('bookingApp').classList.remove('hidden');
                 } else {
                     currentUserData = null;
-                    // Clear inactivity timer on logout
-                    clearTimeout(inactivityTimer);
+                    // Clear inactivity timers on manual logout
+                    clearTimeout(warningTimer);
+                    clearTimeout(logoutTimer);
+                    if (inactivityWarningModal) inactivityWarningModal.classList.add('hidden');
                     
                     navAuthArea.innerHTML = `
                         <button onclick="openAuthModal('login')" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button>
