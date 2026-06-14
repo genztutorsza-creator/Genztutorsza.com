@@ -7,8 +7,8 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(e.request).then(response => {
         const newHeaders = new Headers(response.headers);
-        // This forces the browser to apply the header GitHub Pages blocks
-        newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+        // Allow popups (needed for Firebase Google Auth)
+        newHeaders.set('Cross-Origin-Opener-Policy', 'unsafe-none');
         
         return new Response(response.body, {
           status: response.status,
