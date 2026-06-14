@@ -507,11 +507,11 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block mb-2 text-sm text-slate-300">Extra Time (+R175)</label>
+                            <label class="block mb-2 text-sm text-slate-300">Extra Time</label>
                             <select id="bookingExtraTime" class="booking-input">
                                 <option value="0">None</option>
-                                <option value="1">+ 1hr 15mins</option>
-                                <option value="2">+ 2hrs 30mins</option>
+                                <option value="1">+ 1hr 15mins (+R175)</option>
+                                <option value="2">+ 2hrs 30mins (+R350)</option>
                             </select>
                         </div>
                     </div>
@@ -1236,87 +1236,76 @@
     // Updated State Object
     const bookingState = { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', package: '', extraTimeSlots: 0, date: '', time: '', notes: '' };
 
-    function bookingEls() { return { app: document.getElementById('bookingApp'),
-                                    notice: document.getElementById('bookingAuthNotice'),
-                                    message: document.getElementById('bookingMessage'),
-                                    levels: document.getElementById('academicLevelOptions'),
-                                    moduleArea: document.getElementById('moduleArea'),
-                                    modules: document.getElementById('moduleOptions'),
-                                    tutors: document.getElementById('tutorOptions'),
-                                    lessonType: document.getElementById('bookingLessonType'),
-                                    venue: document.getElementById('bookingVenue'),
-                                    venueLabel: document.getElementById('bookingVenueLabel'),
-                                    package: document.getElementById('bookingPackage'),
-                                    extraTime: document.getElementById('bookingExtraTime'),
-                                    date: document.getElementById('bookingDate'),
-                                    nextWeekendHint: document.getElementById('nextWeekendHint'),
-                                    times: document.getElementById('timeSlotOptions'),
-                                    notes: document.getElementById('bookingNotes'),
-                                    summary: document.getElementById('bookingSummary'),
-                                    total: document.getElementById('bookingTotal'),
-                                    firstName: document.getElementById('bookingFirstName'),
-                                    lastName: document.getElementById('bookingLastName'),
-                                    email: document.getElementById('bookingEmail'),
-                                    phone: document.getElementById('bookingPhone'),
-                                    idNumber: document.getElementById('bookingIdNumber')
-    }; }
-// Add this definition before your setBookingStep function
-function clearBookingMessage() {
-    const messageElement = document.getElementById('booking-message');
-    if (messageElement) messageElement.textContent = '';
-}
+    function bookingEls() { return { app: document.getElementById('bookingApp'), notice: document.getElementById('bookingAuthNotice'), message: document.getElementById('bookingMessage'), levels: document.getElementById('academicLevelOptions'), moduleArea: document.getElementById('moduleArea'), modules: document.getElementById('moduleOptions'), tutors: document.getElementById('tutorOptions'), lessonType: document.getElementById('bookingLessonType'), venue: document.getElementById('bookingVenue'), venueLabel: document.getElementById('bookingVenueLabel'), package: document.getElementById('bookingPackage'), extraTime: document.getElementById('bookingExtraTime'), date: document.getElementById('bookingDate'), nextWeekendHint: document.getElementById('nextWeekendHint'), times: document.getElementById('timeSlotOptions'), notes: document.getElementById('bookingNotes'), summary: document.getElementById('bookingSummary'), total: document.getElementById('bookingTotal'), firstName: document.getElementById('bookingFirstName'), lastName: document.getElementById('bookingLastName'), email: document.getElementById('bookingEmail'), phone: document.getElementById('bookingPhone'), idNumber: document.getElementById('bookingIdNumber') }; }
+
+    // --- RESTORED CORE HELPER FUNCTIONS ---
+    function showBookingMessage(message, type = 'error') { const el = bookingEls().message; if (!el) return; el.textContent = message; el.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); el.classList.add('border'); if (type === 'success') el.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); else el.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30'); }
+    function clearBookingMessage() { const el = bookingEls().message; if (el) el.classList.add('hidden'); }
     
-    function setBookingStep(step) {
-        bookingState.step = step;
-        document.querySelectorAll('[data-booking-step]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.bookingStep !== String(step)));
-        document.querySelectorAll('[data-step-tab]').forEach(tab => { const tabStep = Number(tab.dataset.stepTab); tab.classList.toggle('active', tabStep === step); tab.classList.toggle('bg-emerald-500/20', tabStep < step); });
-        clearBookingMessage(); if (step === 4) renderBookingSummary();
-    }
-    
-  function validateBookingStep(step) {
+    function getBookedSlots() { return safeJSONParse('genZTutorsBookedSlots', {}); }
+    function saveBookedSlot(date, time) { const bookedSlots = getBookedSlots(); bookedSlots[`${date}|${time}`] = true; localStorage.setItem('genZTutorsBookedSlots', JSON.stringify(bookedSlots)); }
+    function isBookedSlot(time) { return Boolean(getBookedSlots()[`${bookingState.date}|${time}`]); }
+    function isWeekend(dateValue) { if (!dateValue) return false; const [year, month, day] = dateValue.split('-').map(Number); const date = new Date(year, month - 1, day); return date.getDay() === 0 || date.getDay() === 6; }
+    function getNextWeekendDate() { const date = new Date(); date.setHours(0, 0, 0, 0); while (date.getDay() !== 0 && date.getDay() !== 6) date.setDate(date.getDate() + 1); return date.toISOString().split('T')[0]; }
+
+    // --- STEP NAVIGATION & VALIDATION ---
+    function setBookingStep(step) { bookingState.step = step; document.querySelectorAll('[data-booking-step]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.bookingStep !== String(step))); document.querySelectorAll('[data-step-tab]').forEach(tab => { const tabStep = Number(tab.dataset.stepTab); tab.classList.toggle('active', tabStep === step); tab.classList.toggle('bg-emerald-500/20', tabStep < step); }); clearBookingMessage(); if (step === 4) renderBookingSummary(); }
+
+    function validateBookingStep(step) {
         if (step === 1 && bookingState.modules.length === 0) return 'Please select at least one module.';
         if (step === 2 && bookingState.tutors.length === 0) return 'Please choose at least one tutor.';
         if (step === 2 && (!bookingState.lessonType || !bookingState.venue || !bookingState.package)) return 'Please choose the lesson type, platform/venue, and a package.';
         if (step === 3 && (!bookingState.date || !bookingState.time)) return 'Please choose a Saturday/Sunday date and an available time slot.';
         return '';
     }
-    
+
+    // --- RENDER FUNCTIONS ---
     function renderAcademicLevels() { const els = bookingEls(); if (!els.levels) return; els.levels.innerHTML = academicLevels.map(level => `<button type="button" class="booking-choice text-left ${bookingState.academicLevel === level ? 'active' : ''}" data-academic-level="${level}"><span class="font-bold">${level}</span></button>`).join(''); }
     function renderModules() { const els = bookingEls(); if (!els.modules || !els.moduleArea) return; els.moduleArea.classList.toggle('hidden', !bookingState.academicLevel); const modules = modulesByLevel[bookingState.academicLevel] || []; els.modules.innerHTML = modules.map(module => `<label class="booking-choice flex items-center gap-3 ${bookingState.modules.includes(module) ? 'active' : ''}"><input type="checkbox" class="booking-module accent-sky-500" value="${module}" ${bookingState.modules.includes(module) ? 'checked' : ''}><span>${module}</span></label>`).join(''); }
     function matchingTutors() { if (bookingState.modules.length === 0) return bookingTutors; return bookingTutors.filter(tutor => bookingState.modules.some(module => tutor.modules.some(tutorModule => module.toLowerCase().includes(tutorModule.toLowerCase()) || tutorModule.toLowerCase().includes(module.split(' ')[0].toLowerCase())))); }
     function renderTutors() { const els = bookingEls(); if (!els.tutors) return; const tutors = matchingTutors(); els.tutors.innerHTML = tutors.map(tutor => `<button type="button" class="booking-choice text-left ${bookingState.tutors.includes(tutor.id) ? 'active' : ''}" data-tutor-id="${tutor.id}"><div class="flex items-start justify-between gap-4"><div><p class="font-bold">${tutor.name}</p><p class="text-sm text-slate-300">Star ${tutor.rating} • ${tutor.modules.join(', ')}</p></div><span class="h-5 w-5 rounded border border-white/25 flex-shrink-0 ${bookingState.tutors.includes(tutor.id) ? 'bg-sky-500' : ''}"></span></div></button>`).join(''); }
     function renderVenueOptions() { const els = bookingEls(); if (!els.venue) return; const options = bookingState.lessonType === 'Online' ? onlinePlatforms : bookingState.lessonType === 'In-Person' ? inPersonVenues : []; els.venueLabel.textContent = bookingState.lessonType === 'Online' ? 'Platform' : bookingState.lessonType === 'In-Person' ? 'Venue' : 'Platform / Venue'; els.venue.innerHTML = '<option value="">Select platform or venue</option>' + options.map(option => `<option>${option}</option>`).join(''); els.venue.value = bookingState.venue; }
-    // Add this function to check if a specific time slot is already taken
-function isBookedSlot(slot) {
-  // Assuming bookingState.bookedSlots is an array of strings like ['10:00', '14:00']
-  return bookingState.bookedSlots && bookingState.bookedSlots.includes(slot);
-}
     function renderTimeSlots() { const els = bookingEls(); if (!els.times) return; els.times.innerHTML = timeSlots.map(slot => { const booked = isBookedSlot(slot); const active = bookingState.time === slot; return `<button type="button" class="time-slot rounded-xl px-3 py-3 font-semibold transition ${booked ? 'booked' : active ? 'bg-orange-500 text-white' : 'bg-white/10 hover:bg-white/15 text-white'}" data-time-slot="${slot}" ${booked ? 'disabled' : ''}>${slot}</button>`; }).join(''); }
-    function renderBookingSummary() { const els = bookingEls(); const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name); const rows = [['Academic Level', bookingState.academicLevel], ['Modules', bookingState.modules.join(', ')], ['Tutors', tutorNames.join(', ')], ['Lesson Type', bookingState.lessonType], ['Platform / Venue', bookingState.venue], ['Duration', bookingState.duration], ['Date & Time', `${bookingState.date} at ${bookingState.time}`], ['Notes', escapeHTML(bookingState.notes) || 'None']]; els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join(''); els.total.textContent = `R${bookingState.tutors.length * bookingRatePerTutor}`; if (currentUserData && !els.email.value) els.email.value = currentUserData.email; }
-    function resetBooking() { Object.assign(bookingState, { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' }); ['bookingLessonType', 'bookingVenue', 'bookingDuration', 'bookingDate', 'bookingNotes', 'bookingFirstName', 'bookingLastName', 'bookingEmail', 'bookingPhone', 'bookingIdNumber'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); renderBookingAll(); setBookingStep(1); }
-   // Helper function to calculate the next Saturday
-function getNextWeekendDate() {
-    const today = new Date();
-    const resultDate = new Date(today);
-    // Calculate days until next Saturday (6)
-    const dayOfWeek = today.getDay();
-    const steps = (6 - dayOfWeek + 7) % 7 || 7; 
-    resultDate.setDate(today.getDate() + steps);
-    return resultDate.toISOString().split('T')[0];
-}
-    function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
+    
+    function calculateTotal() {
+        if (!bookingState.package) return 0;
+        const baseCost = packagePrices[bookingState.package];
+        const extraCost = bookingState.extraTimeSlots * singleLessonRate;
+        return (baseCost + extraCost) * (bookingState.tutors.length || 1);
+    }
 
-    async function saveBookingToFirebase(booking) {
-        if (!firebaseAuth || !currentUserData) return false;
-        try {
-            const savePromise = (async () => { const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js'); const db = firestoreModule.getFirestore(firebaseAuth.app); await firestoreModule.addDoc(firestoreModule.collection(db, 'bookings'), { ...booking, userId: currentUserData.uid, userEmail: currentUserData.email, status: 'pending', createdAt: firestoreModule.serverTimestamp() }); return true; })();
-            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 5000));
-            return await Promise.race([savePromise, timeoutPromise]);
-        } catch (error) { return false; }
+    function renderBookingSummary() { 
+        const els = bookingEls(); 
+        const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name); 
+        const pkgNames = { single: 'Single Lesson', monthly: 'Monthly Package', bootcamp: 'Bootcamp', group: 'Group Lesson' };
+        
+        let extraTimeText = bookingState.extraTimeSlots > 0 ? ` (+${bookingState.extraTimeSlots * 1.25} hrs extra)` : '';
+        
+        const rows = [
+            ['Academic Level', bookingState.academicLevel], 
+            ['Modules', bookingState.modules.join(', ')], 
+            ['Tutors', tutorNames.join(', ')], 
+            ['Lesson Type', bookingState.lessonType], 
+            ['Platform / Venue', bookingState.venue], 
+            ['Package', `${pkgNames[bookingState.package]}${extraTimeText}`], 
+            ['Date & Time', `${bookingState.date} at ${bookingState.time} ${bookingState.package === 'bootcamp' ? '(2 Consecutive Slots)' : ''}`], 
+            ['Notes', escapeHTML(bookingState.notes) || 'None']
+        ]; 
+        
+        els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join(''); 
+        els.total.textContent = `R${calculateTotal()}`; 
+        
+        if (currentUserData && !els.email.value) els.email.value = currentUserData.email; 
+    }
+
+    function resetBooking() { 
+        Object.assign(bookingState, { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', package: '', extraTimeSlots: 0, date: '', time: '', notes: '' }); 
+        ['bookingLessonType', 'bookingVenue', 'bookingPackage', 'bookingExtraTime', 'bookingDate', 'bookingNotes', 'bookingFirstName', 'bookingLastName', 'bookingEmail', 'bookingPhone', 'bookingIdNumber'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); 
+        renderBookingAll(); setBookingStep(1); 
     }
     
-    function buildWhatsAppBookingUrl(booking, savedOnline) { const lines = ['New Gen Z Tutors booking request', '', `Name: ${booking.student.firstName} ${booking.student.lastName}`, `Email: ${booking.student.email}`, `Phone: ${booking.student.phone}`, `Academic Level: ${booking.academicLevel}`, `Modules: ${booking.modules.join(', ')}`, `Tutors: ${booking.tutors.map(t => t.name).join(', ')}`, `Lesson Type: ${booking.lessonType}`, `Platform/Venue: ${booking.venue}`, `Duration: ${booking.duration}`, `Date/Time: ${booking.date} at ${booking.time}`, `Total: R${booking.total}`, booking.notes ? `Notes: ${booking.notes}` : '', savedOnline ? 'Saved online: Yes' : 'Saved online: Local backup only'].filter(Boolean); return `https://wa.me/27679256394?text=${encodeURIComponent(lines.join('\n'))}`; }
-    
+    function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
+
     async function submitBookingRequest() {
         const els = bookingEls(); bookingState.notes = els.notes.value.trim(); const student = { firstName: els.firstName.value.trim(), lastName: els.lastName.value.trim(), email: els.email.value.trim(), phone: els.phone.value.trim(), idNumber: els.idNumber.value.trim() };
         if (!student.firstName || !student.lastName || !student.email || !student.phone || !student.idNumber) { showBookingMessage('Please complete all required student details.'); return; }
