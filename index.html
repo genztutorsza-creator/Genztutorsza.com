@@ -1539,30 +1539,29 @@ async function loadLiveChat() {
     function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
 
     // Global variables to hold the booking temporarily for the payment modal
-    // --- FIREBASE SAVE LOGIC ---
+   // --- FIREBASE SAVE LOGIC ---
     async function saveBookingToFirebase(booking) {
-        if (!firebaseAuth || !currentUserData) return false;
+        if (!firebaseAuth || !currentUserData) return null;
         try {
             const savePromise = (async () => { 
                 const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js'); 
                 const db = firestoreModule.getFirestore(firebaseAuth.app); 
                 
-                await firestoreModule.addDoc(firestoreModule.collection(db, 'bookings'), { 
+                const docRef = await firestoreModule.addDoc(firestoreModule.collection(db, 'bookings'), { 
                     ...booking, 
                     userId: currentUserData.uid, 
                     userEmail: currentUserData.email, 
                     status: 'pending', 
                     createdAt: firestoreModule.serverTimestamp() 
                 }); 
-                return true; 
+                return docRef.id; // Return the actual Firebase Document ID!
             })();
             
-            // 5-second timeout fallback so the UI doesn't freeze if the internet drops
-            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 5000));
+            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 5000));
             return await Promise.race([savePromise, timeoutPromise]);
         } catch (error) { 
             console.error("Firebase save error:", error);
-            return false; 
+            return null; 
         }
     }
     
@@ -1633,6 +1632,7 @@ async function loadLiveChat() {
         });
     }
     
+    // Global variables to hold the booking temporarily for the payment modal
     let pendingPaymentBooking = null;
     let pendingPaymentSavedOnline = false;
 
@@ -1640,12 +1640,33 @@ async function loadLiveChat() {
         const els = bookingEls(); bookingState.notes = els.notes.value.trim(); const student = { firstName: els.firstName.value.trim(), lastName: els.lastName.value.trim(), email: els.email.value.trim(), phone: els.phone.value.trim(), idNumber: els.idNumber.value.trim() };
         if (!student.firstName || !student.lastName || !student.email || !student.phone || !student.idNumber) { showBookingMessage('Please complete all required student details.'); return; }
         
-        const booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, package: bookingState.package, extraTimeSlots: bookingState.extraTimeSlots, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: calculateTotal(), createdAt: new Date().toISOString() };
+        let booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, package: bookingState.package, extraTimeSlots: bookingState.extraTimeSlots, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: calculateTotal(), createdAt: new Date().toISOString() };
         
-        const submitBtn = document.getElementById('submitBookingRequest'); submitBtn.disabled = true; submitBtn.textContent = 'Processing...';
+        const submitBtn = document.getElementById('submitBookingRequest'); 
+        submitBtn.disabled = true; 
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Generating Invoice...';
         
-        const savedOnline = await saveBookingToFirebase(booking);
-        const existingBookings = safeJSONParse('genZTutorsBookings', []); existingBookings.push({ ...booking, savedOnline }); localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
+        // 1. Save booking to Firebase to get the official ID
+        const bookingId = await saveBookingToFirebase(booking);
+        const savedOnline = !!bookingId;
+        const finalBookingId = bookingId || `local_${Date.now()}`;
+        
+        // 2. Generate the PDF and upload it to Storage
+        const invoiceUrl = await generateAndUploadInvoice(booking, finalBookingId);
+        
+        // 3. Link the invoice URL back to the Firestore booking
+        if (savedOnline && invoiceUrl) {
+            booking.invoiceUrl = invoiceUrl;
+            try {
+                const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
+                const db = firestoreModule.getFirestore(firebaseAuth.app);
+                await firestoreModule.updateDoc(firestoreModule.doc(db, 'bookings', bookingId), { invoiceUrl: invoiceUrl });
+            } catch(e) { console.error("Failed to link invoice to database", e); }
+        }
+
+        const existingBookings = safeJSONParse('genZTutorsBookings', []); 
+        existingBookings.push({ ...booking, id: finalBookingId, savedOnline }); 
+        localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
         
         // Save the time slots
         saveBookedSlot(booking.date, booking.time); 
@@ -1657,16 +1678,25 @@ async function loadLiveChat() {
         renderTimeSlots();
         if(localStorage.getItem('activeDashView')) renderDashView(localStorage.getItem('activeDashView'));
         
-        // Intercept: Store the booking and show the Payment Modal instead of opening WhatsApp immediately
+        // Set up the Payment Modal
         pendingPaymentBooking = booking;
         pendingPaymentSavedOnline = savedOnline;
-        
         document.getElementById('paymentModalAmount').textContent = `R${booking.total}`;
-        document.getElementById('paymentModal').classList.remove('hidden');
         
-        submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request';
+        // Dynamically inject the Download Invoice button if generation succeeded
+        const modalBtnContainer = document.querySelector('#paymentModal .space-y-3');
+        const existingInvoiceBtn = document.getElementById('downloadInvoiceBtn');
+        if (existingInvoiceBtn) existingInvoiceBtn.remove();
+        
+        if (invoiceUrl) {
+            const invoiceBtnHtml = `<a id="downloadInvoiceBtn" href="${invoiceUrl}" target="_blank" class="w-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-4 rounded-xl font-bold transition flex items-center justify-center gap-3 mb-2"><i class="fa-solid fa-file-invoice text-xl text-orange-400"></i> View/Download Invoice</a>`;
+            modalBtnContainer.insertAdjacentHTML('afterbegin', invoiceBtnHtml);
+        }
+        
+        document.getElementById('paymentModal').classList.remove('hidden');
+        submitBtn.disabled = false; 
+        submitBtn.textContent = 'Send Booking Request';
     }
-
     // --- PAYMENT INTEGRATION FUNCTIONS ---
     function closePaymentModal() {
         document.getElementById('paymentModal').classList.add('hidden');
