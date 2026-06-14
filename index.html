@@ -1363,11 +1363,35 @@
         if (!student.firstName || !student.lastName || !student.email || !student.phone || !student.idNumber) { showBookingMessage('Please complete all required student details.'); return; }
         const booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, duration: bookingState.duration, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: bookingState.tutors.length * bookingRatePerTutor, createdAt: new Date().toISOString() };
         const submitBtn = document.getElementById('submitBookingRequest'); submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
-        const savedOnline = await saveBookingToFirebase(booking);
+        const savedOnline = await saveBookingToFirebase(booking); 
         const existingBookings = safeJSONParse('genZTutorsBookings', []); existingBookings.push({ ...booking, savedOnline }); localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
         saveBookedSlot(booking.date, booking.time); showBookingMessage(savedOnline ? 'Booking saved. Opening WhatsApp...' : 'Booking saved locally. Opening WhatsApp...', 'success'); renderTimeSlots();
         if(localStorage.getItem('activeDashView')) renderDashView(localStorage.getItem('activeDashView'));
         setTimeout(() => { window.open(buildWhatsAppBookingUrl(booking, savedOnline), '_blank'); resetBooking(); submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request'; }, 700);
+    }
+    async function fetchLiveBookings() {
+        // If not logged in, just return the local storage data as a fallback
+        if (!firebaseAuth || !currentUserData) return safeJSONParse('genZTutorsBookings', []);
+        
+        try {
+            const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
+            const db = firestoreModule.getFirestore(firebaseAuth.app);
+            
+            // Fetch the live bookings from the cloud
+            const querySnapshot = await firestoreModule.getDocs(firestoreModule.collection(db, 'bookings'));
+            const liveBookings = [];
+            
+            querySnapshot.forEach((doc) => {
+                liveBookings.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Sort them so the newest bookings appear at the top
+            return liveBookings.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            
+        } catch (error) {
+            console.error("Error fetching live bookings:", error);
+            return safeJSONParse('genZTutorsBookings', []); // Fallback to local storage if offline
+        }
     }
 
    function setupBookingSystem() {
