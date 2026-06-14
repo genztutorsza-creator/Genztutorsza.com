@@ -1273,10 +1273,10 @@ function clearBookingMessage() {
         clearBookingMessage(); if (step === 4) renderBookingSummary();
     }
     
-    function validateBookingStep(step) {
+  function validateBookingStep(step) {
         if (step === 1 && bookingState.modules.length === 0) return 'Please select at least one module.';
         if (step === 2 && bookingState.tutors.length === 0) return 'Please choose at least one tutor.';
-        if (step === 2 && (!bookingState.lessonType || !bookingState.venue || !bookingState.duration)) return 'Please choose the lesson type, platform or venue, and duration.';
+        if (step === 2 && (!bookingState.lessonType || !bookingState.venue || !bookingState.package)) return 'Please choose the lesson type, platform/venue, and a package.';
         if (step === 3 && (!bookingState.date || !bookingState.time)) return 'Please choose a Saturday/Sunday date and an available time slot.';
         return '';
     }
@@ -1329,23 +1329,46 @@ function getNextWeekendDate() {
         setTimeout(() => { window.open(buildWhatsAppBookingUrl(booking, savedOnline), '_blank'); resetBooking(); submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request'; }, 700);
     }
 
-    function setupBookingSystem() {
-        const els = bookingEls(); if (!els.app) return;
-        renderBookingAll(); setBookingStep(1);
+   function setupBookingSystem() {
+        const els = bookingEls(); 
+        if (!els.app) return;
+        
+        renderBookingAll(); 
+        setBookingStep(1);
+        
+        // Safety check to prevent errors if elements are missing from DOM
+        if (!els.lessonType || !els.venue || !els.package || !els.extraTime || !els.date || !els.times) {
+            console.warn("One or more booking elements are missing from the DOM.");
+            return;
+        }
+
         document.getElementById('clearBookingStep1').addEventListener('click', () => { bookingState.academicLevel = ''; bookingState.modules = []; bookingState.tutors = []; renderBookingAll(); clearBookingMessage(); });
         els.levels.addEventListener('click', event => { const button = event.target.closest('[data-academic-level]'); if (!button) return; bookingState.academicLevel = button.dataset.academicLevel; bookingState.modules = []; bookingState.tutors = []; renderBookingAll(); });
         els.modules.addEventListener('change', event => { if (!event.target.classList.contains('booking-module')) return; const value = event.target.value; bookingState.modules = event.target.checked ? [...bookingState.modules, value] : bookingState.modules.filter(module => module !== value); bookingState.tutors = bookingState.tutors.filter(id => matchingTutors().some(tutor => tutor.id === id)); renderModules(); renderTutors(); });
         els.tutors.addEventListener('click', event => { const button = event.target.closest('[data-tutor-id]'); if (!button) return; const id = button.dataset.tutorId; bookingState.tutors = bookingState.tutors.includes(id) ? bookingState.tutors.filter(tutorId => tutorId !== id) : [...bookingState.tutors, id]; renderTutors(); });
+        
         els.lessonType.addEventListener('change', event => { bookingState.lessonType = event.target.value; bookingState.venue = ''; renderVenueOptions(); });
         els.venue.addEventListener('change', event => bookingState.venue = event.target.value);
-        els.duration.addEventListener('change', event => bookingState.duration = event.target.value);
+        
+        // Updated listeners for Package and Extra Time
+        els.package.addEventListener('change', event => {
+            bookingState.package = event.target.value;
+            // Re-render time slots in case Bootcamp logic requires UI updates
+            if(bookingState.package === 'bootcamp' && els.times) {
+                renderTimeSlots(); 
+            }
+        });
+        els.extraTime.addEventListener('change', event => bookingState.extraTimeSlots = parseInt(event.target.value));
+
         els.date.addEventListener('change', event => { if (!isWeekend(event.target.value)) { event.target.value = ''; bookingState.date = ''; bookingState.time = ''; renderTimeSlots(); showBookingMessage('Please select a Saturday or Sunday.'); return; } bookingState.date = event.target.value; bookingState.time = ''; clearBookingMessage(); renderTimeSlots(); });
         els.times.addEventListener('click', event => { const button = event.target.closest('[data-time-slot]'); if (!button || button.disabled) return; bookingState.time = button.dataset.timeSlot; renderTimeSlots(); });
         els.notes.addEventListener('input', event => bookingState.notes = event.target.value.trim());
+        
         document.querySelectorAll('.booking-next').forEach(button => { button.addEventListener('click', () => { const error = validateBookingStep(bookingState.step); if (error) { showBookingMessage(error); return; } setBookingStep(Number(button.dataset.nextStep)); }); });
         document.querySelectorAll('.booking-prev').forEach(button => button.addEventListener('click', () => setBookingStep(Number(button.dataset.prevStep))));
         document.getElementById('submitBookingRequest').addEventListener('click', submitBookingRequest);
     }
+    
     setupBookingSystem();
 
 </script>
