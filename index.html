@@ -1088,7 +1088,7 @@
         if (contactsHtml === '') contactsHtml = '<p class="text-xs text-slate-500 italic p-2">You have no booked students yet.</p>'; return contactsHtml;
     }
 
-    window.renderDashView = function(view) {
+       window.renderDashView = async function(view) {
         if(!currentUserData) return;
         
         localStorage.setItem('activeDashView', view);
@@ -1097,7 +1097,19 @@
         if (window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
         
         currentChatContactEmail = null; currentChatContactName = null; let html = ''; 
-        const allBookings = safeJSONParse('genZTutorsBookings', []);
+        
+        // Show a sleek loading spinner while fetching live data
+        dashContentArea.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-32 text-slate-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-5xl text-sky-500 mb-4"></i>
+                <p class="font-medium animate-pulse">Syncing live database...</p>
+            </div>
+        `;
+
+        // Fetch live Firebase bookings instead of local storage!
+        const allBookings = await fetchLiveBookings();
+
+        // ------------- STUDENT VIEWS -------------
 
         // ------------- STUDENT VIEWS -------------
         if (view === 'student-home') {
