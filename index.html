@@ -29,30 +29,42 @@
         .tutor-profile-image { width: 100%; height: 400px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%); display: flex; align-items: center; justify-content: center; border-radius: 1.5rem; overflow: hidden; margin-bottom: 1.5rem; }
         .tutor-profile-image img { width: 100%; height: 100%; object-fit: cover; }
         .tutor-role { font-size: 1.1rem; font-weight: 600; margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem; }
+        
         #mobileMenu { transition: all 0.35s ease; transform: translateY(-20px); opacity: 0; pointer-events: none; }
         #mobileMenu.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
         .drawer-link { transform: translateX(-15px); opacity: 0; transition: all 0.35s ease; }
         #mobileMenu.active .drawer-link { transform: translateX(0); opacity: 1; }
+        
         .auth-btn { transition: all 0.3s ease; }
         .auth-btn:hover { transform: translateY(-2px); }
         .auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 999; }
         .auth-modal.active { display: flex; }
+        
         .testimonial-slide { opacity: 1; transition: opacity 0.5s ease; }
         .testimonial-slide.hidden { display: none; }
+        
+        /* LIGHT MODE */
         .light-mode { background: #f8fafc; color: #0f172a; }
         .light-mode .glass { background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.08); }
         .light-mode body { background: #f8fafc; }
         
-        /* Modals & Inputs */
+        /* MODALS */
         .profile-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .profile-modal.active { display: flex; }
         .profile-modal-content { background: #0d1728; border-radius: 2rem; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
         .close-profile-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.1); border: none; color: white; font-size: 1.5rem; width: 3rem; height: 3rem; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1001; }
         .close-profile-btn:hover { background: rgba(255,255,255,0.2); }
-        .booking-input { width: 100%; background: #09111d; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem 1.25rem; color: white; outline: none; transition: border-color 0.2s;}
-        .booking-input:focus { border-color: rgba(56,189,248,0.7); }
         
-        /* Dashboard & Chat Styles */
+        /* BOOKING SYSTEM */
+        .booking-step-tab { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09); color: #94a3b8; border-radius: 0.75rem; padding: 0.75rem 0.5rem; }
+        .booking-step-tab.active { background: #f97316; color: white; border-color: #fb923c; }
+        .booking-input { width: 100%; background: #09111d; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem 1.25rem; color: white; outline: none; transition: border-color 0.2s;}
+        .booking-input:focus { outline: 2px solid rgba(56,189,248,0.45); border-color: rgba(56,189,248,0.7); }
+        .booking-choice { border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); border-radius: 0.875rem; padding: 1rem; cursor: pointer; transition: 0.2s ease; }
+        .booking-choice.active { border-color: #38bdf8; background: rgba(56,189,248,0.15); }
+        .time-slot.booked { background: rgba(239,68,68,0.2); color: #fca5a5; cursor: not-allowed; opacity: 0.65; }
+        
+        /* DASHBOARD & CHAT */
         .dash-sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
         .dash-sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
         .dash-sidebar-link.active { background: rgba(56,189,248,0.15); color: #38bdf8; font-weight: 600; }
@@ -62,7 +74,7 @@
         .chat-attachment { display: block; margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 0.5rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; color: #38bdf8; cursor: pointer; }
         .chat-attachment:hover { background: rgba(0,0,0,0.5); }
         
-        /* Toast Notifications */
+        /* TOAST NOTIFICATIONS */
         #toastContainer { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { background: rgba(16, 185, 129, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.4); color: white; padding: 1rem 1.5rem; border-radius: 1rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); animation: slideDown 0.3s ease forwards; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -260,6 +272,17 @@
         </div>
     </section>
 
+    <section id="portal" class="py-24 bg-[#0d1728]">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16"><h2 class="section-title">Student Portal</h2><p class="text-slate-300">A dedicated learning space for Gen Z Tutors students.</p></div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-book text-4xl text-sky-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Session Notes</h3><p class="text-slate-300">Access tutor summaries, revision packs and lesson resources.</p></div>
+                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-list-check text-4xl text-orange-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Assignments</h3><p class="text-slate-300">Submit tasks, download exercises and practice questions.</p></div>
+                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-chart-bar text-4xl text-emerald-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Performance Tracking</h3><p class="text-slate-300">Monitor progress and academic performance over time.</p></div>
+            </div>
+        </div>
+    </section>
+
     <section id="booking" class="py-24 bg-[#08111f]">
         <div class="max-w-5xl mx-auto px-6">
             <div class="text-center mb-12">
@@ -419,7 +442,7 @@
 
 <div id="authModal" class="auth-modal">
     <div class="glass rounded-3xl p-6 sm:p-10 w-[95%] max-w-md max-h-[92vh] overflow-y-auto my-4 relative">
-        <button id="closeModal" class="absolute top-5 right-5 text-white text-2xl hover:text-orange-400 transition"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-white text-2xl hover:text-orange-400 transition"><i class="fa-solid fa-xmark"></i></button>
         <div class="text-center mb-8">
             <h2 id="authTitle" class="text-3xl font-extrabold mb-3">Welcome Back</h2>
             <p id="authSubtitle" class="text-slate-300">Login to your Gen Z Tutors account.</p>
@@ -514,6 +537,31 @@
     document.querySelectorAll('.profile-modal').forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) closeTutorProfile(modal.id.replace('Modal', '')); }); });
 
     // -----------------------------------------
+    // AUTH MODAL LOGIC (RESTORED!)
+    // -----------------------------------------
+    let authMode = 'login';
+    window.openAuthModal = function(mode) {
+        authMode = mode;
+        const title = document.getElementById('authTitle');
+        const subtitle = document.getElementById('authSubtitle');
+        const submitBtn = document.getElementById('authSubmit');
+        const msg = document.getElementById('authMessage');
+        const modal = document.getElementById('authModal');
+        
+        if (title) title.textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
+        if (subtitle) subtitle.textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
+        if (submitBtn) submitBtn.textContent = mode === 'signup' ? 'Sign Up' : 'Login';
+        if (msg) msg.classList.add('hidden');
+        
+        document.getElementById('authForm').reset();
+        if (modal) modal.classList.add('active');
+    };
+
+    window.closeAuthModal = function() {
+        document.getElementById('authModal').classList.remove('active');
+    };
+
+    // -----------------------------------------
     // SYSTEM CORE: FIREBASE, AUTH, ROUTING
     // -----------------------------------------
     let firebaseAuth;
@@ -521,7 +569,7 @@
     let signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider;
 
     const firebaseConfig = { apiKey: 'AIzaSyAGG8S44RzRP129Caj5QfyVkT8dffH0ip0', authDomain: 'genztutorsza-efa13.firebaseapp.com', projectId: 'genztutorsza-efa13', storageBucket: 'genztutorsza-efa13.firebasestorage.app', messagingSenderId: '699691673917', appId: '1:699691673917:web:7ed8bd10cf0701410cfd54', measurementId: 'G-CL8NS75JGJ' };
-    const authModal = document.getElementById('authModal'), authForm = document.getElementById('authForm'), authEmail = document.getElementById('authEmail'), authPassword = document.getElementById('authPassword'), navAuthArea = document.getElementById('navAuthArea'), appDashboard = document.getElementById('appDashboard'), landingPageContent = document.getElementById('landingPageContent'), dashContentArea = document.getElementById('dashContentArea'), dashNav = document.getElementById('dashNav');
+    const navAuthArea = document.getElementById('navAuthArea'), appDashboard = document.getElementById('appDashboard'), landingPageContent = document.getElementById('landingPageContent'), dashContentArea = document.getElementById('dashContentArea'), dashNav = document.getElementById('dashNav');
 
     function showToast(message) {
         const container = document.getElementById('toastContainer');
@@ -619,7 +667,7 @@
         return 'Tutor';
     }
 
-    function openDashboard(targetView = null) {
+    window.openDashboard = function(targetView = null) {
         if (!currentUserData) return;
         mainHeader.classList.add('hidden'); landingPageContent.classList.add('hidden'); appDashboard.classList.remove('hidden'); window.scrollTo(0, 0);
         const role = getRoleFromEmail(currentUserData.email); document.getElementById('dashUserRole').textContent = role; document.getElementById('dashUserEmail').textContent = currentUserData.email;
@@ -922,13 +970,29 @@
         } catch (error) { console.error('Firebase Error:', error); }
     }
 
+    function showAuthMessage(message) {
+        const msg = document.getElementById('authMessage');
+        if (!msg) return;
+        msg.textContent = message;
+        msg.classList.remove('hidden');
+        msg.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
+    }
+
     document.getElementById('authForm').addEventListener('submit', async (e) => {
         e.preventDefault(); const email = document.getElementById('authEmail').value.trim(); const password = document.getElementById('authPassword').value;
-        try { await signInWithEmailAndPassword(firebaseAuth, email, password); document.getElementById('authModal').classList.remove('active'); openDashboard(); }
-        catch (error) { try { await createUserWithEmailAndPassword(firebaseAuth, email, password); document.getElementById('authModal').classList.remove('active'); openDashboard(); } catch (err) { alert(err.message); } }
+        const submitBtn = document.getElementById('authSubmit'); submitBtn.disabled = true;
+        try { 
+            if (authMode === 'signup') { await createUserWithEmailAndPassword(firebaseAuth, email, password); } 
+            else { await signInWithEmailAndPassword(firebaseAuth, email, password); }
+            closeAuthModal(); openDashboard(); 
+        } catch (error) { showAuthMessage(error.message); } finally { submitBtn.disabled = false; }
     });
     
-    document.getElementById('closeModal').addEventListener('click', () => document.getElementById('authModal').classList.remove('active'));
+    document.getElementById('googleAuthBtn').addEventListener('click', async () => {
+        try { await signInWithPopup(firebaseAuth, new GoogleAuthProvider()); closeAuthModal(); openDashboard(); } 
+        catch (error) { showAuthMessage(error.message); }
+    });
+
     initializeFirebaseAuth();
 </script>
 
