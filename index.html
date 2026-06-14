@@ -1565,11 +1565,10 @@ async function loadLiveChat() {
         }
     }
     
-// --- INVOICE GENERATION LOGIC ---
+/ --- INVOICE GENERATION LOGIC ---
     async function generateAndUploadInvoice(booking, bookingId) {
         return new Promise((resolve) => {
             try {
-                // 1. Populate the HTML template with the booking data
                 const dateObj = new Date();
                 document.getElementById('invDate').textContent = dateObj.toLocaleDateString('en-GB');
                 document.getElementById('invNumber').textContent = `INV-${dateObj.getFullYear()}${String(dateObj.getMonth()+1).padStart(2,'0')}${String(dateObj.getDate()).padStart(2,'0')}-${Math.floor(Math.random() * 1000)}`;
@@ -1587,29 +1586,29 @@ async function loadLiveChat() {
                 document.getElementById('invSubtotal').textContent = `R${booking.total.toFixed(2)}`;
                 document.getElementById('invGrandTotal').textContent = `R${booking.total.toFixed(2)}`;
 
-                // 2. Temporarily show the container (off-screen) so html2pdf can read it
+                // Bulletproof CSS rendering trick for html2pdf
                 const container = document.getElementById('invoiceContainer');
                 container.style.display = 'block';
                 container.style.position = 'absolute';
-                container.style.left = '-9999px';
+                container.style.top = '0';
+                container.style.left = '0';
+                container.style.zIndex = '-9999';
+                container.style.opacity = '0'; // Keeps it rendered but completely invisible to the user
 
                 const element = document.getElementById('invoiceTemplate');
                 const opt = {
                     margin:       0,
                     filename:     `GenZTutors_Invoice_${booking.student.firstName}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
+                    html2canvas:  { scale: 2, useCORS: true, windowWidth: 800 },
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
                 };
 
-                // 3. Generate PDF and upload to Firebase Storage
-                html2pdf().set(opt).from(element).outputPdf('blob').then(async (pdfBlob) => {
-                    container.style.display = 'none'; // Hide it again
+                // Use the standard .output('blob') API
+                html2pdf().set(opt).from(element).output('blob').then(async (pdfBlob) => {
+                    container.style.display = 'none'; // Hide it properly again
                     
-                    if (!firebaseAuth || !currentUserData) {
-                        resolve(null); // Fallback if offline
-                        return;
-                    }
+                    if (!firebaseAuth || !currentUserData) { resolve(null); return; }
 
                     const storageModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js');
                     const storage = storageModule.getStorage(firebaseAuth.app);
@@ -1631,7 +1630,6 @@ async function loadLiveChat() {
             }
         });
     }
-    
     // Global variables to hold the booking temporarily for the payment modal
     let pendingPaymentBooking = null;
     let pendingPaymentSavedOnline = false;
@@ -1703,10 +1701,30 @@ async function loadLiveChat() {
         resetBooking();
     }
 
-    function payViaWhatsApp() {
-        if(!pendingPaymentBooking) return;
-        window.open(buildWhatsAppBookingUrl(pendingPaymentBooking, pendingPaymentSavedOnline), '_blank');
-        closePaymentModal();
+    function buildWhatsAppBookingUrl(booking, savedOnline) { 
+        const pkgNames = { single: 'Single Lesson', monthly: 'Monthly Package', bootcamp: 'Bootcamp', group: 'Group Lesson' };
+        let extraTimeText = booking.extraTimeSlots > 0 ? ` (+${booking.extraTimeSlots * 1.25} hrs extra)` : '';
+        
+        const lines = [
+            'New Gen Z Tutors booking request', 
+            '', 
+            `Name: ${booking.student.firstName} ${booking.student.lastName}`, 
+            `Email: ${booking.student.email}`, 
+            `Phone: ${booking.student.phone}`, 
+            `Academic Level: ${booking.academicLevel}`, 
+            `Modules: ${booking.modules.join(', ')}`, 
+            `Tutors: ${booking.tutors.map(t => t.name).join(', ')}`, 
+            `Lesson Type: ${booking.lessonType}`, 
+            `Platform/Venue: ${booking.venue}`, 
+            `Package: ${pkgNames[booking.package]}${extraTimeText}`, 
+            `Date/Time: ${booking.date} at ${booking.time}`, 
+            `Total: R${booking.total}`, 
+            booking.notes ? `Notes: ${booking.notes}` : '', 
+            booking.invoiceUrl ? `🧾 *View/Download Official Invoice:* ${booking.invoiceUrl}` : ''
+        ].filter(Boolean); 
+        
+        return `https://wa.me/27679256394?text=${encodeURIComponent(lines.join('\n'))}`; 
+    
     }
 
     function initiatePayFast() {
@@ -1880,14 +1898,17 @@ async function loadLiveChat() {
                 <p><span class="font-bold text-slate-800">Bank:</span> Capitec Bank</p>
                 <p><span class="font-bold text-slate-800">Acc Holder:</span> Gen Z Tutors / KT Majola</p>
                 <p><span class="font-bold text-slate-800">Account #:</span> 2497393628 / 1504223991</p>
-                <p><span class="font-bold text-slate-800">Branch Code:</span> 470010</p>
+                <p><span class="font-bold text-slate-800">Branch Code:</span> 679000</p>
+                <p><span class="font-bold text-slate-800">BIC/Swift:</span> DIDCZAJJXXXX</p>
                 <p><span class="font-bold text-slate-800">PayShap ID:</span> 0679256394@capitec</p>
             </div>
-            <p class="mt-4 text-xs font-bold text-orange-500 bg-orange-100 inline-block px-3 py-1 rounded">Make all payments payable to Gen Z Tutors 24hrs prior to lesson.</p>
+            <p class="mt-4 text-xs font-bold text-orange-500 bg-orange-100 inline-block px-3 py-1 rounded">Make all checks payable to Gen Z Tutors 24hrs prior to lesson.</p>
         </div>
         
-        <p class="text-center text-slate-400 text-sm mt-12 italic">Thank you for your business!</p>
-    </div>
+        <div class="text-center text-slate-500 text-xs mt-12 border-t border-slate-200 pt-4">
+            <p class="italic mb-1">Thank you for your business!</p>
+            <p>9 Nigel Road Office Park | Selcourt | Genztutorsza@gmail.com</p>
+        </div>
 </div>
 </body>
 </html>
