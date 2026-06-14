@@ -314,7 +314,7 @@
 
 <script>
     // -----------------------------------------
-    // FIREBASE, DASHBOARD, & VIEW TOGGLE LOGIC
+    // FIREBASE, DASHBOARD, VIEW TOGGLE, & AUTO-LOGOUT
     // -----------------------------------------
     let firebaseAuth;
     let currentUserData = null;
@@ -345,7 +345,34 @@
     const dashContentArea = document.getElementById('dashContentArea');
     const dashNav = document.getElementById('dashNav');
     
-    let authMode = 'login'; // 'login' or 'signup'
+    let authMode = 'login';
+
+    // --- AUTO-LOGOUT LOGIC ---
+    let inactivityTimer;
+    const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        // Only run timer if a user is currently logged in
+        if (currentUserData) {
+            inactivityTimer = setTimeout(handleAutoLogout, INACTIVITY_LIMIT);
+        }
+    }
+
+    async function handleAutoLogout() {
+        if (currentUserData) {
+            if (firebaseAuth) await window.signOut(firebaseAuth);
+            goToHome();
+            alert("You have been automatically logged out due to 15 minutes of inactivity.");
+        }
+    }
+
+    // Listen for general page interaction to reset the timer
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+        document.addEventListener(event, resetInactivityTimer, true);
+    });
+
+    // --- END AUTO-LOGOUT LOGIC ---
 
     // Open/Close Modal
     function openAuthModal(mode) {
@@ -367,14 +394,13 @@
         const e = email.toLowerCase();
         if (e.includes('admin') || e === 'tyren@genztutors.com') return 'admin';
         if (e.includes('tutor')) return 'tutor';
-        return 'student'; // Default
+        return 'student';
     }
 
-    // View Toggles: Landing Page vs Dashboard
+    // View Toggles
     function openDashboard() {
         if (!currentUserData) return;
         
-        // Hide Landing Page and Header, Show Dashboard Fullscreen
         mainHeader.classList.add('hidden');
         landingPageContent.classList.add('hidden');
         appDashboard.classList.remove('hidden');
@@ -389,7 +415,6 @@
     }
 
     function goToHome() {
-        // Hide Dashboard, Show Landing Page and Header
         appDashboard.classList.add('hidden');
         mainHeader.classList.remove('hidden');
         landingPageContent.classList.remove('hidden');
@@ -418,7 +443,9 @@
             authModule.onAuthStateChanged(firebaseAuth, (user) => {
                 if (user) {
                     currentUserData = user;
-                    // Update Landing Page Navigation to highly-visible Dashboard & Logout
+                    // Start inactivity timer on login
+                    resetInactivityTimer();
+                    
                     navAuthArea.innerHTML = `
                         <button onclick="openDashboard()" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">
                             Dashboard
@@ -431,14 +458,16 @@
                     document.getElementById('bookingApp').classList.remove('hidden');
                 } else {
                     currentUserData = null;
-                    // Revert to Login / Sign up
+                    // Clear inactivity timer on logout
+                    clearTimeout(inactivityTimer);
+                    
                     navAuthArea.innerHTML = `
                         <button onclick="openAuthModal('login')" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button>
                         <button onclick="openAuthModal('signup')" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Sign Up</button>
                     `;
                     document.getElementById('bookingAuthNotice').classList.remove('hidden');
                     document.getElementById('bookingApp').classList.add('hidden');
-                    goToHome(); // Force back to home if they log out
+                    goToHome(); 
                 }
             });
         } catch (error) {
@@ -446,7 +475,7 @@
         }
     }
 
-    // Handle Login/Signup Form Submits
+    // Handle Auth Submits
     function showAuthMessage(message) {
         authMessage.textContent = message;
         authMessage.classList.remove('hidden');
@@ -466,7 +495,7 @@
                 await signInWithEmailAndPassword(firebaseAuth, email, password);
             }
             authModal.classList.remove('active');
-            setTimeout(() => openDashboard(), 300); // Auto-open dashboard on fresh login
+            setTimeout(() => openDashboard(), 300);
         } catch (error) {
             showAuthMessage(error.message);
         } finally {
