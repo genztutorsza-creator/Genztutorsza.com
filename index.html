@@ -74,13 +74,20 @@
         .chat-attachment { display: block; margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 0.5rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; color: #38bdf8; cursor: pointer; }
         .chat-attachment:hover { background: rgba(0,0,0,0.5); }
         
-        /* Toast Notifications */
+        /* TOAST NOTIFICATIONS */
         #toastContainer { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { background: rgba(16, 185, 129, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.4); color: white; padding: 1rem 1.5rem; border-radius: 1rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); animation: slideDown 0.3s ease forwards; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
+
+<script>
+    // This executes instantly to prevent the screen from flashing the homepage if you refresh inside the dashboard
+    if(localStorage.getItem('isDashboardOpen') === 'true') {
+        document.write('<style>#mainHeader, #landingPageContent { display: none !important; } #appDashboard { display: flex !important; }</style>');
+    }
+</script>
 
 <div id="toastContainer"></div>
 
@@ -278,17 +285,6 @@
                     <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo"></div>
                     <div class="p-6"><h3 class="text-2xl font-bold mb-2">Fulufhelo</h3><p class="text-orange-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Encouraging discipline, consistency and academic growth for every learner.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="portal" class="py-24 bg-[#0d1728]">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16"><h2 class="section-title">Student Portal</h2><p class="text-slate-300">A dedicated learning space for Gen Z Tutors students.</p></div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-book text-4xl text-sky-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Session Notes</h3><p class="text-slate-300">Access tutor summaries, revision packs and lesson resources.</p></div>
-                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-list-check text-4xl text-orange-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Assignments</h3><p class="text-slate-300">Submit tasks, download exercises and practice questions.</p></div>
-                <div class="glass rounded-3xl p-8 card-hover"><i class="fa-solid fa-chart-bar text-4xl text-emerald-400 mb-5"></i><h3 class="text-2xl font-bold mb-4">Performance Tracking</h3><p class="text-slate-300">Monitor progress and academic performance over time.</p></div>
             </div>
         </div>
     </section>
@@ -565,7 +561,7 @@
     };
 
     // -----------------------------------------
-    // SYSTEM CORE: FIREBASE, AUTH, ROUTING (RESTORED EXACTLY FROM ORIGINAL)
+    // SYSTEM CORE: FIREBASE, AUTH, ROUTING
     // -----------------------------------------
     let firebaseAuth;
     let currentUserData = null;
@@ -577,6 +573,8 @@
     let GoogleAuthProvider;
     let onAuthStateChanged;
     let signOut;
+    let setPersistence;
+    let browserLocalPersistence;
 
     const firebaseConfig = { apiKey: 'AIzaSyAGG8S44RzRP129Caj5QfyVkT8dffH0ip0', authDomain: 'genztutorsza-efa13.firebaseapp.com', projectId: 'genztutorsza-efa13', storageBucket: 'genztutorsza-efa13.firebasestorage.app', messagingSenderId: '699691673917', appId: '1:699691673917:web:7ed8bd10cf0701410cfd54', measurementId: 'G-CL8NS75JGJ' };
     
@@ -618,6 +616,36 @@
         return messages[error.code] || error.message || 'Something went wrong. Please try again.';
     }
 
+    // --- TIMERS & THROTTLING ---
+    let warningTimer, logoutTimer;
+    let lastActivityTime = Date.now();
+
+    window.resetInactivityTimer = function() {
+        const now = Date.now();
+        // Throttle updates to only fire once every 5 seconds to prevent browser crashing
+        if (now - lastActivityTime < 5000 && warningTimer) return; 
+        lastActivityTime = now;
+
+        clearTimeout(warningTimer); 
+        clearTimeout(logoutTimer);
+        document.getElementById('inactivityWarningModal').classList.add('hidden');
+        
+        if (currentUserData) {
+            warningTimer = setTimeout(() => {
+                document.getElementById('inactivityWarningModal').classList.remove('hidden');
+            }, 10 * 60 * 1000);
+            
+            logoutTimer = setTimeout(async () => { 
+                if (firebaseAuth) await window.signOut(firebaseAuth); 
+                goToHome(); 
+                alert("You have been automatically logged out due to inactivity."); 
+            }, 15 * 60 * 1000);
+        }
+    }
+    
+    // Listen for user activity
+    ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(e => document.addEventListener(e, window.resetInactivityTimer, true));
+
     async function initializeFirebaseAuth(showErrors = false) {
         if (firebaseReady) return true;
         if (firebaseInitPromise) return firebaseInitPromise;
@@ -639,9 +667,12 @@
                 GoogleAuthProvider = authModule.GoogleAuthProvider;
                 onAuthStateChanged = authModule.onAuthStateChanged;
                 signOut = authModule.signOut;
-                window.signOut = signOut; // Expose globally for logout button
+                setPersistence = authModule.setPersistence;
+                browserLocalPersistence = authModule.browserLocalPersistence;
+                window.signOut = signOut; 
 
-                await authModule.setPersistence(firebaseAuth, authModule.browserLocalPersistence);
+                // Ensure strict browser local storage persistence for page refreshes
+                await setPersistence(firebaseAuth, browserLocalPersistence);
                 firebaseReady = true;
 
                 onAuthStateChanged(firebaseAuth, (user) => {
@@ -652,21 +683,35 @@
                         currentUserData = user; 
                         window.resetInactivityTimer();
                         
-                        const dashBtnHtml = `<button onclick="openDashboard(localStorage.getItem('activeDashView'))" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">Dashboard</button>`;
+                        const dashBtnHtml = `<button onclick="openDashboard('${localStorage.getItem('activeDashView') || ''}')" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">Dashboard</button>`;
                         if(navAuthArea) navAuthArea.innerHTML = dashBtnHtml;
                         if(mobileNavAuthArea) mobileNavAuthArea.innerHTML = dashBtnHtml;
                         
-                        const savedView = localStorage.getItem('activeDashView'); if (savedView) openDashboard(savedView);
-                        document.getElementById('bookingAuthNotice').classList.add('hidden'); document.getElementById('bookingApp').classList.remove('hidden');
+                        document.getElementById('bookingAuthNotice').classList.add('hidden'); 
+                        document.getElementById('bookingApp').classList.remove('hidden');
+
+                        // Memory State Check for Page Refresh
+                        const isDashOpen = localStorage.getItem('isDashboardOpen');
+                        const savedView = localStorage.getItem('activeDashView'); 
+                        if (isDashOpen === 'true') {
+                            openDashboard(savedView);
+                        }
                     } else {
-                        currentUserData = null; clearTimeout(warningTimer); clearTimeout(logoutTimer); localStorage.removeItem('activeDashView');
+                        currentUserData = null; 
+                        clearTimeout(warningTimer); 
+                        clearTimeout(logoutTimer); 
+                        
                         if(document.getElementById('inactivityWarningModal')) document.getElementById('inactivityWarningModal').classList.add('hidden');
                         
                         const loginHtml = `<button onclick="openAuthModal('login')" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button><button onclick="openAuthModal('signup')" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Sign Up</button>`;
                         if(navAuthArea) navAuthArea.innerHTML = loginHtml;
                         if(mobileNavAuthArea) mobileNavAuthArea.innerHTML = loginHtml;
                         
-                        document.getElementById('bookingAuthNotice').classList.remove('hidden'); document.getElementById('bookingApp').classList.add('hidden');
+                        document.getElementById('bookingAuthNotice').classList.remove('hidden'); 
+                        document.getElementById('bookingApp').classList.add('hidden');
+                        
+                        // Clear memory and force home
+                        localStorage.setItem('isDashboardOpen', 'false');
                         goToHome(); 
                     }
                 });
@@ -816,14 +861,32 @@
 
     window.openDashboard = function(targetView = null) {
         if (!currentUserData) return;
+        localStorage.setItem('isDashboardOpen', 'true'); // Memory flag for refresh
         mainHeader.classList.add('hidden'); landingPageContent.classList.add('hidden'); appDashboard.classList.remove('hidden'); window.scrollTo(0, 0);
         const role = getRoleFromEmail(currentUserData.email); document.getElementById('dashUserRole').textContent = role; document.getElementById('dashUserEmail').textContent = currentUserData.email;
         renderDashboardNavigation(role);
-        if (targetView && targetView.startsWith(role)) renderDashView(targetView); else renderDashView(`${role}-home`);
+        
+        if (targetView && targetView.trim() !== '' && targetView !== 'null' && targetView.startsWith(role)) {
+            renderDashView(targetView);
+        } else {
+            renderDashView(`${role}-home`);
+        }
     }
 
-    window.goToHome = function() { appDashboard.classList.add('hidden'); mainHeader.classList.remove('hidden'); landingPageContent.classList.remove('hidden'); window.scrollTo(0, 0); }
-    window.logoutUser = async function() { if(firebaseAuth) await window.signOut(firebaseAuth); localStorage.removeItem('activeDashView'); goToHome(); };
+    window.goToHome = function() { 
+        localStorage.setItem('isDashboardOpen', 'false'); // Memory flag for refresh
+        appDashboard.classList.add('hidden'); 
+        mainHeader.classList.remove('hidden'); 
+        landingPageContent.classList.remove('hidden'); 
+        window.scrollTo(0, 0); 
+    }
+    
+    window.logoutUser = async function() { 
+        if(firebaseAuth) await window.signOut(firebaseAuth); 
+        localStorage.removeItem('activeDashView'); 
+        localStorage.setItem('isDashboardOpen', 'false');
+        goToHome(); 
+    };
 
     function renderDashboardNavigation(role) {
         let links = '';
@@ -834,6 +897,7 @@
     }
 
     function generateDynamicTutorContacts() {
+        if(!currentUserData) return '';
         const allBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]'); const myTutorName = getTutorNameFromEmail(currentUserData.email); const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
         const uniqueStudents = {}; myBookings.forEach(b => { uniqueStudents[b.student.email] = `${b.student.firstName} ${b.student.lastName}`; });
         let contactsHtml = '';
@@ -842,10 +906,15 @@
     }
 
     window.renderDashView = function(view) {
+        if(!currentUserData) return;
+        
         localStorage.setItem('activeDashView', view);
         document.querySelectorAll('.dash-sidebar-link').forEach(el => { el.classList.remove('active'); if (el.getAttribute('data-view') === view) el.classList.add('active'); });
+        
         if (window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
-        currentChatContactEmail = null; currentChatContactName = null; let html = ''; const allBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]');
+        
+        currentChatContactEmail = null; currentChatContactName = null; let html = ''; 
+        const allBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]');
 
         // ------------- STUDENT VIEWS -------------
         if (view === 'student-home') {
@@ -953,7 +1022,7 @@
                         <h3 class="font-bold mb-4 text-slate-300">Broadcasts</h3>
                         <button onclick="selectChat('All Tutors (Broadcast)')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-bullhorn text-orange-400"></i></div><div><p class="font-bold text-orange-400">All Tutors</p><p class="text-xs text-slate-400">Broadcast</p></div></button>
                         <h3 class="font-bold mb-4 text-slate-300">Tutors</h3>
-                        <button onclick="selectChat('Lilonke (Accounting)')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user-tie text-slate-300"></i></div><div><p class="font-bold">Lilonke</p><p class="text-xs text-slate-400">Tutor</p></div></button>
+                        <button onclick="selectChat('Lilonke (Accounting)', 'lilonke@genztutors.com')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user-tie text-slate-300"></i></div><div><p class="font-bold">Lilonke</p><p class="text-xs text-slate-400">Tutor</p></div></button>
                     </div>
                     <div class="dash-card col-span-2 flex flex-col p-6 relative">
                         <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center"><h3 class="font-bold text-lg text-orange-400" id="chatHeaderName">Select a Channel</h3></div>
