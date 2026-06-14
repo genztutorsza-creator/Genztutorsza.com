@@ -1538,6 +1538,32 @@ async function loadLiveChat() {
     function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
 
     // Global variables to hold the booking temporarily for the payment modal
+    // --- FIREBASE SAVE LOGIC ---
+    async function saveBookingToFirebase(booking) {
+        if (!firebaseAuth || !currentUserData) return false;
+        try {
+            const savePromise = (async () => { 
+                const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js'); 
+                const db = firestoreModule.getFirestore(firebaseAuth.app); 
+                
+                await firestoreModule.addDoc(firestoreModule.collection(db, 'bookings'), { 
+                    ...booking, 
+                    userId: currentUserData.uid, 
+                    userEmail: currentUserData.email, 
+                    status: 'pending', 
+                    createdAt: firestoreModule.serverTimestamp() 
+                }); 
+                return true; 
+            })();
+            
+            // 5-second timeout fallback so the UI doesn't freeze if the internet drops
+            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 5000));
+            return await Promise.race([savePromise, timeoutPromise]);
+        } catch (error) { 
+            console.error("Firebase save error:", error);
+            return false; 
+        }
+    }
     let pendingPaymentBooking = null;
     let pendingPaymentSavedOnline = false;
 
