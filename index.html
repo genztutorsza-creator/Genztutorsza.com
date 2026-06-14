@@ -88,6 +88,18 @@
         }
     </script>
 </head>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./coop-sw.js')
+      .then(reg => {
+        // If the service worker just took control, reload once to apply headers
+        if (!navigator.serviceWorker.controller) {
+          window.location.reload();
+        }
+      })
+      .catch(err => console.error('COOP Service Worker registration failed:', err));
+  }
+</script>
 <body>
 
 <div id="toastContainer"></div>
