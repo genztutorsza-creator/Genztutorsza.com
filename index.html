@@ -1260,6 +1260,12 @@
                                     phone: document.getElementById('bookingPhone'),
                                     idNumber: document.getElementById('bookingIdNumber')
     }; }
+// Add this definition before your setBookingStep function
+function clearBookingMessage() {
+    const messageElement = document.getElementById('booking-message');
+    if (messageElement) messageElement.textContent = '';
+}
+    
     function setBookingStep(step) {
         bookingState.step = step;
         document.querySelectorAll('[data-booking-step]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.bookingStep !== String(step)));
