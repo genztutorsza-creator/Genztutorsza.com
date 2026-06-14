@@ -1332,13 +1332,13 @@ async function loadLiveChat() {
             html = `<h2 class="text-3xl font-bold mb-6">Platform Tools & Resources</h2><div class="grid md:grid-cols-2 gap-6"><div class="dash-card"><h3 class="font-bold text-xl mb-2"><i class="fa-solid fa-video text-sky-400 mr-2"></i> Lesson Recording</h3><p class="text-slate-400 text-sm mb-4">Tools approved for recording sessions for students to review.</p><div class="flex gap-2"><a href="https://zoom.us" target="_blank" class="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold">Launch Zoom</a><a href="https://obsproject.com" target="_blank" class="bg-slate-700 px-4 py-2 rounded-lg text-sm font-bold">Get OBS</a></div></div><div class="dash-card"><h3 class="font-bold text-xl mb-2"><i class="fa-solid fa-cloud text-orange-400 mr-2"></i> Resource Drive</h3><p class="text-slate-400 text-sm mb-4">Access Gen Z Tutors master study guides, past papers, and memos.</p><button class="bg-orange-500 px-4 py-2 rounded-lg text-sm font-bold">Open Google Drive</button></div></div>`;
         }
         else if (view === 'tutor-messages') {
-            const dynamicStudentContacts = generateDynamicTutorContacts();
+            const dynamicStudentContacts = generateDynamicTutorContacts(allBookings);
             html = `
                 <h2 class="text-3xl font-bold mb-6">Tutor Communications</h2>
                 <div class="grid md:grid-cols-3 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
                     <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
                         <h3 class="font-bold mb-4 text-slate-300">Management</h3>
-                        <button onclick="selectChat('Admin Support')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-orange-400"></i></div><div><p class="font-bold text-orange-400">Admin / System</p><p class="text-xs text-slate-400">Priority Channel</p></div></button>
+                        <button onclick="selectChat('Admin Support')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-shield-halved text-orange-400"></i></div><div><p class="font-bold text-orange-400">Admin / System</p><p class="text-xs text-slate-400">Priority Channel</p></div></button>
                         <h3 class="font-bold mb-4 text-slate-300">Your Students</h3>
                         ${dynamicStudentContacts}
                     </div>
@@ -1379,22 +1379,38 @@ async function loadLiveChat() {
             if(!bList) bList = '<p class="text-slate-400">No bookings exist in the system yet.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">All Bookings Master List</h2><div class="dash-card border-orange-500/30">${bList}</div>`;
         }
-        else if (view === 'admin-users') {
-            html = `<h2 class="text-3xl font-bold mb-6">Manage Users</h2><div class="dash-card"><table class="w-full text-left border-collapse"><thead><tr class="border-b border-white/10 text-slate-400"><th class="pb-3">User</th><th class="pb-3">Role</th><th class="pb-3">Status</th></tr></thead><tbody><tr class="border-b border-white/5"><td class="py-3 font-bold">${escapeHTML(currentUserData.email)}</td><td class="py-3 text-sky-400">Admin</td><td class="py-3 text-emerald-400">Active (You)</td></tr><tr class="border-b border-white/5"><td class="py-3 font-bold">lilonke@genztutors.com</td><td class="py-3 text-orange-400">Tutor</td><td class="py-3 text-emerald-400">Active</td></tr></tbody></table></div>`;
+    else if (view === 'admin-users') {
+            const uniqueUsers = {};
+            allBookings.forEach(b => {
+                if(b.student && b.student.email) {
+                    uniqueUsers[b.student.email.toLowerCase()] = { name: `${b.student.firstName} ${b.student.lastName}`, role: 'Student', status: 'Active' };
+                }
+            });
+            let userRows = `<tr class="border-b border-white/5"><td class="py-3 font-bold">${escapeHTML(currentUserData.email)}</td><td class="py-3 text-sky-400">Admin</td><td class="py-3 text-emerald-400">Active (You)</td></tr>`;
+
+            for (const [email, info] of Object.entries(uniqueUsers)) {
+                 if(email !== currentUserData.email.toLowerCase()) {
+                     userRows += `<tr class="border-b border-white/5"><td class="py-3 font-bold text-sm text-slate-200">${escapeHTML(email)}</td><td class="py-3 text-orange-400 text-sm">${escapeHTML(info.role)}</td><td class="py-3 text-emerald-400 text-sm">${escapeHTML(info.status)}</td></tr>`;
+                 }
+            }
+            if (Object.keys(uniqueUsers).length === 0) userRows += `<tr class="border-b border-white/5"><td colspan="3" class="py-6 text-center text-slate-500">No external users found in bookings yet.</td></tr>`;
+
+            html = `<h2 class="text-3xl font-bold mb-6">Manage Users</h2><div class="dash-card overflow-x-auto"><table class="w-full text-left border-collapse min-w-[500px]"><thead><tr class="border-b border-white/10 text-slate-400"><th class="pb-3">User Email</th><th class="pb-3">Role</th><th class="pb-3">Status</th></tr></thead><tbody>${userRows}</tbody></table></div>`;
         }
         else if (view === 'admin-finance') {
             const totalRev = allBookings.reduce((sum, b) => sum + b.total, 0);
             html = `<h2 class="text-3xl font-bold mb-6">Master Financials</h2><div class="dash-card mb-6 border-emerald-500/30"><p class="text-slate-400">Total Platform Revenue Generated</p><h3 class="text-4xl font-bold text-emerald-400">R${totalRev}</h3></div>`;
         }
-        else if (view === 'admin-messages') {
+      else if (view === 'admin-messages') {
+            const dynamicAdminContacts = await generateDynamicAdminContacts(allBookings);
             html = `
                 <h2 class="text-3xl font-bold mb-6">Master Communications</h2>
                 <div class="grid md:grid-cols-3 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
                     <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
                         <h3 class="font-bold mb-4 text-slate-300">Broadcasts</h3>
-                        <button onclick="selectChat('All Tutors (Broadcast)')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-bullhorn text-orange-400"></i></div><div><p class="font-bold text-orange-400">All Tutors</p><p class="text-xs text-slate-400">Broadcast</p></div></button>
-                        <h3 class="font-bold mb-4 text-slate-300">Tutors</h3>
-                        <button onclick="selectChat('Lilonke (Accounting)', 'lilonke@genztutors.com')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user-tie text-slate-300"></i></div><div><p class="font-bold">Lilonke</p><p class="text-xs text-slate-400">Tutor</p></div></button>
+                        <button onclick="selectChat('All Tutors (Broadcast)')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bullhorn text-orange-400"></i></div><div><p class="font-bold text-orange-400">All Tutors</p><p class="text-xs text-slate-400">Broadcast</p></div></button>
+                        <h3 class="font-bold mb-4 text-slate-300">All Users & Tutors</h3>
+                        ${dynamicAdminContacts}
                     </div>
                     <div class="dash-card col-span-2 flex flex-col p-6 relative">
                         <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center"><h3 class="font-bold text-lg text-orange-400" id="chatHeaderName">Select a Channel</h3></div>
