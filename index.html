@@ -750,36 +750,52 @@
             submitBtn.disabled = false;
         }
     });
-    
-document.getElementById('googleAuthBtn').addEventListener('click', async () => {
+    document.getElementById('googleAuthBtn').addEventListener('click', async () => {
         const btn = document.getElementById('googleAuthBtn');
-        btn.disabled = true; // Prevent double-clicks
+        const msg = document.getElementById('authMessage');
         
+        // Disable button and show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> Connecting...';
+        msg.classList.add('hidden');
+
         try {
-            // 1. Ensure Firebase is fully loaded before launching the popup
-            if (!(await initializeFirebaseAuth(true))) {
-                btn.disabled = false;
-                return;
+            // Check if Firebase finished loading in the background
+            if (!firebaseAuth || !signInWithPopup || !GoogleAuthProvider) {
+                throw new Error("Firebase is still connecting to the server. Please try again in 3 seconds.");
             }
-            
-            // 2. Launch Google Sign In
+
+            // Launch Google Sign In
             await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
-            
-            // 3. Show success and transition to dashboard
-            showAuthMessage('Google login successful. Opening Portal...', 'success');
+
+            // Show Success Message
+            msg.textContent = 'Google login successful. Opening Portal...';
+            msg.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30');
+            msg.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border', 'border-emerald-500/30');
+
+            // Open Dashboard and reset button
             setTimeout(() => { 
                 closeAuthModal(); 
                 openDashboard(); 
+                btn.innerHTML = '<i class="fa-brands fa-google text-xl"></i> Continue with Google';
+                btn.disabled = false;
             }, 800);
-            
+
         } catch (error) {
-            // 4. Catch "Popup closed by user" or authorized domain errors
-            if (typeof friendlyAuthError === "function") {
-                showAuthMessage(friendlyAuthError(error));
-            } else {
-                showAuthMessage(error.message);
-            }
-        } finally {
+            console.error("Google Auth Error:", error);
+            
+            // Format common error messages
+            let errorText = error.message;
+            if (error.code === 'auth/popup-closed-by-user') errorText = "Login was cancelled. Please try again.";
+            if (error.code === 'auth/unauthorized-domain') errorText = "This domain is not authorized in your Firebase Console.";
+            
+            // Show Error Message
+            msg.textContent = errorText;
+            msg.classList.remove('hidden', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
+            msg.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
+            
+            // Reset button
+            btn.innerHTML = '<i class="fa-brands fa-google text-xl"></i> Continue with Google';
             btn.disabled = false;
         }
     });
