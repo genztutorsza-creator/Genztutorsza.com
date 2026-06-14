@@ -6,7 +6,6 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./coop-sw.js')
       .then(reg => {
-        // If the service worker just took control, reload once to apply headers
         if (!navigator.serviceWorker.controller) {
           window.location.reload();
         }
@@ -110,7 +109,6 @@
     
     <style id="flicker-prevention"></style>
     <script>
-        // Safely prevents flash without document.write blocking the parser
         if(localStorage.getItem('isDashboardOpen') === 'true') {
             document.getElementById('flicker-prevention').textContent = '#mainHeader, #landingPageContent { display: none !important; } #appDashboard { display: flex !important; }';
         }
@@ -162,9 +160,7 @@
 </header>
 
 <div id="appDashboard" class="hidden h-screen w-full bg-[#08111f] flex text-white overflow-hidden fixed inset-0 z-50">
-    
     <div id="dashSidebarOverlay" onclick="toggleDashSidebar()" class="fixed inset-0 bg-black/60 z-[55] hidden md:hidden backdrop-blur-sm transition-opacity"></div>
-
     <aside id="dashSidebar" class="w-64 bg-[#0d1728] border-r border-white/10 flex flex-col h-full fixed md:relative z-[60] transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         <div class="p-6 border-b border-white/10 flex justify-between items-center">
             <div>
@@ -187,7 +183,6 @@
             </button>
         </div>
     </aside>
-
     <main class="flex-1 overflow-y-auto relative bg-[#08111f] h-full w-full">
         <div class="md:hidden p-4 border-b border-white/10 flex justify-between items-center bg-[#0d1728] sticky top-0 z-40">
             <div class="flex items-center gap-4">
@@ -196,14 +191,29 @@
             </div>
             <button onclick="goToHome()" class="text-slate-300 hover:text-white p-1"><i class="fa-solid fa-house text-xl"></i></button>
         </div>
-        
-        <div class="p-4 md:p-10 max-w-6xl mx-auto" id="dashContentArea">
-        </div>
+        <div class="p-4 md:p-10 max-w-6xl mx-auto" id="dashContentArea"></div>
     </main>
 </div>
 
+<div id="filePreviewModal" class="hidden fixed inset-0 z-[1100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0d1728] border border-white/10 rounded-2xl p-6 max-w-2xl w-full flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Preview & Edit Attachment</h3>
+            <button onclick="closeFilePreview()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm text-slate-400 mb-1">File Name</label>
+            <input type="text" id="previewFileName" class="booking-input py-2 text-sm">
+        </div>
+        <div id="previewContentArea" class="flex-1 overflow-y-auto bg-[#09111d] rounded-xl border border-white/10 p-4 mb-4 min-h-[200px]"></div>
+        <div class="flex justify-end gap-3 mt-auto">
+            <button onclick="closeFilePreview()" class="border border-white/20 hover:bg-white/10 px-5 py-2 rounded-xl font-semibold transition">Cancel</button>
+            <button onclick="attachPreparedFile()" class="bg-sky-500 hover:bg-sky-600 px-5 py-2 rounded-xl font-bold transition">Save & Attach</button>
+        </div>
+    </div>
+</div>
+
 <div id="landingPageContent" class="transition-opacity duration-300">
-    
     <section id="home" class="hero-bg min-h-screen flex items-center pt-20">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -239,9 +249,7 @@
                 <h2 class="section-title">Lesson Packages</h2>
                 <p class="text-slate-300 max-w-2xl mx-auto">Choose the perfect package for your learning needs. Need more time? Add single lessons at R175 each.</p>
             </div>
-            
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                <!-- Single Lesson -->
                 <div class="package-card">
                     <h3 class="text-2xl font-bold mb-2">Single Lesson</h3>
                     <p class="package-subtext mb-4">Perfect for trying out a tutor</p>
@@ -255,12 +263,8 @@
                     </ul>
                     <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
                 </div>
-
-                <!-- Monthly Package (Most Popular) -->
                 <div class="package-card popular">
-                    <div class="mb-4">
-                        <span class="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">MOST POPULAR</span>
-                    </div>
+                    <div class="mb-4"><span class="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">MOST POPULAR</span></div>
                     <h3 class="text-2xl font-bold mb-2">Monthly Package</h3>
                     <p class="package-subtext mb-4">Consistent learning</p>
                     <div class="package-price">R595</div>
@@ -273,8 +277,6 @@
                     </ul>
                     <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
                 </div>
-
-                <!-- Bootcamp -->
                 <div class="package-card">
                     <h3 class="text-2xl font-bold mb-2">Bootcamp</h3>
                     <p class="package-subtext mb-4">Intensive exam prep</p>
@@ -288,8 +290,6 @@
                     </ul>
                     <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
                 </div>
-
-                <!-- Group Lesson -->
                 <div class="package-card">
                     <h3 class="text-2xl font-bold mb-2">Group Lesson</h3>
                     <p class="package-subtext mb-4">Learn with peers</p>
@@ -304,65 +304,63 @@
                     <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
                 </div>
             </div>
-
-            <!-- Comparison Table -->
             <div class="bg-[#09111d] rounded-2xl p-8 overflow-x-auto">
                 <h3 class="text-2xl font-bold mb-6">Lesson Type Comparison</h3>
                 <table class="comparison-table">
                     <thead>
                         <tr>
-                            <th>Feature</th>
-                            <th>Single</th>
-                            <th>Monthly</th>
-                            <th>Bootcamp</th>
-                            <th>Group</th>
+                            <th>Feature</th><th>Single</th><th>Monthly</th><th>Bootcamp</th><th>Group</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="font-semibold">Duration</td>
-                            <td>1hr 15m</td>
-                            <td>1hr 15m x4</td>
-                            <td>2hr 30m x2</td>
-                            <td>1hr 15m x4</td>
+                            <td class="font-semibold">Duration</td><td>1hr 15m</td><td>1hr 15m x4</td><td>2hr 30m x2</td><td>1hr 15m x4</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold">Time Slots</td>
-                            <td>1</td>
-                            <td>1 recurring</td>
-                            <td>2 consecutive</td>
-                            <td>1 recurring</td>
+                            <td class="font-semibold">Time Slots</td><td>1</td><td>1 recurring</td><td>2 consecutive</td><td>1 recurring</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold">Schedule</td>
-                            <td>1 day</td>
-                            <td>4 weeks</td>
-                            <td>2 days (Sat & Sun)</td>
-                            <td>4 weeks</td>
+                            <td class="font-semibold">Schedule</td><td>1 day</td><td>4 weeks</td><td>2 days (Sat & Sun)</td><td>4 weeks</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold">Tutor</td>
-                            <td>Any tutor</td>
-                            <td>Same tutor</td>
-                            <td>Any tutor</td>
-                            <td>Same tutor</td>
+                            <td class="font-semibold">Tutor</td><td>Any tutor</td><td>Same tutor</td><td>Any tutor</td><td>Same tutor</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold">Group</td>
-                            <td>Solo</td>
-                            <td>Solo</td>
-                            <td>Multiple</td>
-                            <td>Multiple</td>
+                            <td class="font-semibold">Group</td><td>Solo</td><td>Solo</td><td>Multiple</td><td>Multiple</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold">Price</td>
-                            <td>R175</td>
-                            <td>R595</td>
-                            <td>R250</td>
-                            <td>R400</td>
+                            <td class="font-semibold">Price</td><td>R175</td><td>R595</td><td>R250</td><td>R400</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="py-24 bg-[#08111f] overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="section-title mb-4">Student Testimonials</h2>
+            <p class="text-slate-300 mb-14">What Gen Z Tutors students are saying.</p>
+            <div class="relative max-w-3xl mx-auto glass rounded-3xl p-10 min-h-[280px]">
+                <div id="testimonialContainer">
+                    <div class="testimonial-slide active">
+                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"Gen Z Tutors completely changed how I understood accounting. I went from struggling to passing confidently."</p>
+                        <h4 class="font-bold text-orange-400">Commerce Student</h4>
+                    </div>
+                    <div class="testimonial-slide hidden">
+                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"The tutors are relatable, patient and actually make difficult concepts easy."</p>
+                        <h4 class="font-bold text-sky-400">Financial Accounting Student</h4>
+                    </div>
+                    <div class="testimonial-slide hidden">
+                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"The online sessions and mentorship helped improve my confidence massively."</p>
+                        <h4 class="font-bold text-emerald-400">University Student</h4>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-3 mt-6">
+                    <button class="w-3 h-3 rounded-full bg-orange-400 transition" onclick="changeTestimonial(0)"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(1)"></button>
+                    <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(2)"></button>
+                </div>
             </div>
         </div>
     </section>
@@ -401,7 +399,6 @@
                 <h2 class="section-title">Book Your Lesson</h2>
                 <p class="text-slate-300 max-w-2xl mx-auto">Select your lesson package, choose a tutor, and pick an available time slot.</p>
             </div>
-
             <div id="bookingAuthNotice" class="glass rounded-3xl p-8 text-center hidden">
                 <i class="fa-solid fa-lock text-4xl text-orange-400 mb-4"></i>
                 <h3 class="text-2xl font-bold mb-3">Sign In Required</h3>
@@ -411,7 +408,6 @@
                     <button type="button" onclick="openAuthModal('signup')" class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">Sign Up</button>
                 </div>
             </div>
-
             <div id="bookingApp" class="glass rounded-3xl p-6 md:p-10">
                 <div class="grid grid-cols-5 gap-2 mb-8 text-center text-xs sm:text-sm font-semibold">
                     <div class="booking-step-tab active" data-step-tab="1">Step 1</div>
@@ -420,10 +416,7 @@
                     <div class="booking-step-tab" data-step-tab="4">Step 4</div>
                     <div class="booking-step-tab" data-step-tab="5">Step 5</div>
                 </div>
-
                 <p id="bookingMessage" class="hidden rounded-xl px-4 py-3 text-sm font-medium mb-6"></p>
-
-                <!-- STEP 1: LESSON PACKAGE -->
                 <div class="booking-step" data-booking-step="1">
                     <h3 class="text-2xl font-bold mb-2">Step 1: Choose Your Lesson Package</h3>
                     <p class="text-slate-300 mb-6">Select the package that fits your learning needs.</p>
@@ -434,8 +427,6 @@
                         <button type="button" data-next-step="2" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
-
-                <!-- STEP 2: ACADEMIC LEVEL & MODULES -->
                 <div class="booking-step hidden" data-booking-step="2">
                     <h3 class="text-2xl font-bold mb-2">Step 2: Select Your Academic Level & Modules</h3>
                     <p class="text-slate-300 mb-6">Choose the level and modules you need help with.</p>
@@ -450,8 +441,6 @@
                         <button type="button" data-next-step="3" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
-
-                <!-- STEP 3: TUTOR & LESSON DETAILS -->
                 <div class="booking-step hidden" data-booking-step="3">
                     <h3 class="text-2xl font-bold mb-2">Step 3: Choose Your Tutor & Lesson Details</h3>
                     <p class="text-slate-300 mb-6">Select a tutor and specify your lesson preferences.</p>
@@ -478,14 +467,12 @@
                         <button type="button" data-next-step="4" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
-
-                <!-- STEP 4: DATE & TIME SELECTION -->
                 <div class="booking-step hidden" data-booking-step="4">
                     <h3 class="text-2xl font-bold mb-2">Step 4: Choose Your Preferred Date & Time</h3>
-                    <p class="text-slate-300 mb-6">Gen Z Tutors operates weekends only (unless approved by admin for weekday sessions). Each lesson slot is 1hr 15mins with 15-min tutor breaks.</p>
+                    <p class="text-slate-300 mb-6">Gen Z Tutors operates weekends only (unless approved by admin). Each slot is 1hr 15mins with 15-min tutor breaks.</p>
                     <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl p-4 mb-6 text-sky-200 text-sm">
                         <i class="fa-solid fa-circle-info mr-2"></i>
-                        <strong>Weekend Schedule:</strong> 8:00 AM - 5:00 PM | <strong>Slot Duration:</strong> 1hr 15mins | <strong>Tutor Break:</strong> 15 mins between lessons | <strong>Bootcamp:</strong> Uses 2 consecutive slots (2hrs 30mins)
+                        <strong>Weekend Schedule:</strong> 8:00 AM - 5:00 PM | <strong>Slot:</strong> 1hr 15mins | <strong>Break:</strong> 15 mins | <strong>Bootcamp:</strong> 2 slots
                     </div>
                     <label class="block mb-2 text-sm text-slate-300">Date (Saturday or Sunday)</label>
                     <input id="bookingDate" type="date" class="booking-input mb-3">
@@ -503,8 +490,6 @@
                         <button type="button" data-next-step="5" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
-
-                <!-- STEP 5: CONFIRM BOOKING -->
                 <div class="booking-step hidden" data-booking-step="5">
                     <h3 class="text-2xl font-bold mb-2">Step 5: Confirm Your Booking</h3>
                     <p class="text-slate-300 mb-6">Review your booking details before sending your request.</p>
@@ -579,8 +564,52 @@
     </div>
 </div>
 
+<div id="inactivityWarningModal" class="hidden fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-[#0d1728] border border-orange-500/30 rounded-2xl p-8 max-w-md w-[90%] text-center shadow-2xl shadow-orange-500/10">
+        <i class="fa-solid fa-triangle-exclamation text-5xl text-orange-400 mb-4"></i>
+        <h3 class="text-2xl font-bold mb-2 text-white">Are you still there?</h3>
+        <p class="text-slate-300 mb-6">You have been inactive for a while. You will be automatically logged out in <strong>5 minutes</strong> to protect your account.</p>
+        <button onclick="window.resetInactivityTimer()" class="w-full bg-orange-500 hover:bg-orange-600 transition py-3 rounded-xl font-bold text-lg text-white">Keep Me Logged In</button>
+    </div>
+</div>
+
+<div id="tyrenModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('tyren')"><i class="fa-solid fa-xmark"></i></button>
+        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren Majola"></div><div><h2 class="text-4xl font-bold mb-2">Tyren Majola</h2><p class="text-orange-400 text-lg mb-6 tutor-role"><i class="fa-solid fa-briefcase"></i> Founder & CEO</p><p class="text-slate-300 leading-relaxed">Tyren is the founder of Gen Z Tutors with over 5 years of experience in academic mentoring. Specializing in Commerce and Accounting, Tyren is passionate about making complex concepts accessible to all students.</p></div></div></div>
+    </div>
+</div>
+
+<div id="thapeloModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('thapelo')"><i class="fa-solid fa-xmark"></i></button>
+        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo"></div><div><h2 class="text-4xl font-bold mb-2">Thapelo</h2><p class="text-orange-400 text-lg mb-6 tutor-role"><i class="fa-solid fa-graduation-cap"></i> Commerce Tutor</p><p class="text-slate-300 leading-relaxed">Thapelo brings 3+ years of Commerce tutoring expertise. Known for making complex business concepts fun and engaging, Thapelo helps students build strong foundations in Commerce.</p></div></div></div>
+    </div>
+</div>
+
+<div id="mikeModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('mike')"><i class="fa-solid fa-xmark"></i></button>
+        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8k2qL.png" alt="Mike"></div><div><h2 class="text-4xl font-bold mb-2">Mike</h2><p class="text-sky-400 text-lg mb-6 tutor-role"><i class="fa-solid fa-star"></i> Academic Mentor</p><p class="text-slate-300 leading-relaxed">Mike is dedicated to creating personalized learning experiences. With a focus on student growth, Mike helps learners build confidence and achieve their academic goals.</p></div></div></div>
+    </div>
+</div>
+
+<div id="lilonkeModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('lilonke')"><i class="fa-solid fa-xmark"></i></button>
+        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke Breakfast"></div><div><h2 class="text-4xl font-bold mb-2">Lilonke Breakfast</h2><p class="text-emerald-400 text-lg mb-6 tutor-role"><i class="fa-solid fa-book"></i> Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Lilonke is an expert in IFRS standards with 4+ years of accounting experience. Student-first teaching approach ensures every learner masters accounting fundamentals.</p></div></div></div>
+    </div>
+</div>
+
+<div id="fulufheloModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <button class="close-profile-btn" onclick="closeTutorProfile('fulufhelo')"><i class="fa-solid fa-xmark"></i></button>
+        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo"></div><div><h2 class="text-4xl font-bold mb-2">Fulufhelo</h2><p class="text-orange-400 text-lg mb-6 tutor-role"><i class="fa-solid fa-chalkboard-user"></i> Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Fulufhelo encourages critical thinking and complex problem-solving. Specializing in advanced accounting frameworks, Fulufhelo helps students achieve excellence.</p></div></div></div>
+    </div>
+</div>
+
 <script>
-    // ===== LESSON PACKAGES DATA =====
+    // LESSON PACKAGES DATA
     const lessonPackages = {
         'single': { name: 'Single Lesson', price: 175, duration: '1h 15m', sessions: 1, type: 'one-time' },
         'monthly': { name: 'Monthly Package', price: 595, duration: '1h 15m x 4 weeks', sessions: 4, type: 'weekly-recurring' },
@@ -588,33 +617,28 @@
         'group': { name: 'Group Lesson', price: 400, duration: '1h 15m x 4 weeks', sessions: 4, type: 'weekly-recurring' }
     };
 
-    // ===== TIME SLOT GENERATION =====
+    // TIME SLOT GENERATION
     function generateTimeSlots(isBootcamp = false) {
         const slots = [];
-        const startHour = 8;  // 8 AM
-        const endHour = 17;   // 5 PM
-        const slotDuration = 75;  // 1hr 15mins in minutes
-        const breakDuration = 15;  // 15-min break
-
-        let currentTime = startHour * 60;  // Convert to minutes
+        const startHour = 8;
+        const endHour = 17;
+        const slotDuration = 75;
+        const breakDuration = 15;
+        let currentTime = startHour * 60;
         const endTime = endHour * 60;
-
         while (currentTime + (isBootcamp ? slotDuration * 2 : slotDuration) <= endTime) {
             const hours = Math.floor(currentTime / 60);
             const mins = currentTime % 60;
             const endHours = Math.floor((currentTime + slotDuration) / 60);
             const endMins = (currentTime + slotDuration) % 60;
-
             const timeSlot = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} - ${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
             slots.push(timeSlot);
-
-            currentTime += slotDuration + breakDuration;  // Add break after lesson
+            currentTime += slotDuration + breakDuration;
         }
-
         return slots;
     }
 
-    // ===== UTILITIES =====
+    // UTILITIES
     function escapeHTML(str) {
         if(!str) return '';
         return String(str).replace(/[&<>'"]/g, tag => ({
@@ -627,7 +651,7 @@
         catch(e) { console.warn(`Failed to parse ${key}`, e); return fallback; }
     }
 
-    // ===== BOOKING DATA STORAGE =====
+    // BOOKING DATA
     let bookingData = {
         packageType: null,
         academicLevel: null,
@@ -640,15 +664,15 @@
         notes: null
     };
 
-    // ===== INITIALIZE BOOKING =====
+    // INITIALIZE BOOKING
     function initializeBooking() {
         renderPackageOptions();
         setupBookingStepNavigation();
-        updateTimeSlots();
     }
 
     function renderPackageOptions() {
         const container = document.getElementById('packageOptions');
+        if (!container) return;
         container.innerHTML = '';
         for (const [key, pkg] of Object.entries(lessonPackages)) {
             const btn = document.createElement('button');
@@ -667,40 +691,37 @@
     }
 
     function setupBookingStepNavigation() {
-        // Next buttons
         document.querySelectorAll('.booking-next').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const nextStep = btn.getAttribute('data-next-step');
                 const currentStep = document.querySelector('.booking-step:not(.hidden)').getAttribute('data-booking-step');
-                
                 if (validateStep(currentStep)) {
                     moveToStep(nextStep);
                 }
             });
         });
-
-        // Previous buttons
         document.querySelectorAll('.booking-prev').forEach(btn => {
             btn.addEventListener('click', () => {
                 const prevStep = btn.getAttribute('data-prev-step');
                 moveToStep(prevStep);
             });
         });
-
-        // Clear button
-        document.getElementById('clearBookingStep1').addEventListener('click', () => {
-            bookingData.packageType = null;
-            document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
-        });
+        const clearBtn = document.getElementById('clearBookingStep1');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                bookingData.packageType = null;
+                document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
+            });
+        }
     }
 
     function moveToStep(stepNumber) {
         document.querySelectorAll('.booking-step').forEach(step => step.classList.add('hidden'));
         document.querySelectorAll('.booking-step-tab').forEach(tab => tab.classList.remove('active'));
-        
-        document.querySelector(`[data-booking-step="${stepNumber}"]`).classList.remove('hidden');
-        document.querySelector(`[data-step-tab="${stepNumber}"]`).classList.add('active');
-        
+        const step = document.querySelector(`[data-booking-step="${stepNumber}"]`);
+        const tab = document.querySelector(`[data-step-tab="${stepNumber}"]`);
+        if (step) step.classList.remove('hidden');
+        if (tab) tab.classList.add('active');
         if (stepNumber === '4') updateTimeSlots();
         if (stepNumber === '5') generateBookingSummary();
     }
@@ -720,22 +741,18 @@
             dateInput.value = nextSaturday;
             updateNextWeekendHint(nextSaturday);
         }
-
         const selectedDate = new Date(dateInput.value);
         const dayOfWeek = selectedDate.getDay();
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
         if (!isWeekend) {
             alert('Lessons are only available on weekends (Saturday & Sunday) unless approved by admin.');
             dateInput.value = '';
             return;
         }
-
         const isBootcamp = bookingData.packageType === 'bootcamp';
         const slots = generateTimeSlots(isBootcamp);
         const slotsContainer = document.getElementById('timeSlotOptions');
         slotsContainer.innerHTML = '';
-
         slots.forEach(slot => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -756,11 +773,9 @@
         const today = new Date();
         const dayOfWeek = today.getDay();
         let daysUntilSaturday;
-
-        if (dayOfWeek === 0) daysUntilSaturday = 6;  // Sunday -> Saturday
-        else if (dayOfWeek === 6) daysUntilSaturday = 1;  // Saturday -> next Saturday
+        if (dayOfWeek === 0) daysUntilSaturday = 6;
+        else if (dayOfWeek === 6) daysUntilSaturday = 1;
         else daysUntilSaturday = 6 - dayOfWeek;
-
         const nextSaturday = new Date(today);
         nextSaturday.setDate(today.getDate() + daysUntilSaturday);
         return nextSaturday.toISOString().split('T')[0];
@@ -769,23 +784,132 @@
     function updateNextWeekendHint(dateStr) {
         const date = new Date(dateStr);
         const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-        document.getElementById('nextWeekendHint').textContent = `Selected: ${dayName}, ${date.toLocaleDateString()}`;
+        const hintEl = document.getElementById('nextWeekendHint');
+        if (hintEl) hintEl.textContent = `Selected: ${dayName}, ${date.toLocaleDateString()}`;
     }
 
     function generateBookingSummary() {
         const pkg = lessonPackages[bookingData.packageType];
+        if (!pkg) return;
         const summary = `
             <div><span class="text-slate-400">Package:</span> <strong>${pkg.name}</strong></div>
             <div><span class="text-slate-400">Price:</span> <strong>R${pkg.price}</strong></div>
-            <div><span class="text-slate-400">Tutor:</span> <strong>${bookingData.tutor}</strong></div>
-            <div><span class="text-slate-400">Lesson Type:</span> <strong>${document.getElementById('bookingLessonType').value}</strong></div>
+            <div><span class="text-slate-400">Tutor:</span> <strong>${bookingData.tutor || 'TBD'}</strong></div>
+            <div><span class="text-slate-400">Lesson Type:</span> <strong>${document.getElementById('bookingLessonType').value || 'TBD'}</strong></div>
             <div><span class="text-slate-400">Date & Time:</span> <strong>${bookingData.date} at ${bookingData.timeSlot}</strong></div>
         `;
         document.getElementById('bookingSummary').innerHTML = summary;
         document.getElementById('bookingTotal').textContent = `R${pkg.price}`;
     }
 
-    // Initialize booking on page load
+    // THEME TOGGLE
+    const themeToggle = document.getElementById('themeToggle');
+    let isDarkMode = true;
+    themeToggle.addEventListener('click', () => {
+        isDarkMode = !isDarkMode;
+        document.body.classList.toggle('light-mode');
+        themeToggle.innerHTML = isDarkMode ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+    });
+
+    // MOBILE MENU
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('active');
+        menuBtn.querySelector('i').className = mobileMenu.classList.contains('active') ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+    });
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            menuBtn.querySelector('i').className = 'fa-solid fa-bars';
+        });
+    });
+
+    // TESTIMONIALS
+    let currentTestimonial = 0;
+    const testimonials = document.querySelectorAll('.testimonial-slide');
+    function autoTestimonial() {
+        window.changeTestimonial((currentTestimonial + 1) % testimonials.length, false);
+    }
+    let testimonialInterval = setInterval(autoTestimonial, 6000);
+    window.changeTestimonial = function(index, resetTimer = true) {
+        testimonials[currentTestimonial].classList.add('hidden');
+        testimonials[currentTestimonial].classList.remove('active');
+        testimonials[index].classList.remove('hidden');
+        testimonials[index].classList.add('active');
+        document.querySelectorAll('[onclick^="changeTestimonial"]').forEach((dot, i) => {
+            if (i === index) {
+                dot.classList.remove('bg-white/30');
+                dot.classList.add('bg-orange-400');
+            } else {
+                dot.classList.remove('bg-orange-400');
+                dot.classList.add('bg-white/30');
+            }
+        });
+        currentTestimonial = index;
+        if(resetTimer) {
+            clearInterval(testimonialInterval);
+            testimonialInterval = setInterval(autoTestimonial, 6000);
+        }
+    };
+
+    // TUTOR PROFILES
+    window.openTutorProfile = function(tutor) {
+        const modal = document.getElementById(tutor + 'Modal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    };
+    window.closeTutorProfile = function(tutor) {
+        const modal = document.getElementById(tutor + 'Modal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    };
+    document.querySelectorAll('.profile-modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeTutorProfile(modal.id.replace('Modal', ''));
+        });
+    });
+
+    // AUTH MODAL
+    let authMode = 'login';
+    window.openAuthModal = function(mode) {
+        authMode = mode;
+        document.getElementById('authTitle').textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
+        document.getElementById('authSubtitle').textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
+        document.getElementById('authSubmit').textContent = mode === 'signup' ? 'Sign Up' : 'Login';
+        document.getElementById('authMessage').classList.add('hidden');
+        document.getElementById('authForm').reset();
+        document.getElementById('authModal').classList.add('active');
+    };
+    window.closeAuthModal = function() {
+        document.getElementById('authModal').classList.remove('active');
+    };
+
+    // DASHBOARD FUNCTIONS
+    window.toggleDashSidebar = function() {
+        const sidebar = document.getElementById('dashSidebar');
+        const overlay = document.getElementById('dashSidebarOverlay');
+        sidebar.classList.toggle('-translate-x-full');
+        if(sidebar.classList.contains('-translate-x-full')){ overlay.classList.add('hidden'); } else { overlay.classList.remove('hidden'); }
+    };
+    window.goToHome = function() {
+        localStorage.setItem('isDashboardOpen', 'false');
+        document.getElementById('appDashboard').classList.add('hidden');
+        document.getElementById('mainHeader').classList.remove('hidden');
+        document.getElementById('landingPageContent').classList.remove('hidden');
+        window.scrollTo(0, 0);
+    };
+    window.logoutUser = function() {
+        localStorage.removeItem('activeDashView');
+        localStorage.setItem('isDashboardOpen', 'false');
+        goToHome();
+    };
+
+    // Initialize
     document.addEventListener('DOMContentLoaded', initializeBooking);
 </script>
 </body>
