@@ -1106,9 +1106,26 @@
         } 
         else if (view === 'student-schedule') {
             const myBookings = allBookings.filter(b => b.student.email === currentUserData.email);
-            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.modules.join(', '))}</p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p></div><div class="text-left sm:text-right"><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span></div></div>`).join('');
+            const pkgNames = { single: 'Single Lesson', monthly: 'Monthly Package', bootcamp: 'Bootcamp', group: 'Group Lesson' };
+            
+            let bList = myBookings.map(b => {
+                const pkgDisplay = b.package ? pkgNames[b.package] : 'Standard Lesson';
+                const extraTimeDisplay = b.extraTimeSlots > 0 ? ` (+${b.extraTimeSlots * 1.25}hrs extra)` : '';
+                
+                return `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div>
+                        <p class="font-bold">${escapeHTML(b.modules.join(', '))} <span class="text-orange-400 text-sm ml-2 px-2 py-1 bg-orange-500/10 rounded">${pkgDisplay}${extraTimeDisplay}</span></p>
+                        <p class="text-sm text-sky-400 mt-1">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span>
+                    </div>
+                </div>`;
+            }).join('');
+            
             if(!bList) bList = '<p class="text-slate-400">You have no upcoming lessons scheduled.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">My Schedule</h2><div class="dash-card border-sky-500/30">${bList}</div>`;
+        }
         }
         else if (view === 'student-materials') {
             html = `<h2 class="text-3xl font-bold mb-6">Study Materials</h2><div class="grid md:grid-cols-2 gap-4"><div class="dash-card flex justify-between items-center"><div><h4 class="font-bold">Accounting 101 Notes</h4><p class="text-xs text-slate-400">PDF • 2.4 MB</p></div><button class="text-sky-400 hover:text-white"><i class="fa-solid fa-download"></i></button></div><div class="dash-card flex justify-between items-center"><div><h4 class="font-bold">Economics Past Paper</h4><p class="text-xs text-slate-400">PDF • 1.1 MB</p></div><button class="text-sky-400 hover:text-white"><i class="fa-solid fa-download"></i></button></div></div>`;
