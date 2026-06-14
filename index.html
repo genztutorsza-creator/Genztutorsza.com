@@ -1161,10 +1161,27 @@
             const expectedInc = myBookings.reduce((sum, b) => sum + (b.total/b.tutors.length), 0);
             html = `<h2 class="text-3xl font-bold mb-6">Tutor Dashboard</h2><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="dash-card border-sky-500/30"><p class="text-slate-400 mb-1">Total Expected Income</p><h3 class="text-3xl font-bold text-white">R${expectedInc}</h3></div><div class="dash-card border-emerald-500/30"><p class="text-emerald-400 mb-1 text-sm"><i class="fa-solid fa-check-circle"></i> Accrued (Taught)</p><h3 class="text-2xl font-bold text-emerald-400">R0</h3></div><div class="dash-card border-orange-500/30"><p class="text-orange-400 mb-1 text-sm"><i class="fa-solid fa-clock"></i> Upcoming Bookings</p><h3 class="text-2xl font-bold text-orange-400">${myBookings.length}</h3></div></div>`;
         } 
-        else if (view === 'tutor-schedule') {
+       else if (view === 'tutor-schedule') {
             const myTutorName = getTutorNameFromEmail(currentUserData.email);
             const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400">R${b.total / b.tutors.length}</p></div></div>`).join('');
+            const pkgNames = { single: 'Single Lesson', monthly: 'Monthly Package', bootcamp: 'Bootcamp', group: 'Group Lesson' };
+            
+            let bList = myBookings.map(b => {
+                const pkgDisplay = b.package ? pkgNames[b.package] : 'Standard Lesson';
+                const extraTimeDisplay = b.extraTimeSlots > 0 ? ` (+${b.extraTimeSlots * 1.25}hrs)` : '';
+                
+                return `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div>
+                        <p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p>
+                        <p class="text-sm text-orange-400 mt-1">${pkgDisplay}${extraTimeDisplay} &bull; <span class="text-sky-400">${escapeHTML(b.venue)}</span></p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-regular fa-clock mr-1"></i> ${escapeHTML(b.date)} at ${escapeHTML(b.time)}</p>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <p class="font-bold text-emerald-400">R${b.total / b.tutors.length}</p>
+                    </div>
+                </div>`;
+            }).join('');
+            
             if(!bList) bList = '<p class="text-slate-400">You have no students scheduled yet.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">Lesson Roster</h2><div class="dash-card border-sky-500/30">${bList}</div>`;
         }
@@ -1202,8 +1219,26 @@
             const totalRev = allBookings.reduce((sum, b) => sum + b.total, 0);
             html = `<h2 class="text-3xl font-bold mb-6">Admin Overview</h2><div class="grid md:grid-cols-4 gap-4 mb-8"><div class="dash-card"><p class="text-slate-400 text-sm">Total Revenue</p><h3 class="text-2xl font-bold text-emerald-400">R${totalRev}</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">System Bookings</p><h3 class="text-2xl font-bold text-white">${allBookings.length}</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">Pending Support</p><h3 class="text-2xl font-bold text-orange-400">0</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">Tutors Active</p><h3 class="text-2xl font-bold text-sky-400">5</h3></div></div>`;
         } 
-        else if (view === 'admin-bookings') {
-            let bList = allBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p><p class="text-xs text-slate-500 mt-1">${escapeHTML(b.student.email)} • ${escapeHTML(b.student.phone)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400 mb-1">R${b.total}</p><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span></div></div>`).join('');
+       else if (view === 'admin-bookings') {
+            const pkgNames = { single: 'Single Lesson', monthly: 'Monthly Package', bootcamp: 'Bootcamp', group: 'Group Lesson' };
+            
+            let bList = allBookings.map(b => {
+                const pkgDisplay = b.package ? pkgNames[b.package] : 'Standard Lesson';
+                const extraTimeDisplay = b.extraTimeSlots > 0 ? ` (+${b.extraTimeSlots * 1.25}hrs)` : '';
+                
+                return `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div>
+                        <p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p>
+                        <p class="text-sm text-sky-400 mt-1">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; <span class="text-orange-400 font-semibold">${pkgDisplay}${extraTimeDisplay}</span> &bull; ${escapeHTML(b.venue)}</p>
+                        <p class="text-xs text-slate-500 mt-1">${escapeHTML(b.student.email)} • ${escapeHTML(b.student.phone)}</p>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <p class="font-bold text-emerald-400 mb-1">R${b.total}</p>
+                        <span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span>
+                    </div>
+                </div>`;
+            }).join('');
+            
             if(!bList) bList = '<p class="text-slate-400">No bookings exist in the system yet.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">All Bookings Master List</h2><div class="dash-card border-orange-500/30">${bList}</div>`;
         }
