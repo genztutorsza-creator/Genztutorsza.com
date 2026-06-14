@@ -751,14 +751,36 @@
         }
     });
     
-    document.getElementById('googleAuthBtn').addEventListener('click', async () => {
-        if (!(await initializeFirebaseAuth(true))) return;
+document.getElementById('googleAuthBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('googleAuthBtn');
+        btn.disabled = true; // Prevent double-clicks
+        
         try {
+            // 1. Ensure Firebase is fully loaded before launching the popup
+            if (!(await initializeFirebaseAuth(true))) {
+                btn.disabled = false;
+                return;
+            }
+            
+            // 2. Launch Google Sign In
             await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
-            showAuthMessage('Google login successful. Welcome.', 'success');
-            setTimeout(() => { closeAuthModal(); openDashboard(); }, 1000);
+            
+            // 3. Show success and transition to dashboard
+            showAuthMessage('Google login successful. Opening Portal...', 'success');
+            setTimeout(() => { 
+                closeAuthModal(); 
+                openDashboard(); 
+            }, 800);
+            
         } catch (error) {
-            showAuthMessage(friendlyAuthError(error));
+            // 4. Catch "Popup closed by user" or authorized domain errors
+            if (typeof friendlyAuthError === "function") {
+                showAuthMessage(friendlyAuthError(error));
+            } else {
+                showAuthMessage(error.message);
+            }
+        } finally {
+            btn.disabled = false;
         }
     });
 
