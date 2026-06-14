@@ -750,54 +750,53 @@
             submitBtn.disabled = false;
         }
     });
-    document.getElementById('googleAuthBtn').addEventListener('click', async () => {
-        const btn = document.getElementById('googleAuthBtn');
-        const msg = document.getElementById('authMessage');
-        
-        // Disable button and show loading state
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> Connecting...';
-        msg.classList.add('hidden');
-
-        try {
-            // Check if Firebase finished loading in the background
-            if (!firebaseAuth || !signInWithPopup || !GoogleAuthProvider) {
-                throw new Error("Firebase is still connecting to the server. Please try again in 3 seconds.");
-            }
-
-            // Launch Google Sign In
-            await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
-
-            // Show Success Message
-            msg.textContent = 'Google login successful. Opening Portal...';
-            msg.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30');
-            msg.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border', 'border-emerald-500/30');
-
-            // Open Dashboard and reset button
-            setTimeout(() => { 
-                closeAuthModal(); 
-                openDashboard(); 
-                btn.innerHTML = '<i class="fa-brands fa-google text-xl"></i> Continue with Google';
+    // --- UPDATED GOOGLE AUTHENTICATION FIX ---
+    // Finds ALL instances of the Google Auth button to bypass the duplicate ID bug
+    const googleBtns = document.querySelectorAll('#googleAuthBtn');
+    
+    googleBtns.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // 1. Show a loading spinner so you know it registered the click
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> Connecting...';
+            
+            try {
+                // 2. Ensure Firebase is fully loaded
+                if (!firebaseAuth || !GoogleAuthProvider || !signInWithPopup) {
+                    throw new Error("System is still loading. Please try again in a few seconds.");
+                }
+                
+                // 3. Trigger the Google Pop-up
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(firebaseAuth, provider);
+                
+                // 4. On Success: Close modal and launch the dashboard
+                closeAuthModal();
+                openDashboard();
+                
+            } catch (error) {
+                console.error("Google Auth Error:", error);
+                
+                // 5. Display the exact error in the red message box
+                const msg = document.getElementById('authMessage');
+                if (msg) {
+                    let errorText = error.message;
+                    if (error.code === 'auth/popup-closed-by-user') errorText = "Sign-in was cancelled.";
+                    if (error.code === 'auth/unauthorized-domain') errorText = "This domain is not authorized in Firebase.";
+                    
+                    msg.textContent = errorText;
+                    msg.classList.remove('hidden', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
+                    msg.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
+                }
+            } finally {
+                // 6. Always restore the button back to normal
                 btn.disabled = false;
-            }, 800);
-
-        } catch (error) {
-            console.error("Google Auth Error:", error);
-            
-            // Format common error messages
-            let errorText = error.message;
-            if (error.code === 'auth/popup-closed-by-user') errorText = "Login was cancelled. Please try again.";
-            if (error.code === 'auth/unauthorized-domain') errorText = "This domain is not authorized in your Firebase Console.";
-            
-            // Show Error Message
-            msg.textContent = errorText;
-            msg.classList.remove('hidden', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
-            msg.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
-            
-            // Reset button
-            btn.innerHTML = '<i class="fa-brands fa-google text-xl"></i> Continue with Google';
-            btn.disabled = false;
-        }
+                btn.innerHTML = originalHTML;
+            }
+        });
     });
 
     // Run Background Init
