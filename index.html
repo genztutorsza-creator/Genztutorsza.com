@@ -56,7 +56,7 @@
         .time-slot.booked { background: rgba(239,68,68,0.2); color: #fca5a5; cursor: not-allowed; opacity: 0.65; }
         
         /* Dashboard Specific Styles */
-        .dash-sidebar-link { display: flex; items-center: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
+        .dash-sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
         .dash-sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
         .dash-sidebar-link.active { background: rgba(56,189,248,0.15); color: #38bdf8; font-weight: 600; }
         .dash-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 1.5rem; padding: 1.5rem; }
@@ -327,7 +327,7 @@
 
 <script>
     // -----------------------------------------
-    // FIREBASE, DASHBOARD, VIEW TOGGLE, & AUTO-LOGOUT
+    // FIREBASE, DASHBOARD, PERSISTENCE, & AUTO-LOGOUT
     // -----------------------------------------
     let firebaseAuth;
     let currentUserData = null;
@@ -343,7 +343,6 @@
         measurementId: 'G-CL8NS75JGJ'
     };
 
-    // Core UI Elements
     const authModal = document.getElementById('authModal');
     const authForm = document.getElementById('authForm');
     const authEmail = document.getElementById('authEmail');
@@ -364,17 +363,13 @@
     // --- AUTO-LOGOUT LOGIC ---
     let warningTimer;
     let logoutTimer;
-    const INACTIVITY_WARNING_LIMIT = 10 * 60 * 1000; // Trigger warning at 10 minutes
-    const INACTIVITY_LOGOUT_LIMIT = 15 * 60 * 1000;  // Actual logout at 15 minutes
+    const INACTIVITY_WARNING_LIMIT = 10 * 60 * 1000;
+    const INACTIVITY_LOGOUT_LIMIT = 15 * 60 * 1000;
 
     window.resetInactivityTimer = function() {
         clearTimeout(warningTimer);
         clearTimeout(logoutTimer);
-        
-        if (inactivityWarningModal) {
-            inactivityWarningModal.classList.add('hidden');
-        }
-
+        if (inactivityWarningModal) inactivityWarningModal.classList.add('hidden');
         if (currentUserData) {
             warningTimer = setTimeout(showInactivityWarning, INACTIVITY_WARNING_LIMIT);
             logoutTimer = setTimeout(handleAutoLogout, INACTIVITY_LOGOUT_LIMIT);
@@ -399,9 +394,8 @@
     ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(event => {
         document.addEventListener(event, window.resetInactivityTimer, true);
     });
-    // --- END AUTO-LOGOUT LOGIC ---
 
-    // Open/Close Modal
+    // --- UTILITIES ---
     function openAuthModal(mode) {
         authMode = mode;
         document.getElementById('authTitle').textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
@@ -415,7 +409,6 @@
     document.getElementById('closeModal').addEventListener('click', () => authModal.classList.remove('active'));
     document.querySelectorAll('.auth-trigger').forEach(btn => btn.addEventListener('click', () => openAuthModal('login')));
 
-    // Determine Role
     function getRoleFromEmail(email) {
         if (!email) return 'student';
         const e = email.toLowerCase();
@@ -424,8 +417,8 @@
         return 'student';
     }
 
-    // View Toggles
-    function openDashboard() {
+    // --- PERSISTENCE & DASHBOARD NAVIGATION ---
+    function openDashboard(targetView = null) {
         if (!currentUserData) return;
         
         mainHeader.classList.add('hidden');
@@ -438,7 +431,13 @@
         document.getElementById('dashUserEmail').textContent = currentUserData.email;
         
         renderDashboardNavigation(role);
-        renderDashView(`${role}-home`);
+        
+        // Restore previous view or default to home
+        if (targetView && targetView.startsWith(role)) {
+            renderDashView(targetView);
+        } else {
+            renderDashView(`${role}-home`);
+        }
     }
 
     function goToHome() {
@@ -450,8 +449,20 @@
 
     window.logoutUser = async function() {
         if(firebaseAuth) await window.signOut(firebaseAuth);
+        localStorage.removeItem('activeDashView'); // Clear saved state on logout
         goToHome();
     };
+
+    // --- CHAT SELECTION LOGIC ---
+    window.selectChat = function(name) {
+        const headerName = document.getElementById('chatHeaderName');
+        if (headerName) headerName.innerHTML = name;
+        
+        const msgs = document.getElementById('chatMessagesArea');
+        if (msgs) {
+            msgs.innerHTML = `<div class="text-center text-slate-500 text-sm mt-10">This is the beginning of your conversation with ${name}.</div>`;
+        }
+    }
 
     // Firebase Initialization
     async function initializeFirebaseAuth() {
@@ -473,7 +484,7 @@
                     window.resetInactivityTimer();
                     
                     navAuthArea.innerHTML = `
-                        <button onclick="openDashboard()" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">
+                        <button onclick="openDashboard(localStorage.getItem('activeDashView'))" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">
                             Dashboard
                         </button>
                         <button onclick="logoutUser()" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition px-6 py-3 rounded-xl font-bold text-sm">
@@ -482,10 +493,17 @@
                     `;
                     document.getElementById('bookingAuthNotice').classList.add('hidden');
                     document.getElementById('bookingApp').classList.remove('hidden');
+
+                    // STATE PERSISTENCE: If they refresh while logged in, auto-open the dashboard
+                    const savedView = localStorage.getItem('activeDashView');
+                    if (savedView) {
+                        openDashboard(savedView);
+                    }
                 } else {
                     currentUserData = null;
                     clearTimeout(warningTimer);
                     clearTimeout(logoutTimer);
+                    localStorage.removeItem('activeDashView'); // Clear saved state
                     if (inactivityWarningModal) inactivityWarningModal.classList.add('hidden');
                     
                     navAuthArea.innerHTML = `
@@ -500,13 +518,6 @@
         } catch (error) {
             console.error('Firebase Error:', error);
         }
-    }
-
-    // Handle Auth Submits
-    function showAuthMessage(message) {
-        authMessage.textContent = message;
-        authMessage.classList.remove('hidden');
-        authMessage.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
     }
 
     authForm.addEventListener('submit', async (e) => {
@@ -540,43 +551,54 @@
         }
     });
 
-    // Render Dashboard Nav
+    function showAuthMessage(message) {
+        authMessage.textContent = message;
+        authMessage.classList.remove('hidden');
+        authMessage.classList.add('bg-red-500/15', 'text-red-300', 'border', 'border-red-500/30');
+    }
+
+    // --- RENDER FUNCTIONS ---
     function renderDashboardNavigation(role) {
         let links = '';
         if (role === 'student') {
             links = `
-                <a class="dash-sidebar-link active" onclick="renderDashView('student-home', this)"><i class="fa-solid fa-house"></i> Home</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('student-schedule', this)"><i class="fa-solid fa-calendar"></i> My Schedule</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('student-materials', this)"><i class="fa-solid fa-folder-open"></i> Study Materials</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('student-finance', this)"><i class="fa-solid fa-wallet"></i> Finances & Credits</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('student-messages', this)"><i class="fa-solid fa-comments"></i> Messages</a>
+                <a class="dash-sidebar-link" data-view="student-home" onclick="renderDashView('student-home')"><i class="fa-solid fa-house"></i> Home</a>
+                <a class="dash-sidebar-link" data-view="student-schedule" onclick="renderDashView('student-schedule')"><i class="fa-solid fa-calendar"></i> My Schedule</a>
+                <a class="dash-sidebar-link" data-view="student-materials" onclick="renderDashView('student-materials')"><i class="fa-solid fa-folder-open"></i> Study Materials</a>
+                <a class="dash-sidebar-link" data-view="student-finance" onclick="renderDashView('student-finance')"><i class="fa-solid fa-wallet"></i> Finances & Credits</a>
+                <a class="dash-sidebar-link" data-view="student-messages" onclick="renderDashView('student-messages')"><i class="fa-solid fa-comments"></i> Messages</a>
             `;
         } else if (role === 'tutor') {
             links = `
-                <a class="dash-sidebar-link active" onclick="renderDashView('tutor-home', this)"><i class="fa-solid fa-chalkboard-user"></i> Dashboard</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('tutor-schedule', this)"><i class="fa-solid fa-calendar-check"></i> Lesson Roster</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('tutor-finance', this)"><i class="fa-solid fa-money-bill-trend-up"></i> Income & Earnings</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('tutor-tools', this)"><i class="fa-solid fa-toolbox"></i> Platform Tools</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('tutor-messages', this)"><i class="fa-solid fa-comments"></i> Messages</a>
+                <a class="dash-sidebar-link" data-view="tutor-home" onclick="renderDashView('tutor-home')"><i class="fa-solid fa-chalkboard-user"></i> Dashboard</a>
+                <a class="dash-sidebar-link" data-view="tutor-schedule" onclick="renderDashView('tutor-schedule')"><i class="fa-solid fa-calendar-check"></i> Lesson Roster</a>
+                <a class="dash-sidebar-link" data-view="tutor-finance" onclick="renderDashView('tutor-finance')"><i class="fa-solid fa-money-bill-trend-up"></i> Income & Earnings</a>
+                <a class="dash-sidebar-link" data-view="tutor-tools" onclick="renderDashView('tutor-tools')"><i class="fa-solid fa-toolbox"></i> Platform Tools</a>
+                <a class="dash-sidebar-link" data-view="tutor-messages" onclick="renderDashView('tutor-messages')"><i class="fa-solid fa-comments"></i> Messages</a>
             `;
         } else if (role === 'admin') {
             links = `
-                <a class="dash-sidebar-link active" onclick="renderDashView('admin-home', this)"><i class="fa-solid fa-chart-line"></i> Overview</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('admin-bookings', this)"><i class="fa-solid fa-list-check"></i> All Bookings</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('admin-users', this)"><i class="fa-solid fa-users"></i> Manage Users</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('admin-finance', this)"><i class="fa-solid fa-vault"></i> Master Financials</a>
-                <a class="dash-sidebar-link" onclick="renderDashView('admin-messages', this)"><i class="fa-solid fa-comments"></i> Communications</a>
+                <a class="dash-sidebar-link" data-view="admin-home" onclick="renderDashView('admin-home')"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                <a class="dash-sidebar-link" data-view="admin-bookings" onclick="renderDashView('admin-bookings')"><i class="fa-solid fa-list-check"></i> All Bookings</a>
+                <a class="dash-sidebar-link" data-view="admin-users" onclick="renderDashView('admin-users')"><i class="fa-solid fa-users"></i> Manage Users</a>
+                <a class="dash-sidebar-link" data-view="admin-finance" onclick="renderDashView('admin-finance')"><i class="fa-solid fa-vault"></i> Master Financials</a>
+                <a class="dash-sidebar-link" data-view="admin-messages" onclick="renderDashView('admin-messages')"><i class="fa-solid fa-comments"></i> Communications</a>
             `;
         }
         dashNav.innerHTML = links;
     }
 
-    // Render Dashboard Content
-    window.renderDashView = function(view, element = null) {
-        if(element) {
-            document.querySelectorAll('.dash-sidebar-link').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
+    window.renderDashView = function(view) {
+        // Save state so refresh works perfectly
+        localStorage.setItem('activeDashView', view);
+        
+        // Update sidebar UI dynamically
+        document.querySelectorAll('.dash-sidebar-link').forEach(el => {
+            el.classList.remove('active');
+            if (el.getAttribute('data-view') === view) {
+                el.classList.add('active');
+            }
+        });
 
         let html = '';
         
@@ -613,17 +635,17 @@
                     <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
                         <h3 class="font-bold mb-4 text-slate-300">Your Contacts</h3>
                         
-                        <button class="w-full text-left p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center gap-3">
+                        <button onclick="selectChat('Lilonke (Accounting)')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center"><i class="fa-solid fa-chalkboard-user text-sky-400"></i></div>
                             <div><p class="font-bold">Lilonke</p><p class="text-xs text-sky-400">Accounting Tutor</p></div>
                         </button>
                         
-                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                        <button onclick="selectChat('Tyren M. (Commerce)')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-crown text-slate-300"></i></div>
                             <div><p class="font-bold">Tyren M.</p><p class="text-xs text-slate-400">Commerce Tutor</p></div>
                         </button>
                         
-                        <button class="w-full text-left p-3 rounded-xl bg-orange-500/5 hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mt-4">
+                        <button onclick="selectChat('Admin Support')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mt-4">
                             <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-headset text-orange-400"></i></div>
                             <div><p class="font-bold text-orange-400">Admin Support</p><p class="text-xs text-slate-400">Billing & Issues</p></div>
                         </button>
@@ -631,15 +653,18 @@
                     
                     <div class="dash-card col-span-2 flex flex-col p-6">
                         <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
-                            <h3 class="font-bold text-lg"><i class="fa-solid fa-circle text-emerald-400 text-xs mr-2"></i> Lilonke</h3>
+                            <h3 class="font-bold text-lg" id="chatHeaderName">Select a Contact</h3>
                         </div>
-                        <div class="flex-1 overflow-y-auto space-y-4 mb-4">
-                            <div class="chat-message-received"><p class="text-sm">Hi! Don't forget to review the IAS 1 frameworks before our lesson tomorrow at 10 AM.</p><p class="text-[10px] text-slate-500 mt-1">Yesterday, 14:30</p></div>
-                            <div class="chat-message-sent"><p class="text-sm">Thanks Lilonke! I have the PDF open now. Will see you on Zoom tomorrow.</p><p class="text-[10px] text-sky-200/50 mt-1">Yesterday, 15:00</p></div>
+                        <div class="flex-1 overflow-y-auto space-y-4 mb-4" id="chatMessagesArea">
+                            <div class="text-center text-slate-500 text-sm mt-10">Select a contact from the left to view messages.</div>
                         </div>
-                        <div class="mt-auto flex gap-2">
+                        <div class="mt-auto flex gap-2 items-center">
+                            <label class="cursor-pointer text-slate-400 hover:text-white transition p-2" title="Upload File">
+                                <i class="fa-solid fa-paperclip text-xl"></i>
+                                <input type="file" class="hidden" onchange="alert('File attached: ' + this.files[0].name)">
+                            </label>
                             <input type="text" placeholder="Type your message..." class="booking-input flex-1 py-3">
-                            <button class="bg-sky-500 hover:bg-sky-600 px-6 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
+                            <button class="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
@@ -703,33 +728,37 @@
                 <div class="grid md:grid-cols-3 gap-6 h-[500px]">
                     <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
                         <h3 class="font-bold mb-4 text-slate-300">Management</h3>
-                        <button class="w-full text-left p-3 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center gap-3 mb-6">
+                        <button onclick="selectChat('System Admin')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-orange-400"></i></div>
                             <div><p class="font-bold text-orange-400">Admin / System</p><p class="text-xs text-slate-400">Priority Channel</p></div>
                         </button>
 
                         <h3 class="font-bold mb-4 text-slate-300">Your Students</h3>
-                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                        <button onclick="selectChat('John Doe')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div>
                             <div><p class="font-bold">John Doe</p><p class="text-xs text-slate-400">Commerce 1st Year</p></div>
                         </button>
                         
-                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                        <button onclick="selectChat('Sarah Smith')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div>
                             <div><p class="font-bold">Sarah Smith</p><p class="text-xs text-slate-400">Accounting 2nd Year</p></div>
                         </button>
                     </div>
                     
-                    <div class="dash-card col-span-2 flex flex-col p-6 border-orange-500/30">
+                    <div class="dash-card col-span-2 flex flex-col p-6 border-sky-500/30">
                         <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
-                            <h3 class="font-bold text-lg text-orange-400"><i class="fa-solid fa-shield-halved mr-2"></i> Direct Admin Channel</h3>
+                            <h3 class="font-bold text-lg" id="chatHeaderName">Select a Contact</h3>
                         </div>
-                        <div class="flex-1 overflow-y-auto space-y-4 mb-4">
-                            <div class="chat-message-received"><p class="text-sm">Please ensure you submit the timesheet for this weekend by Sunday night.</p><p class="text-[10px] text-slate-500 mt-1">Admin &bull; Today, 09:00</p></div>
+                        <div class="flex-1 overflow-y-auto space-y-4 mb-4" id="chatMessagesArea">
+                            <div class="text-center text-slate-500 text-sm mt-10">Select a contact from the left to view messages.</div>
                         </div>
-                        <div class="mt-auto flex gap-2">
-                            <input type="text" placeholder="Message admin..." class="booking-input flex-1 py-3 focus:outline-orange-500/50 focus:border-orange-500/50">
-                            <button class="bg-orange-500 hover:bg-orange-600 px-6 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
+                        <div class="mt-auto flex gap-2 items-center">
+                            <label class="cursor-pointer text-slate-400 hover:text-white transition p-2" title="Upload Resource File">
+                                <i class="fa-solid fa-paperclip text-xl"></i>
+                                <input type="file" class="hidden" onchange="alert('Resource file attached: ' + this.files[0].name)">
+                            </label>
+                            <input type="text" placeholder="Type message..." class="booking-input flex-1 py-3 focus:outline-sky-500/50 focus:border-sky-500/50">
+                            <button class="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
@@ -758,19 +787,19 @@
                 <div class="grid md:grid-cols-3 gap-6 h-[500px]">
                     <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
                         <h3 class="font-bold mb-4 text-slate-300">Broadcasts</h3>
-                        <button class="w-full text-left p-3 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center gap-3 mb-6">
+                        <button onclick="selectChat('All Tutors (Broadcast)')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-bullhorn text-orange-400"></i></div>
                             <div><p class="font-bold text-orange-400">All Tutors</p><p class="text-xs text-slate-400">Announcements</p></div>
                         </button>
 
                         <h3 class="font-bold mb-4 text-slate-300">Tutors</h3>
-                        <button class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent transition flex items-center gap-3">
+                        <button onclick="selectChat('Lilonke (Tutor)')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user-tie text-slate-300"></i></div>
                             <div><p class="font-bold">Lilonke</p><p class="text-xs text-slate-400">Online now</p></div>
                         </button>
                         
                         <h3 class="font-bold mb-4 text-slate-300 mt-6">Support Tickets (Students)</h3>
-                        <button class="w-full text-left p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
+                        <button onclick="selectChat('John Doe (Ticket)')" class="w-full text-left p-3 rounded-xl hover:bg-emerald-500/10 border border-transparent transition flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center"><i class="fa-solid fa-circle-exclamation text-emerald-400"></i></div>
                             <div><p class="font-bold text-emerald-400">John Doe</p><p class="text-xs text-slate-400">Billing inquiry</p></div>
                         </button>
@@ -778,14 +807,18 @@
                     
                     <div class="dash-card col-span-2 flex flex-col p-6 border-orange-500/30">
                         <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
-                            <h3 class="font-bold text-lg text-orange-400"><i class="fa-solid fa-bullhorn mr-2"></i> Broadcast to All Tutors</h3>
+                            <h3 class="font-bold text-lg text-orange-400" id="chatHeaderName">Select a Channel</h3>
                         </div>
-                        <div class="flex-1 overflow-y-auto space-y-4 mb-4">
-                            <div class="chat-message-sent bg-orange-500/20 border-orange-500/30"><p class="text-sm">Reminder: All end-of-month progress reports for your students are due this Friday.</p><p class="text-[10px] text-orange-200/50 mt-1">Admin Broadcast &bull; Tuesday, 10:00</p></div>
+                        <div class="flex-1 overflow-y-auto space-y-4 mb-4" id="chatMessagesArea">
+                            <div class="text-center text-slate-500 text-sm mt-10">Select a channel from the left to broadcast or message.</div>
                         </div>
-                        <div class="mt-auto flex gap-2">
-                            <input type="text" placeholder="Type announcement..." class="booking-input flex-1 py-3 focus:outline-orange-500/50 focus:border-orange-500/50">
-                            <button class="bg-orange-500 hover:bg-orange-600 px-6 rounded-xl font-bold transition">Send to All</button>
+                        <div class="mt-auto flex gap-2 items-center">
+                            <label class="cursor-pointer text-slate-400 hover:text-white transition p-2" title="Attach Document">
+                                <i class="fa-solid fa-paperclip text-xl"></i>
+                                <input type="file" class="hidden" onchange="alert('Admin document attached: ' + this.files[0].name)">
+                            </label>
+                            <input type="text" placeholder="Type message..." class="booking-input flex-1 py-3 focus:outline-orange-500/50 focus:border-orange-500/50">
+                            <button class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
