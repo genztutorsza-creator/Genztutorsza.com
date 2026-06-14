@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
      <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./coop-sw.js')
@@ -54,6 +53,7 @@
         
         .testimonial-slide { opacity: 1; transition: opacity 0.5s ease; }
         .testimonial-slide.hidden { display: none; }
+        .testimonial-slide.active { opacity: 1; }
         
         /* LIGHT MODE */
         .light-mode { background: #f8fafc; color: #0f172a; }
@@ -193,24 +193,6 @@
         </div>
         <div class="p-4 md:p-10 max-w-6xl mx-auto" id="dashContentArea"></div>
     </main>
-</div>
-
-<div id="filePreviewModal" class="hidden fixed inset-0 z-[1100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#0d1728] border border-white/10 rounded-2xl p-6 max-w-2xl w-full flex flex-col max-h-[90vh]">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Preview & Edit Attachment</h3>
-            <button onclick="closeFilePreview()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm text-slate-400 mb-1">File Name</label>
-            <input type="text" id="previewFileName" class="booking-input py-2 text-sm">
-        </div>
-        <div id="previewContentArea" class="flex-1 overflow-y-auto bg-[#09111d] rounded-xl border border-white/10 p-4 mb-4 min-h-[200px]"></div>
-        <div class="flex justify-end gap-3 mt-auto">
-            <button onclick="closeFilePreview()" class="border border-white/20 hover:bg-white/10 px-5 py-2 rounded-xl font-semibold transition">Cancel</button>
-            <button onclick="attachPreparedFile()" class="bg-sky-500 hover:bg-sky-600 px-5 py-2 rounded-xl font-bold transition">Save & Attach</button>
-        </div>
-    </div>
 </div>
 
 <div id="landingPageContent" class="transition-opacity duration-300">
@@ -399,15 +381,6 @@
                 <h2 class="section-title">Book Your Lesson</h2>
                 <p class="text-slate-300 max-w-2xl mx-auto">Select your lesson package, choose a tutor, and pick an available time slot.</p>
             </div>
-            <div id="bookingAuthNotice" class="glass rounded-3xl p-8 text-center hidden">
-                <i class="fa-solid fa-lock text-4xl text-orange-400 mb-4"></i>
-                <h3 class="text-2xl font-bold mb-3">Sign In Required</h3>
-                <p class="text-slate-300 mb-6">You need to be logged in to book a lesson with Gen Z Tutors.</p>
-                <div class="flex flex-wrap justify-center gap-3">
-                    <button type="button" onclick="openAuthModal('login')" class="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-xl font-semibold transition">Login</button>
-                    <button type="button" onclick="openAuthModal('signup')" class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-xl font-semibold transition">Sign Up</button>
-                </div>
-            </div>
             <div id="bookingApp" class="glass rounded-3xl p-6 md:p-10">
                 <div class="grid grid-cols-5 gap-2 mb-8 text-center text-xs sm:text-sm font-semibold">
                     <div class="booking-step-tab active" data-step-tab="1">Step 1</div>
@@ -428,86 +401,59 @@
                     </div>
                 </div>
                 <div class="booking-step hidden" data-booking-step="2">
-                    <h3 class="text-2xl font-bold mb-2">Step 2: Select Your Academic Level & Modules</h3>
-                    <p class="text-slate-300 mb-6">Choose the level and modules you need help with.</p>
-                    <label class="block text-sm font-semibold text-slate-300 mb-3">Academic Level</label>
-                    <div id="academicLevelOptions" class="grid sm:grid-cols-2 gap-3 mb-6"></div>
-                    <div id="moduleArea" class="hidden">
-                        <label class="block text-sm font-semibold text-slate-300 mb-3">Select Modules</label>
-                        <div id="moduleOptions" class="space-y-3"></div>
-                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Step 2: Select Tutor</h3>
+                    <p class="text-slate-300 mb-6">Choose your preferred tutor.</p>
+                    <label class="block text-sm font-semibold text-slate-300 mb-3">Available Tutors</label>
+                    <div id="tutorOptions" class="grid gap-3 mb-6"></div>
                     <div class="flex justify-between gap-3 mt-8">
                         <button type="button" data-prev-step="1" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
                         <button type="button" data-next-step="3" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
                 <div class="booking-step hidden" data-booking-step="3">
-                    <h3 class="text-2xl font-bold mb-2">Step 3: Choose Your Tutor & Lesson Details</h3>
-                    <p class="text-slate-300 mb-6">Select a tutor and specify your lesson preferences.</p>
-                    <label class="block text-sm font-semibold text-slate-300 mb-3">Available Tutors</label>
-                    <div id="tutorOptions" class="grid gap-4 mb-6"></div>
-                    <div class="grid md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block mb-2 text-sm text-slate-300">Lesson Type</label>
-                            <select id="bookingLessonType" class="booking-input">
-                                <option value="">Select lesson type</option>
-                                <option>Online</option>
-                                <option>In-Person</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label id="bookingVenueLabel" class="block mb-2 text-sm text-slate-300">Platform / Venue</label>
-                            <select id="bookingVenue" class="booking-input">
-                                <option value="">Select platform or venue</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="flex justify-between gap-3 mt-8">
-                        <button type="button" data-prev-step="2" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
-                        <button type="button" data-next-step="4" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
-                    </div>
-                </div>
-                <div class="booking-step hidden" data-booking-step="4">
-                    <h3 class="text-2xl font-bold mb-2">Step 4: Choose Your Preferred Date & Time</h3>
-                    <p class="text-slate-300 mb-6">Gen Z Tutors operates weekends only (unless approved by admin). Each slot is 1hr 15mins with 15-min tutor breaks.</p>
+                    <h3 class="text-2xl font-bold mb-2">Step 3: Select Date & Time</h3>
+                    <p class="text-slate-300 mb-6">Gen Z Tutors operates weekends only. Each slot is 1hr 15mins with 15-min breaks.</p>
                     <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl p-4 mb-6 text-sky-200 text-sm">
                         <i class="fa-solid fa-circle-info mr-2"></i>
-                        <strong>Weekend Schedule:</strong> 8:00 AM - 5:00 PM | <strong>Slot:</strong> 1hr 15mins | <strong>Break:</strong> 15 mins | <strong>Bootcamp:</strong> 2 slots
+                        <strong>Weekend Schedule:</strong> 8:00 AM - 5:00 PM | <strong>Slot:</strong> 1hr 15mins | <strong>Break:</strong> 15 mins
                     </div>
                     <label class="block mb-2 text-sm text-slate-300">Date (Saturday or Sunday)</label>
                     <input id="bookingDate" type="date" class="booking-input mb-3">
                     <p id="nextWeekendHint" class="text-xs text-slate-400 mb-6"></p>
                     <label class="block mb-3 text-sm text-slate-300">Available Time Slots</label>
                     <div id="timeSlotOptions" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5"></div>
-                    <div class="flex gap-5 text-xs text-slate-400 mb-6">
-                        <span><span class="inline-block w-3 h-3 rounded bg-white/10 border border-white/15 mr-1"></span>Available</span>
-                        <span><span class="inline-block w-3 h-3 rounded bg-red-500/30 mr-1"></span>Booked</span>
-                    </div>
-                    <label class="block mb-2 text-sm text-slate-300">Additional Notes (Optional)</label>
-                    <textarea id="bookingNotes" rows="4" placeholder="Tell us about your learning goals, challenges, or any specific topics you'd like to focus on..." class="booking-input"></textarea>
                     <div class="flex justify-between gap-3 mt-8">
+                        <button type="button" data-prev-step="2" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+                        <button type="button" data-next-step="4" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+                    </div>
+                </div>
+                <div class="booking-step hidden" data-booking-step="4">
+                    <h3 class="text-2xl font-bold mb-2">Step 4: Contact Details</h3>
+                    <p class="text-slate-300 mb-6">Enter your information to complete booking.</p>
+                    <div class="grid md:grid-cols-2 gap-5 mb-6">
+                        <div><label class="block mb-2 text-sm text-slate-300">First Name *</label><input id="bookingFirstName" type="text" class="booking-input" placeholder="Your first name"></div>
+                        <div><label class="block mb-2 text-sm text-slate-300">Last Name *</label><input id="bookingLastName" type="text" class="booking-input" placeholder="Your last name"></div>
+                        <div><label class="block mb-2 text-sm text-slate-300">Email *</label><input id="bookingEmail" type="email" class="booking-input" placeholder="your@email.com"></div>
+                        <div><label class="block mb-2 text-sm text-slate-300">Phone *</label><input id="bookingPhone" type="tel" class="booking-input" placeholder="+27..."></div>
+                    </div>
+                    <label class="block mb-2 text-sm text-slate-300">Special Requests (Optional)</label>
+                    <textarea id="bookingNotes" rows="3" placeholder="Any specific topics or requirements..." class="booking-input mb-6"></textarea>
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 mb-6 flex justify-between gap-4 text-lg font-bold">
+                        <span>Total Amount:</span><span id="bookingTotal" class="text-orange-400">R0</span>
+                    </div>
+                    <div class="flex justify-between gap-3">
                         <button type="button" data-prev-step="3" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
                         <button type="button" data-next-step="5" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
                 <div class="booking-step hidden" data-booking-step="5">
-                    <h3 class="text-2xl font-bold mb-2">Step 5: Confirm Your Booking</h3>
-                    <p class="text-slate-300 mb-6">Review your booking details before sending your request.</p>
-                    <div id="bookingSummary" class="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 mb-6"></div>
-                    <div class="grid md:grid-cols-2 gap-5 mb-6">
-                        <div><label class="block mb-2 text-sm text-slate-300">First Name *</label><input id="bookingFirstName" type="text" class="booking-input"></div>
-                        <div><label class="block mb-2 text-sm text-slate-300">Last Name *</label><input id="bookingLastName" type="text" class="booking-input"></div>
-                        <div><label class="block mb-2 text-sm text-slate-300">Email *</label><input id="bookingEmail" type="email" class="booking-input"></div>
-                        <div><label class="block mb-2 text-sm text-slate-300">Phone *</label><input id="bookingPhone" type="tel" class="booking-input"></div>
-                        <div class="md:col-span-2"><label class="block mb-2 text-sm text-slate-300">ID Number *</label><input id="bookingIdNumber" type="text" class="booking-input"></div>
-                    </div>
-                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 mb-6 flex justify-between gap-4 text-lg font-bold">
-                        <span>Total Amount:</span><span id="bookingTotal" class="text-orange-400">R0</span>
-                    </div>
-                    <p class="text-slate-400 text-sm mb-6">Payment will be arranged via PayFast, Yoco, EFT, or WhatsApp confirmation.</p>
+                    <h3 class="text-2xl font-bold mb-2">Step 5: Confirm</h3>
+                    <p class="text-slate-300 mb-6">Review your booking details.</p>
+                    <div id="bookingSummary" class="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 mb-6 text-sm"></div>
+                    <p class="text-slate-400 text-sm mb-6">Payment will be arranged via WhatsApp, Email, or Portal.</p>
                     <div class="flex justify-between gap-3">
                         <button type="button" data-prev-step="4" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
-                        <button type="button" id="submitBookingRequest" class="bg-green-500 hover:bg-green-600 px-5 py-3 rounded-xl font-bold transition">Send Booking Request</button>
+                        <button type="button" id="submitBookingRequest" class="bg-green-500 hover:bg-green-600 px-5 py-3 rounded-xl font-bold transition">Confirm Booking</button>
                     </div>
                 </div>
             </div>
@@ -564,15 +510,6 @@
     </div>
 </div>
 
-<div id="inactivityWarningModal" class="hidden fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center">
-    <div class="bg-[#0d1728] border border-orange-500/30 rounded-2xl p-8 max-w-md w-[90%] text-center shadow-2xl shadow-orange-500/10">
-        <i class="fa-solid fa-triangle-exclamation text-5xl text-orange-400 mb-4"></i>
-        <h3 class="text-2xl font-bold mb-2 text-white">Are you still there?</h3>
-        <p class="text-slate-300 mb-6">You have been inactive for a while. You will be automatically logged out in <strong>5 minutes</strong> to protect your account.</p>
-        <button onclick="window.resetInactivityTimer()" class="w-full bg-orange-500 hover:bg-orange-600 transition py-3 rounded-xl font-bold text-lg text-white">Keep Me Logged In</button>
-    </div>
-</div>
-
 <div id="tyrenModal" class="profile-modal">
     <div class="profile-modal-content">
         <button class="close-profile-btn" onclick="closeTutorProfile('tyren')"><i class="fa-solid fa-xmark"></i></button>
@@ -611,10 +548,25 @@
 <script>
     // LESSON PACKAGES DATA
     const lessonPackages = {
-        'single': { name: 'Single Lesson', price: 175, duration: '1h 15m', sessions: 1, type: 'one-time' },
-        'monthly': { name: 'Monthly Package', price: 595, duration: '1h 15m x 4 weeks', sessions: 4, type: 'weekly-recurring' },
-        'bootcamp': { name: 'Bootcamp', price: 250, duration: '2h 30m x 2 days', sessions: 2, type: 'intensive-weekend' },
-        'group': { name: 'Group Lesson', price: 400, duration: '1h 15m x 4 weeks', sessions: 4, type: 'weekly-recurring' }
+        'single': { name: 'Single Lesson', price: 175, duration: '1h 15m', sessions: 1 },
+        'monthly': { name: 'Monthly Package', price: 595, duration: '1h 15m x 4 weeks', sessions: 4 },
+        'bootcamp': { name: 'Bootcamp', price: 250, duration: '2h 30m x 2 days', sessions: 2 },
+        'group': { name: 'Group Lesson', price: 400, duration: '1h 15m x 4 weeks', sessions: 4 }
+    };
+
+    const tutors = ['Tyren Majola', 'Thapelo', 'Mike', 'Lilonke Breakfast', 'Fulufhelo'];
+
+    // BOOKING DATA
+    let bookingData = {
+        packageType: null,
+        tutor: null,
+        date: null,
+        timeSlot: null,
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        notes: ''
     };
 
     // TIME SLOT GENERATION
@@ -626,7 +578,7 @@
         const breakDuration = 15;
         let currentTime = startHour * 60;
         const endTime = endHour * 60;
-        while (currentTime + (isBootcamp ? slotDuration * 2 : slotDuration) <= endTime) {
+        while (currentTime + slotDuration <= endTime) {
             const hours = Math.floor(currentTime / 60);
             const mins = currentTime % 60;
             const endHours = Math.floor((currentTime + slotDuration) / 60);
@@ -638,36 +590,12 @@
         return slots;
     }
 
-    // UTILITIES
-    function escapeHTML(str) {
-        if(!str) return '';
-        return String(str).replace(/[&<>'"]/g, tag => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-        }[tag]));
-    }
-
-    function safeJSONParse(key, fallback) {
-        try { return JSON.parse(localStorage.getItem(key)) || fallback; }
-        catch(e) { console.warn(`Failed to parse ${key}`, e); return fallback; }
-    }
-
-    // BOOKING DATA
-    let bookingData = {
-        packageType: null,
-        academicLevel: null,
-        modules: [],
-        tutor: null,
-        lessonType: null,
-        venue: null,
-        date: null,
-        timeSlot: null,
-        notes: null
-    };
-
     // INITIALIZE BOOKING
     function initializeBooking() {
         renderPackageOptions();
-        setupBookingStepNavigation();
+        renderTutorOptions();
+        setupBookingNavigation();
+        setupDateValidation();
     }
 
     function renderPackageOptions() {
@@ -679,59 +607,99 @@
             btn.type = 'button';
             btn.className = 'booking-choice';
             btn.innerHTML = `<strong>${pkg.name}</strong><br><span class="text-sm text-slate-400">R${pkg.price}</span>`;
-            btn.onclick = () => selectPackage(key);
+            btn.onclick = () => {
+                bookingData.packageType = key;
+                document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
+                btn.classList.add('active');
+                updateBookingTotal();
+            };
             container.appendChild(btn);
         }
     }
 
-    function selectPackage(packageKey) {
-        bookingData.packageType = packageKey;
-        document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
-        event.target.closest('.booking-choice').classList.add('active');
+    function renderTutorOptions() {
+        const container = document.getElementById('tutorOptions');
+        if (!container) return;
+        container.innerHTML = '';
+        tutors.forEach(tutor => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'booking-choice w-full';
+            btn.textContent = tutor;
+            btn.onclick = () => {
+                bookingData.tutor = tutor;
+                document.querySelectorAll('#tutorOptions .booking-choice').forEach(el => el.classList.remove('active'));
+                btn.classList.add('active');
+            };
+            container.appendChild(btn);
+        });
     }
 
-    function setupBookingStepNavigation() {
+    function setupBookingNavigation() {
         document.querySelectorAll('.booking-next').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const nextStep = btn.getAttribute('data-next-step');
+            btn.addEventListener('click', () => {
                 const currentStep = document.querySelector('.booking-step:not(.hidden)').getAttribute('data-booking-step');
                 if (validateStep(currentStep)) {
+                    const nextStep = btn.getAttribute('data-next-step');
                     moveToStep(nextStep);
                 }
             });
         });
+
         document.querySelectorAll('.booking-prev').forEach(btn => {
             btn.addEventListener('click', () => {
                 const prevStep = btn.getAttribute('data-prev-step');
                 moveToStep(prevStep);
             });
         });
-        const clearBtn = document.getElementById('clearBookingStep1');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                bookingData.packageType = null;
-                document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
-            });
-        }
+
+        document.getElementById('clearBookingStep1')?.addEventListener('click', () => {
+            bookingData.packageType = null;
+            document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
+        });
+
+        document.getElementById('submitBookingRequest')?.addEventListener('click', submitBooking);
     }
 
     function moveToStep(stepNumber) {
         document.querySelectorAll('.booking-step').forEach(step => step.classList.add('hidden'));
         document.querySelectorAll('.booking-step-tab').forEach(tab => tab.classList.remove('active'));
-        const step = document.querySelector(`[data-booking-step="${stepNumber}"]`);
-        const tab = document.querySelector(`[data-step-tab="${stepNumber}"]`);
-        if (step) step.classList.remove('hidden');
-        if (tab) tab.classList.add('active');
-        if (stepNumber === '4') updateTimeSlots();
+        document.querySelector(`[data-booking-step="${stepNumber}"]`).classList.remove('hidden');
+        document.querySelector(`[data-step-tab="${stepNumber}"]`).classList.add('active');
+        
+        if (stepNumber === '3') updateTimeSlots();
         if (stepNumber === '5') generateBookingSummary();
     }
 
     function validateStep(stepNumber) {
         if (stepNumber === '1') return bookingData.packageType !== null;
-        if (stepNumber === '2') return bookingData.academicLevel !== null && bookingData.modules.length > 0;
-        if (stepNumber === '3') return bookingData.tutor !== null && document.getElementById('bookingLessonType').value && document.getElementById('bookingVenue').value;
-        if (stepNumber === '4') return bookingData.date !== null && bookingData.timeSlot !== null;
+        if (stepNumber === '2') return bookingData.tutor !== null;
+        if (stepNumber === '3') return bookingData.date !== null && bookingData.timeSlot !== null;
+        if (stepNumber === '4') {
+            const fn = document.getElementById('bookingFirstName').value.trim();
+            const ln = document.getElementById('bookingLastName').value.trim();
+            const em = document.getElementById('bookingEmail').value.trim();
+            const ph = document.getElementById('bookingPhone').value.trim();
+            if (!fn || !ln || !em || !ph) {
+                alert('Please fill in all required fields');
+                return false;
+            }
+            return true;
+        }
         return true;
+    }
+
+    function setupDateValidation() {
+        document.getElementById('bookingDate')?.addEventListener('change', (e) => {
+            const date = new Date(e.target.value);
+            const day = date.getDay();
+            if (day !== 0 && day !== 6) {
+                alert('Lessons are only available on weekends (Saturday & Sunday)');
+                e.target.value = '';
+            } else {
+                updateTimeSlots();
+            }
+        });
     }
 
     function updateTimeSlots() {
@@ -739,82 +707,103 @@
         if (!dateInput.value) {
             const nextSaturday = getNextWeekend();
             dateInput.value = nextSaturday;
-            updateNextWeekendHint(nextSaturday);
         }
-        const selectedDate = new Date(dateInput.value);
-        const dayOfWeek = selectedDate.getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        if (!isWeekend) {
-            alert('Lessons are only available on weekends (Saturday & Sunday) unless approved by admin.');
-            dateInput.value = '';
-            return;
-        }
-        const isBootcamp = bookingData.packageType === 'bootcamp';
-        const slots = generateTimeSlots(isBootcamp);
-        const slotsContainer = document.getElementById('timeSlotOptions');
-        slotsContainer.innerHTML = '';
+        const slots = generateTimeSlots(bookingData.packageType === 'bootcamp');
+        const container = document.getElementById('timeSlotOptions');
+        container.innerHTML = '';
         slots.forEach(slot => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'time-slot';
             btn.textContent = slot;
-            btn.onclick = () => selectTimeSlot(slot, btn);
-            slotsContainer.appendChild(btn);
+            btn.onclick = () => {
+                bookingData.timeSlot = slot;
+                document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('active'));
+                btn.classList.add('active');
+            };
+            container.appendChild(btn);
         });
-    }
-
-    function selectTimeSlot(slot, element) {
-        bookingData.timeSlot = slot;
-        document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
     }
 
     function getNextWeekend() {
         const today = new Date();
-        const dayOfWeek = today.getDay();
-        let daysUntilSaturday;
-        if (dayOfWeek === 0) daysUntilSaturday = 6;
-        else if (dayOfWeek === 6) daysUntilSaturday = 1;
-        else daysUntilSaturday = 6 - dayOfWeek;
-        const nextSaturday = new Date(today);
-        nextSaturday.setDate(today.getDate() + daysUntilSaturday);
-        return nextSaturday.toISOString().split('T')[0];
-    }
-
-    function updateNextWeekendHint(dateStr) {
-        const date = new Date(dateStr);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-        const hintEl = document.getElementById('nextWeekendHint');
-        if (hintEl) hintEl.textContent = `Selected: ${dayName}, ${date.toLocaleDateString()}`;
+        const day = today.getDay();
+        let daysUntilSaturday = day === 0 ? 6 : day === 6 ? 1 : 6 - day;
+        const next = new Date(today);
+        next.setDate(today.getDate() + daysUntilSaturday);
+        return next.toISOString().split('T')[0];
     }
 
     function generateBookingSummary() {
         const pkg = lessonPackages[bookingData.packageType];
-        if (!pkg) return;
+        bookingData.firstName = document.getElementById('bookingFirstName').value;
+        bookingData.lastName = document.getElementById('bookingLastName').value;
+        bookingData.email = document.getElementById('bookingEmail').value;
+        bookingData.phone = document.getElementById('bookingPhone').value;
+        bookingData.notes = document.getElementById('bookingNotes').value;
+        
         const summary = `
             <div><span class="text-slate-400">Package:</span> <strong>${pkg.name}</strong></div>
             <div><span class="text-slate-400">Price:</span> <strong>R${pkg.price}</strong></div>
-            <div><span class="text-slate-400">Tutor:</span> <strong>${bookingData.tutor || 'TBD'}</strong></div>
-            <div><span class="text-slate-400">Lesson Type:</span> <strong>${document.getElementById('bookingLessonType').value || 'TBD'}</strong></div>
+            <div><span class="text-slate-400">Tutor:</span> <strong>${bookingData.tutor}</strong></div>
             <div><span class="text-slate-400">Date & Time:</span> <strong>${bookingData.date} at ${bookingData.timeSlot}</strong></div>
+            <div><span class="text-slate-400">Name:</span> <strong>${bookingData.firstName} ${bookingData.lastName}</strong></div>
         `;
         document.getElementById('bookingSummary').innerHTML = summary;
-        document.getElementById('bookingTotal').textContent = `R${pkg.price}`;
+        updateBookingTotal();
     }
 
+    function updateBookingTotal() {
+        const pkg = lessonPackages[bookingData.packageType];
+        if (pkg) {
+            document.getElementById('bookingTotal').textContent = `R${pkg.price}`;
+        }
+    }
+
+    function submitBooking() {
+        console.log('Booking submitted:', bookingData);
+        alert('Booking request submitted! We will contact you shortly via WhatsApp or Email.');
+        moveToStep('1');
+        document.querySelectorAll('.booking-choice').forEach(el => el.classList.remove('active'));
+        bookingData = { packageType: null, tutor: null, date: null, timeSlot: null, firstName: '', lastName: '', email: '', phone: '', notes: '' };
+    }
+
+    // AUTH SYSTEM
+    let authMode = 'login';
+    window.openAuthModal = function(mode) {
+        authMode = mode;
+        document.getElementById('authTitle').textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
+        document.getElementById('authSubtitle').textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
+        document.getElementById('authSubmit').textContent = mode === 'signup' ? 'Sign Up' : 'Login';
+        document.getElementById('authMessage').classList.add('hidden');
+        document.getElementById('authForm').reset();
+        document.getElementById('authModal').classList.add('active');
+    };
+    window.closeAuthModal = function() {
+        document.getElementById('authModal').classList.remove('active');
+    };
+
+    document.getElementById('authForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        console.log(`${authMode} attempt:`, email);
+        alert(`${authMode === 'signup' ? 'Account created' : 'Logged in'} successfully!`);
+        closeAuthModal();
+    });
+
     // THEME TOGGLE
-    const themeToggle = document.getElementById('themeToggle');
     let isDarkMode = true;
-    themeToggle.addEventListener('click', () => {
+    document.getElementById('themeToggle')?.addEventListener('click', () => {
         isDarkMode = !isDarkMode;
         document.body.classList.toggle('light-mode');
-        themeToggle.innerHTML = isDarkMode ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        document.getElementById('themeToggle').innerHTML = isDarkMode ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
     });
 
     // MOBILE MENU
     const menuBtn = document.getElementById('menuBtn');
     const mobileMenu = document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click', () => {
+    menuBtn?.addEventListener('click', () => {
         mobileMenu.classList.toggle('active');
         menuBtn.querySelector('i').className = mobileMenu.classList.contains('active') ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
     });
@@ -833,21 +822,19 @@
     }
     let testimonialInterval = setInterval(autoTestimonial, 6000);
     window.changeTestimonial = function(index, resetTimer = true) {
-        testimonials[currentTestimonial].classList.add('hidden');
-        testimonials[currentTestimonial].classList.remove('active');
-        testimonials[index].classList.remove('hidden');
-        testimonials[index].classList.add('active');
-        document.querySelectorAll('[onclick^="changeTestimonial"]').forEach((dot, i) => {
+        if (testimonials[currentTestimonial]) testimonials[currentTestimonial].classList.add('hidden');
+        if (testimonials[index]) testimonials[index].classList.remove('hidden');
+        const dots = document.querySelectorAll('[onclick^="changeTestimonial"]');
+        dots.forEach((dot, i) => {
+            dot.classList.remove('bg-orange-400');
+            dot.classList.add('bg-white/30');
             if (i === index) {
-                dot.classList.remove('bg-white/30');
                 dot.classList.add('bg-orange-400');
-            } else {
-                dot.classList.remove('bg-orange-400');
-                dot.classList.add('bg-white/30');
+                dot.classList.remove('bg-white/30');
             }
         });
         currentTestimonial = index;
-        if(resetTimer) {
+        if (resetTimer) {
             clearInterval(testimonialInterval);
             testimonialInterval = setInterval(autoTestimonial, 6000);
         }
@@ -870,31 +857,23 @@
     };
     document.querySelectorAll('.profile-modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeTutorProfile(modal.id.replace('Modal', ''));
+            if (e.target === modal) {
+                const tutorName = modal.id.replace('Modal', '');
+                closeTutorProfile(tutorName);
+            }
         });
     });
 
-    // AUTH MODAL
-    let authMode = 'login';
-    window.openAuthModal = function(mode) {
-        authMode = mode;
-        document.getElementById('authTitle').textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
-        document.getElementById('authSubtitle').textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
-        document.getElementById('authSubmit').textContent = mode === 'signup' ? 'Sign Up' : 'Login';
-        document.getElementById('authMessage').classList.add('hidden');
-        document.getElementById('authForm').reset();
-        document.getElementById('authModal').classList.add('active');
-    };
-    window.closeAuthModal = function() {
-        document.getElementById('authModal').classList.remove('active');
-    };
-
-    // DASHBOARD FUNCTIONS
+    // DASHBOARD
     window.toggleDashSidebar = function() {
         const sidebar = document.getElementById('dashSidebar');
         const overlay = document.getElementById('dashSidebarOverlay');
         sidebar.classList.toggle('-translate-x-full');
-        if(sidebar.classList.contains('-translate-x-full')){ overlay.classList.add('hidden'); } else { overlay.classList.remove('hidden'); }
+        if (sidebar.classList.contains('-translate-x-full')) {
+            overlay.classList.add('hidden');
+        } else {
+            overlay.classList.remove('hidden');
+        }
     };
     window.goToHome = function() {
         localStorage.setItem('isDashboardOpen', 'false');
@@ -904,8 +883,6 @@
         window.scrollTo(0, 0);
     };
     window.logoutUser = function() {
-        localStorage.removeItem('activeDashView');
-        localStorage.setItem('isDashboardOpen', 'false');
         goToHome();
     };
 
