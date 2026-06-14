@@ -1219,22 +1219,27 @@
     };
 
     // --- FULL ORIGINAL BOOKING SYSTEM LOGIC ---
-    const academicLevels = ['High School', 'BAcc 1st Year', 'BCom 1st Year', '2nd Year'];
-    const modulesByLevel = { 'High School': ['Economics', 'Maths', 'Physics', 'Accounting'], 'BAcc 1st Year': ['Accounting (EFIN1/FACC1)'], 'BCom 1st Year': ['Accounting', 'Commercial Law', 'Economics'], '2nd Year': ['Tax (Tax1/2)', 'Accounting (EFIN2/FACC2)', 'Managerial/Cost & Financial Management (MFM/CFM)'] };
-    const bookingTutors = [{ id: 'tyren', name: 'Tyren K.M', rating: 4.9, modules: ['Economics', 'Accounting', 'Tax', 'Commercial Law'] }, { id: 'lilonke', name: 'Lilonke Breakfast', rating: 4.95, modules: ['Accounting', 'Economics'] }, { id: 'fulufhelo', name: 'Fulufhelo Masevhe', rating: 4.85, modules: ['Maths', 'Accounting', 'Tax'] }, { id: 'thapelo', name: 'Thapelo', rating: 4.8, modules: ['Commerce', 'Business Studies', 'Economics'] }, { id: 'mike', name: 'Mike', rating: 4.8, modules: ['Academic Mentorship', 'Commerce'] }];
-    const onlinePlatforms = ['Zoom', 'Google Meet', 'Jitsi Meet'], inPersonVenues = ['UFS Campus', 'Student Home', "Tutor's Office", 'Library', 'Coffee Shop'], timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'];
-    const bookingRatePerTutor = 150;
-    const bookingState = { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' };
-
-    function bookingEls() { return { app: document.getElementById('bookingApp'), notice: document.getElementById('bookingAuthNotice'), message: document.getElementById('bookingMessage'), levels: document.getElementById('academicLevelOptions'), moduleArea: document.getElementById('moduleArea'), modules: document.getElementById('moduleOptions'), tutors: document.getElementById('tutorOptions'), lessonType: document.getElementById('bookingLessonType'), venue: document.getElementById('bookingVenue'), venueLabel: document.getElementById('bookingVenueLabel'), duration: document.getElementById('bookingDuration'), date: document.getElementById('bookingDate'), nextWeekendHint: document.getElementById('nextWeekendHint'), times: document.getElementById('timeSlotOptions'), notes: document.getElementById('bookingNotes'), summary: document.getElementById('bookingSummary'), total: document.getElementById('bookingTotal'), firstName: document.getElementById('bookingFirstName'), lastName: document.getElementById('bookingLastName'), email: document.getElementById('bookingEmail'), phone: document.getElementById('bookingPhone'), idNumber: document.getElementById('bookingIdNumber') }; }
-    function showBookingMessage(message, type = 'error') { const el = bookingEls().message; if (!el) return; el.textContent = message; el.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); el.classList.add('border'); if (type === 'success') el.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); else el.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30'); }
-    function clearBookingMessage() { const el = bookingEls().message; if (el) el.classList.add('hidden'); }
-    function getBookedSlots() { return safeJSONParse('genZTutorsBookedSlots', {}); }
-    function saveBookedSlot(date, time) { const bookedSlots = getBookedSlots(); bookedSlots[`${date}|${time}`] = true; localStorage.setItem('genZTutorsBookedSlots', JSON.stringify(bookedSlots)); }
-    function isBookedSlot(time) { return Boolean(getBookedSlots()[`${bookingState.date}|${time}`]); }
-    function isWeekend(dateValue) { if (!dateValue) return false; const [year, month, day] = dateValue.split('-').map(Number); const date = new Date(year, month - 1, day); return date.getDay() === 0 || date.getDay() === 6; }
-    function getNextWeekendDate() { const date = new Date(); date.setHours(0, 0, 0, 0); while (date.getDay() !== 0 && date.getDay() !== 6) date.setDate(date.getDate() + 1); return date.toISOString().split('T')[0]; }
+   const onlinePlatforms = ['Zoom', 'Google Meet', 'Jitsi Meet'], inPersonVenues = ['UFS Campus', 'Student Home', "Tutor's Office", 'Library', 'Coffee Shop'];
+    // 1hr 15min slots with 15min breaks (Total 1.5hr blocks from 08:00 to 17:00)
+    const timeSlots = ['08:00', '09:30', '11:00', '12:30', '14:00', '15:30'];
     
+    // New Pricing Logic
+    const packagePrices = { single: 175, monthly: 595, bootcamp: 250, group: 400 };
+    const singleLessonRate = 175; // Rate for extra time
+    
+    // Updated State Object
+    const bookingState = { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', package: '', extraTimeSlots: 0, date: '', time: '', notes: '' };
+
+    function bookingEls() { return { 
+        app: document.getElementById('bookingApp'), notice: document.getElementById('bookingAuthNotice'), message: document.getElementById('bookingMessage'), 
+        levels: document.getElementById('academicLevelOptions'), moduleArea: document.getElementById('moduleArea'), modules: document.getElementById('moduleOptions'), 
+        tutors: document.getElementById('tutorOptions'), lessonType: document.getElementById('bookingLessonType'), venue: document.getElementById('bookingVenue'), 
+        venueLabel: document.getElementById('bookingVenueLabel'), package: document.getElementById('bookingPackage'), extraTime: document.getElementById('bookingExtraTime'), 
+        date: document.getElementById('bookingDate'), nextWeekendHint: document.getElementById('nextWeekendHint'), times: document.getElementById('timeSlotOptions'), 
+        notes: document.getElementById('bookingNotes'), summary: document.getElementById('bookingSummary'), total: document.getElementById('bookingTotal'), 
+        firstName: document.getElementById('bookingFirstName'), lastName: document.getElementById('bookingLastName'), email: document.getElementById('bookingEmail'), 
+        phone: document.getElementById('bookingPhone'), idNumber: document.getElementById('bookingIdNumber') 
+    }; }
     function setBookingStep(step) {
         bookingState.step = step;
         document.querySelectorAll('[data-booking-step]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.bookingStep !== String(step)));
