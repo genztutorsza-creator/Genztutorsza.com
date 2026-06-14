@@ -1288,6 +1288,16 @@ function isBookedSlot(slot) {
     function renderTimeSlots() { const els = bookingEls(); if (!els.times) return; els.times.innerHTML = timeSlots.map(slot => { const booked = isBookedSlot(slot); const active = bookingState.time === slot; return `<button type="button" class="time-slot rounded-xl px-3 py-3 font-semibold transition ${booked ? 'booked' : active ? 'bg-orange-500 text-white' : 'bg-white/10 hover:bg-white/15 text-white'}" data-time-slot="${slot}" ${booked ? 'disabled' : ''}>${slot}</button>`; }).join(''); }
     function renderBookingSummary() { const els = bookingEls(); const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name); const rows = [['Academic Level', bookingState.academicLevel], ['Modules', bookingState.modules.join(', ')], ['Tutors', tutorNames.join(', ')], ['Lesson Type', bookingState.lessonType], ['Platform / Venue', bookingState.venue], ['Duration', bookingState.duration], ['Date & Time', `${bookingState.date} at ${bookingState.time}`], ['Notes', escapeHTML(bookingState.notes) || 'None']]; els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join(''); els.total.textContent = `R${bookingState.tutors.length * bookingRatePerTutor}`; if (currentUserData && !els.email.value) els.email.value = currentUserData.email; }
     function resetBooking() { Object.assign(bookingState, { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' }); ['bookingLessonType', 'bookingVenue', 'bookingDuration', 'bookingDate', 'bookingNotes', 'bookingFirstName', 'bookingLastName', 'bookingEmail', 'bookingPhone', 'bookingIdNumber'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); renderBookingAll(); setBookingStep(1); }
+   // Helper function to calculate the next Saturday
+function getNextWeekendDate() {
+    const today = new Date();
+    const resultDate = new Date(today);
+    // Calculate days until next Saturday (6)
+    const dayOfWeek = today.getDay();
+    const steps = (6 - dayOfWeek + 7) % 7 || 7; 
+    resultDate.setDate(today.getDate() + steps);
+    return resultDate.toISOString().split('T')[0];
+}
     function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
 
     async function saveBookingToFirebase(booking) {
