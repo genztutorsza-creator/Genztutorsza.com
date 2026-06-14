@@ -2,22 +2,11 @@
 <html lang="en">
 <head>
 
-    <script>
+     <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./coop-sw.js')
       .then(reg => {
-        // Check if there's an update available
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available - notify user or reload
-              console.log('New service worker available');
-            }
-          });
-        });
-        
-        // Reload only if service worker just became the controller
+        // If the service worker just took control, reload once to apply headers
         if (!navigator.serviceWorker.controller) {
           window.location.reload();
         }
@@ -38,19 +27,19 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #08111f; color: white; scroll-behavior: smooth; overflow-x: hidden; }
-        .hero-bg { background: linear-gradient(rgba(6,12,22,0.85), rgba(6,12,22,0.92)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23060c16" width="1200" height="600"/></svg>'); background-size: cover; background-position: center; }
+        .hero-bg { background: linear-gradient(rgba(6,12,22,0.85), rgba(6,12,22,0.92)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23060c16" width="1200" height="600"/></svg>'); background-size: cover; }
         .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); }
         .gradient-text { background: linear-gradient(90deg, #38bdf8, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .card-hover:hover { transform: translateY(-6px); transition: 0.3s ease; }
         .section-title { font-size: 2.3rem; font-weight: 800; margin-bottom: 12px; }
-        .image-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%); display: flex; align-items: center; justify-content: center; border-radius: 1.5rem; overflow: hidden; position: relative; }
+        .image-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%); display: flex; align-items: center; justify-content: center; }
         .image-placeholder img { width: 100%; height: 100%; object-fit: contain; padding: 1rem; }
         .navbar-logo-placeholder { width: 100%; height: 100%; background: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0.25rem; }
         .navbar-logo-placeholder img { width: 100%; height: 100%; object-fit: contain; }
         .hero-image-placeholder { width: 100%; height: 100%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; border-radius: 1.5rem; }
         .hero-image-placeholder img { width: 90%; height: 90%; object-fit: contain; }
         .tutor-card-link { cursor: pointer; text-decoration: none; color: inherit; }
-        .tutor-profile-image { width: 100%; height: 400px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%); display: flex; align-items: center; justify-content: center; border-radius: 1.5rem; overflow: hidden; margin-bottom: 1.5rem; }
+        .tutor-profile-image { width: 100%; height: 400px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%); display: flex; align-items: center; justify-content: center; }
         .tutor-profile-image img { width: 100%; height: 100%; object-fit: cover; }
         .tutor-role { font-size: 1.1rem; font-weight: 600; margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem; }
         
@@ -76,17 +65,32 @@
         .profile-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .profile-modal.active { display: flex; }
         .profile-modal-content { background: #0d1728; border-radius: 2rem; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
-        .close-profile-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.1); border: none; color: white; font-size: 1.5rem; width: 3rem; height: 3rem; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1001; }
+        .close-profile-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.1); border: none; color: white; font-size: 1.5rem; width: 3rem; height: 3rem; border-radius: 50%; cursor: pointer; }
         .close-profile-btn:hover { background: rgba(255,255,255,0.2); }
         
         /* BOOKING SYSTEM */
         .booking-step-tab { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09); color: #94a3b8; border-radius: 0.75rem; padding: 0.75rem 0.5rem; }
         .booking-step-tab.active { background: #f97316; color: white; border-color: #fb923c; }
-        .booking-input { width: 100%; background: #09111d; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem 1.25rem; color: white; outline: none; transition: border-color 0.2s;}
+        .booking-input { width: 100%; background: #09111d; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem 1.25rem; color: white; outline: none; transition: border-color 0.2s; }
         .booking-input:focus { outline: 2px solid rgba(56,189,248,0.45); border-color: rgba(56,189,248,0.7); }
         .booking-choice { border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); border-radius: 0.875rem; padding: 1rem; cursor: pointer; transition: 0.2s ease; }
         .booking-choice.active { border-color: #38bdf8; background: rgba(56,189,248,0.15); }
+        .time-slot { border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 0.75rem; cursor: pointer; transition: 0.2s ease; text-align: center; font-size: 0.875rem; }
+        .time-slot.active { border-color: #38bdf8; background: rgba(56,189,248,0.15); font-weight: 600; }
         .time-slot.booked { background: rgba(239,68,68,0.2); color: #fca5a5; cursor: not-allowed; opacity: 0.65; }
+        
+        /* LESSON PACKAGES DISPLAY */
+        .package-card { border: 2px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 2rem; text-align: center; transition: all 0.3s ease; }
+        .package-card:hover { border-color: #f97316; transform: translateY(-4px); }
+        .package-card.popular { border-color: #f97316; background: rgba(249, 115, 22, 0.05); }
+        .package-price { font-size: 2.5rem; font-weight: 800; color: #f97316; margin: 1rem 0; }
+        .package-subtext { font-size: 0.875rem; color: #94a3b8; }
+        
+        /* COMPARISON TABLE */
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th, .comparison-table td { padding: 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .comparison-table th { background: rgba(56, 189, 248, 0.1); font-weight: 700; }
+        .comparison-table tr:hover { background: rgba(255,255,255,0.02); }
         
         /* DASHBOARD & CHAT */
         .dash-sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
@@ -95,12 +99,12 @@
         .dash-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 1.5rem; padding: 1.5rem; }
         .chat-message-sent { background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 1rem 1rem 0 1rem; padding: 0.75rem 1rem; margin-left: auto; max-width: 80%; }
         .chat-message-received { background: #09111d; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem 1rem 1rem 0; padding: 0.75rem 1rem; max-width: 80%; }
-        .chat-attachment { display: block; margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 0.5rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; color: #38bdf8; cursor: pointer; }
+        .chat-attachment { display: block; margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 0.5rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; }
         .chat-attachment:hover { background: rgba(0,0,0,0.5); }
         
         /* TOAST NOTIFICATIONS */
         #toastContainer { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: rgba(16, 185, 129, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.4); color: white; padding: 1rem 1.5rem; border-radius: 1rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); animation: slideDown 0.3s ease forwards; }
+        .toast { background: rgba(16, 185, 129, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.4); color: white; padding: 1rem 1.5rem; border-radius: 1rem; font-weight: 600; animation: slideDown 0.3s ease; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
     
@@ -130,7 +134,7 @@
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
             <a href="#home" class="hover:text-orange-400">Home</a>
             <a href="#about" class="hover:text-orange-400">About</a>
-            <a href="#services" class="hover:text-orange-400">Services</a>
+            <a href="#pricing" class="hover:text-orange-400">Pricing</a>
             <a href="#tutors" class="hover:text-orange-400">Tutors</a>
             <a href="#contact" class="hover:text-orange-400">Contact</a>
         </nav>
@@ -145,7 +149,7 @@
         <div class="flex flex-col px-6 py-6 gap-5 text-lg font-medium">
             <a href="#home" class="drawer-link hover:text-orange-400">Home</a>
             <a href="#about" class="drawer-link hover:text-orange-400">About</a>
-            <a href="#services" class="drawer-link hover:text-orange-400">Services</a>
+            <a href="#pricing" class="drawer-link hover:text-orange-400">Pricing</a>
             <a href="#tutors" class="drawer-link hover:text-orange-400">Tutors</a>
             <a href="#contact" class="drawer-link hover:text-orange-400">Contact</a>
             <div class="drawer-link grid grid-cols-2 gap-3 mt-2" id="mobileNavAuthArea">
@@ -161,7 +165,7 @@
     
     <div id="dashSidebarOverlay" onclick="toggleDashSidebar()" class="fixed inset-0 bg-black/60 z-[55] hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-    <aside id="dashSidebar" class="w-64 bg-[#0d1728] border-r border-white/10 flex flex-col h-full fixed md:relative z-[60] transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+    <aside id="dashSidebar" class="w-64 bg-[#0d1728] border-r border-white/10 flex flex-col h-full fixed md:relative z-[60] transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         <div class="p-6 border-b border-white/10 flex justify-between items-center">
             <div>
                 <div class="flex items-center gap-3 mb-2">
@@ -198,24 +202,6 @@
     </main>
 </div>
 
-<div id="filePreviewModal" class="hidden fixed inset-0 z-[1100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#0d1728] border border-white/10 rounded-2xl p-6 max-w-2xl w-full flex flex-col max-h-[90vh]">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Preview & Edit Attachment</h3>
-            <button onclick="closeFilePreview()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm text-slate-400 mb-1">File Name</label>
-            <input type="text" id="previewFileName" class="booking-input py-2 text-sm">
-        </div>
-        <div id="previewContentArea" class="flex-1 overflow-y-auto bg-[#09111d] rounded-xl border border-white/10 p-4 mb-4 min-h-[200px]"></div>
-        <div class="flex justify-end gap-3 mt-auto">
-            <button onclick="closeFilePreview()" class="border border-white/20 hover:bg-white/10 px-5 py-2 rounded-xl font-semibold transition">Cancel</button>
-            <button onclick="attachPreparedFile()" class="bg-sky-500 hover:bg-sky-600 px-5 py-2 rounded-xl font-bold transition">Save & Attach</button>
-        </div>
-    </div>
-</div>
-
 <div id="landingPageContent" class="transition-opacity duration-300">
     
     <section id="home" class="hero-bg min-h-screen flex items-center pt-20">
@@ -223,7 +209,7 @@
             <div>
                 <span class="bg-sky-500/20 border border-sky-400/20 text-sky-300 px-4 py-2 rounded-full text-sm">Academic Excellence Redefined</span>
                 <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mt-6 mb-6">Learn Smarter With <span class="gradient-text">Gen Z Tutors</span></h1>
-                <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">We help university students master Accounting, Economics, Financial Management, Taxation, and Commerce modules through relatable, high-performance tutoring.</p>
+                <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">We help university students master Accounting, Economics, Financial Management, Taxation, and Commerce modules through innovative tutoring.</p>
                 <div class="flex flex-wrap gap-4">
                     <a href="#tutors" class="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-xl font-semibold transition">Meet The Tutors</a>
                     <a href="https://wa.me/27679256394" target="_blank" class="border border-white/20 hover:bg-white/10 px-8 py-4 rounded-xl font-semibold transition">WhatsApp Us</a>
@@ -238,77 +224,172 @@
     <section id="about" class="py-24">
         <div class="max-w-6xl mx-auto px-6 text-center">
             <h2 class="section-title">About <span class="gradient-text">Gen Z Tutors</span></h2>
-            <p class="text-slate-300 max-w-3xl mx-auto leading-relaxed text-lg mt-6">Gen Z Tutors is a student-centered tutoring organization focused on helping learners unlock confidence, improve grades, and fully understand their academic modules. Our tutoring approach blends modern learning techniques, mentorship, and real-life academic experience.</p>
+            <p class="text-slate-300 max-w-3xl mx-auto leading-relaxed text-lg mt-6">Gen Z Tutors is a student-centered tutoring organization focused on helping learners unlock confidence, improve grades, and develop mastery in their subjects.</p>
             <div class="grid md:grid-cols-3 gap-8 mt-16">
-                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-book-open text-4xl text-sky-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Quality Learning</h3><p class="text-slate-300">Simplifying difficult concepts into understandable lessons.</p></div>
-                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-user-graduate text-4xl text-orange-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Student Focused</h3><p class="text-slate-300">We build confidence and help students feel capable academically.</p></div>
-                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-chart-line text-4xl text-emerald-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Results Driven</h3><p class="text-slate-300">Structured tutoring aimed at distinctions and long-term understanding.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-book-open text-4xl text-sky-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Quality Learning</h3><p class="text-slate-300">Expert-led sessions tailored to your learning style and pace.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-user-graduate text-4xl text-orange-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Student Focused</h3><p class="text-slate-300">Your success is our priority. Every tutor cares about your growth.</p></div>
+                <div class="glass p-8 rounded-2xl card-hover"><i class="fa-solid fa-chart-line text-4xl text-emerald-400 mb-5"></i><h3 class="font-bold text-xl mb-3">Results Driven</h3><p class="text-slate-300">Track your progress and achieve your academic goals with confidence.</p></div>
             </div>
         </div>
     </section>
 
-    <section id="services" class="py-24 bg-[#0d1728]">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16"><h2 class="section-title">Our Services</h2><p class="text-slate-300 max-w-2xl mx-auto">Specialized academic support built for university students.</p></div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-2xl card-hover"><h3 class="font-bold text-2xl mb-4">Accounting</h3><p class="text-slate-300 leading-relaxed">Financial Accounting, IFRS, IAS frameworks and reporting standards.</p></div>
-                <div class="glass p-8 rounded-2xl card-hover"><h3 class="font-bold text-2xl mb-4">Economics & Finance</h3><p class="text-slate-300 leading-relaxed">Financial management, market structures and economic systems.</p></div>
-                <div class="glass p-8 rounded-2xl card-hover"><h3 class="font-bold text-2xl mb-4">Taxation</h3><p class="text-slate-300 leading-relaxed">Corporate taxation systems and practical commerce applications.</p></div>
+    <section id="pricing" class="py-24 bg-[#0d1728]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="section-title">Lesson Packages</h2>
+                <p class="text-slate-300 max-w-2xl mx-auto">Choose the perfect package for your learning needs. Need more time? Add single lessons at R175 each.</p>
             </div>
-        </div>
-    </section>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <!-- Single Lesson -->
+                <div class="package-card">
+                    <h3 class="text-2xl font-bold mb-2">Single Lesson</h3>
+                    <p class="package-subtext mb-4">Perfect for trying out a tutor</p>
+                    <div class="package-price">R175</div>
+                    <p class="text-sm text-slate-300 mb-6">1hr 15mins<br><span class="text-xs text-slate-400">One-time</span></p>
+                    <ul class="text-sm text-slate-300 space-y-2 mb-6 text-left">
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>1 hour 15 min session</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Expert tutor guidance</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Flexible scheduling</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Weekend availability</li>
+                    </ul>
+                    <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
+                </div>
 
-    <section id="testimonials" class="py-24 bg-[#08111f] overflow-hidden">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-            <h2 class="section-title mb-4">Student Testimonials</h2>
-            <p class="text-slate-300 mb-14">What Gen Z Tutors students are saying.</p>
-            <div class="relative max-w-3xl mx-auto glass rounded-3xl p-10 min-h-[280px]">
-                <div id="testimonialContainer">
-                    <div class="testimonial-slide active">
-                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"Gen Z Tutors completely changed how I understood accounting. I went from struggling to passing confidently."</p>
-                        <h4 class="font-bold text-orange-400">Commerce Student</h4>
+                <!-- Monthly Package (Most Popular) -->
+                <div class="package-card popular">
+                    <div class="mb-4">
+                        <span class="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">MOST POPULAR</span>
                     </div>
-                    <div class="testimonial-slide hidden">
-                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"The tutors are relatable, patient and actually make difficult concepts easy."</p>
-                        <h4 class="font-bold text-sky-400">Financial Accounting Student</h4>
-                    </div>
-                    <div class="testimonial-slide hidden">
-                        <p class="text-xl leading-relaxed text-slate-200 mb-6">"The online sessions and mentorship helped improve my confidence massively."</p>
-                        <h4 class="font-bold text-emerald-400">University Student</h4>
-                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Monthly Package</h3>
+                    <p class="package-subtext mb-4">Consistent learning</p>
+                    <div class="package-price">R595</div>
+                    <p class="text-sm text-slate-300 mb-6">1hr 15mins x 4 weeks<br><span class="text-xs text-slate-400">Weekly recurring</span></p>
+                    <ul class="text-sm text-slate-300 space-y-2 mb-6 text-left">
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>4 sessions (1hr 15m each)</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Same tutor & time weekly</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Better value</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Flexible cancellation</li>
+                    </ul>
+                    <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
                 </div>
-                <div class="flex justify-center gap-3 mt-6">
-                    <button class="w-3 h-3 rounded-full bg-orange-400 transition" onclick="changeTestimonial(0)"></button>
-                    <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(1)"></button>
-                    <button class="w-3 h-3 rounded-full bg-white/30 transition" onclick="changeTestimonial(2)"></button>
+
+                <!-- Bootcamp -->
+                <div class="package-card">
+                    <h3 class="text-2xl font-bold mb-2">Bootcamp</h3>
+                    <p class="package-subtext mb-4">Intensive exam prep</p>
+                    <div class="package-price">R250</div>
+                    <p class="text-sm text-slate-300 mb-6">2hr 30mins x 2 days<br><span class="text-xs text-slate-400">Intensive weekend</span></p>
+                    <ul class="text-sm text-slate-300 space-y-2 mb-6 text-left">
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>2 consecutive days</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>2.5 hours per day</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Perfect for exams</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Per person pricing</li>
+                    </ul>
+                    <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
                 </div>
+
+                <!-- Group Lesson -->
+                <div class="package-card">
+                    <h3 class="text-2xl font-bold mb-2">Group Lesson</h3>
+                    <p class="package-subtext mb-4">Learn with peers</p>
+                    <div class="package-price">R400</div>
+                    <p class="text-sm text-slate-300 mb-6">1hr 15mins x 4 weeks<br><span class="text-xs text-slate-400">Weekly recurring</span></p>
+                    <ul class="text-sm text-slate-300 space-y-2 mb-6 text-left">
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>4 sessions (1hr 15m each)</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Collaborative learning</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Same tutor weekly</li>
+                        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Shared cost savings</li>
+                    </ul>
+                    <button onclick="openAuthModal('signup')" class="w-full bg-orange-500 hover:bg-orange-600 transition py-2 rounded-xl font-bold text-sm">Book Now</button>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="bg-[#09111d] rounded-2xl p-8 overflow-x-auto">
+                <h3 class="text-2xl font-bold mb-6">Lesson Type Comparison</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Single</th>
+                            <th>Monthly</th>
+                            <th>Bootcamp</th>
+                            <th>Group</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold">Duration</td>
+                            <td>1hr 15m</td>
+                            <td>1hr 15m x4</td>
+                            <td>2hr 30m x2</td>
+                            <td>1hr 15m x4</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Time Slots</td>
+                            <td>1</td>
+                            <td>1 recurring</td>
+                            <td>2 consecutive</td>
+                            <td>1 recurring</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Schedule</td>
+                            <td>1 day</td>
+                            <td>4 weeks</td>
+                            <td>2 days (Sat & Sun)</td>
+                            <td>4 weeks</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Tutor</td>
+                            <td>Any tutor</td>
+                            <td>Same tutor</td>
+                            <td>Any tutor</td>
+                            <td>Same tutor</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Group</td>
+                            <td>Solo</td>
+                            <td>Solo</td>
+                            <td>Multiple</td>
+                            <td>Multiple</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Price</td>
+                            <td>R175</td>
+                            <td>R595</td>
+                            <td>R250</td>
+                            <td>R400</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </section>
 
     <section id="tutors" class="py-24">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16"><h2 class="section-title">Meet Your <span class="gradient-text">Gen Z Tutors</span></h2><p class="text-slate-300 max-w-2xl mx-auto">Passionate university tutors dedicated to helping students succeed. Click on any tutor to learn more!</p></div>
+            <div class="text-center mb-16"><h2 class="section-title">Meet Your <span class="gradient-text">Gen Z Tutors</span></h2><p class="text-slate-300 max-w-2xl mx-auto">Passionate university tutors dedicated to your success.</p></div>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('tyren')">
                     <div class="h-80 image-placeholder"><img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren"></div>
-                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Tyren Majola</h3><p class="text-orange-400 font-medium mb-4">Founder & CEO</p><p class="text-slate-300 leading-relaxed">Founder of Gen Z Tutors focused on making learning relatable, empowering and effective.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Tyren Majola</h3><p class="text-orange-400 font-medium mb-4">Founder & CEO</p><p class="text-slate-300 leading-relaxed">Founder with 5+ years of academic mentoring experience in Commerce and Accounting.</p></div>
                 </div>
                 <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('thapelo')">
                     <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo"></div>
-                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Thapelo</h3><p class="text-orange-400 font-medium mb-4">Commerce Tutor</p><p class="text-slate-300 leading-relaxed">Passionate about helping students build confidence and master difficult concepts.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Thapelo</h3><p class="text-orange-400 font-medium mb-4">Commerce Tutor</p><p class="text-slate-300 leading-relaxed">Passionate about making Commerce concepts accessible and fun for all learners.</p></div>
                 </div>
                 <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('mike')">
                     <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8k2qL.png" alt="Mike"></div>
-                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Mike</h3><p class="text-sky-400 font-medium mb-4">Academic Mentor</p><p class="text-slate-300 leading-relaxed">Dedicated to creating engaging lessons that help students achieve excellence.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Mike</h3><p class="text-sky-400 font-medium mb-4">Academic Mentor</p><p class="text-slate-300 leading-relaxed">Dedicated to creating personalized learning experiences that build student confidence.</p></div>
                 </div>
                 <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('lilonke')">
                     <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke"></div>
-                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Lilonke Breakfast</h3><p class="text-emerald-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Committed to helping students realize their potential and succeed academically.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Lilonke Breakfast</h3><p class="text-emerald-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Expert in IFRS standards and practical accounting with a student-first teaching approach.</p></div>
                 </div>
                 <div class="glass rounded-3xl overflow-hidden card-hover cursor-pointer tutor-card-link" onclick="openTutorProfile('fulufhelo')">
                     <div class="h-80 image-placeholder"><img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo"></div>
-                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Fulufhelo</h3><p class="text-orange-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Encouraging discipline, consistency and academic growth for every learner.</p><div class="mt-4 text-sky-400 text-sm font-semibold">Click to view full profile &rarr;</div></div>
+                    <div class="p-6"><h3 class="text-2xl font-bold mb-2">Fulufhelo</h3><p class="text-orange-400 font-medium mb-4">Accounting Tutor</p><p class="text-slate-300 leading-relaxed">Encourages critical thinking and helps students master complex accounting frameworks.</p></div>
                 </div>
             </div>
         </div>
@@ -318,7 +399,7 @@
         <div class="max-w-5xl mx-auto px-6">
             <div class="text-center mb-12">
                 <h2 class="section-title">Book Your Lesson</h2>
-                <p class="text-slate-300 max-w-2xl mx-auto">Select your modules, choose a tutor, and pick an available weekend time slot.</p>
+                <p class="text-slate-300 max-w-2xl mx-auto">Select your lesson package, choose a tutor, and pick an available time slot.</p>
             </div>
 
             <div id="bookingAuthNotice" class="glass rounded-3xl p-8 text-center hidden">
@@ -332,17 +413,31 @@
             </div>
 
             <div id="bookingApp" class="glass rounded-3xl p-6 md:p-10">
-                <div class="grid grid-cols-4 gap-2 mb-8 text-center text-xs sm:text-sm font-semibold">
+                <div class="grid grid-cols-5 gap-2 mb-8 text-center text-xs sm:text-sm font-semibold">
                     <div class="booking-step-tab active" data-step-tab="1">Step 1</div>
                     <div class="booking-step-tab" data-step-tab="2">Step 2</div>
                     <div class="booking-step-tab" data-step-tab="3">Step 3</div>
                     <div class="booking-step-tab" data-step-tab="4">Step 4</div>
+                    <div class="booking-step-tab" data-step-tab="5">Step 5</div>
                 </div>
 
                 <p id="bookingMessage" class="hidden rounded-xl px-4 py-3 text-sm font-medium mb-6"></p>
 
+                <!-- STEP 1: LESSON PACKAGE -->
                 <div class="booking-step" data-booking-step="1">
-                    <h3 class="text-2xl font-bold mb-2">Step 1: Select Your Academic Level & Modules</h3>
+                    <h3 class="text-2xl font-bold mb-2">Step 1: Choose Your Lesson Package</h3>
+                    <p class="text-slate-300 mb-6">Select the package that fits your learning needs.</p>
+                    <label class="block text-sm font-semibold text-slate-300 mb-3">Lesson Package</label>
+                    <div id="packageOptions" class="grid sm:grid-cols-2 gap-3 mb-6"></div>
+                    <div class="flex justify-end gap-3 mt-8">
+                        <button type="button" id="clearBookingStep1" class="border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Clear</button>
+                        <button type="button" data-next-step="2" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: ACADEMIC LEVEL & MODULES -->
+                <div class="booking-step hidden" data-booking-step="2">
+                    <h3 class="text-2xl font-bold mb-2">Step 2: Select Your Academic Level & Modules</h3>
                     <p class="text-slate-300 mb-6">Choose the level and modules you need help with.</p>
                     <label class="block text-sm font-semibold text-slate-300 mb-3">Academic Level</label>
                     <div id="academicLevelOptions" class="grid sm:grid-cols-2 gap-3 mb-6"></div>
@@ -350,18 +445,19 @@
                         <label class="block text-sm font-semibold text-slate-300 mb-3">Select Modules</label>
                         <div id="moduleOptions" class="space-y-3"></div>
                     </div>
-                    <div class="flex justify-end gap-3 mt-8">
-                        <button type="button" id="clearBookingStep1" class="border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Clear</button>
-                        <button type="button" data-next-step="2" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+                    <div class="flex justify-between gap-3 mt-8">
+                        <button type="button" data-prev-step="1" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+                        <button type="button" data-next-step="3" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
 
-                <div class="booking-step hidden" data-booking-step="2">
-                    <h3 class="text-2xl font-bold mb-2">Step 2: Choose Your Tutor & Lesson Details</h3>
+                <!-- STEP 3: TUTOR & LESSON DETAILS -->
+                <div class="booking-step hidden" data-booking-step="3">
+                    <h3 class="text-2xl font-bold mb-2">Step 3: Choose Your Tutor & Lesson Details</h3>
                     <p class="text-slate-300 mb-6">Select a tutor and specify your lesson preferences.</p>
                     <label class="block text-sm font-semibold text-slate-300 mb-3">Available Tutors</label>
                     <div id="tutorOptions" class="grid gap-4 mb-6"></div>
-                    <div class="grid md:grid-cols-3 gap-5">
+                    <div class="grid md:grid-cols-2 gap-5">
                         <div>
                             <label class="block mb-2 text-sm text-slate-300">Lesson Type</label>
                             <select id="bookingLessonType" class="booking-input">
@@ -376,29 +472,20 @@
                                 <option value="">Select platform or venue</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block mb-2 text-sm text-slate-300">Lesson Duration</label>
-                            <select id="bookingDuration" class="booking-input">
-                                <option value="">Select duration</option>
-                                <option>30 minutes</option>
-                                <option>1 hour</option>
-                                <option>1.5 hours</option>
-                                <option>2 hours</option>
-                            </select>
-                        </div>
                     </div>
                     <div class="flex justify-between gap-3 mt-8">
-                        <button type="button" data-prev-step="1" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
-                        <button type="button" data-next-step="3" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+                        <button type="button" data-prev-step="2" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+                        <button type="button" data-next-step="4" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
 
-                <div class="booking-step hidden" data-booking-step="3">
-                    <h3 class="text-2xl font-bold mb-2">Step 3: Choose Your Preferred Date & Time</h3>
-                    <p class="text-slate-300 mb-6">Gen Z Tutors is available on Saturdays and Sundays only.</p>
+                <!-- STEP 4: DATE & TIME SELECTION -->
+                <div class="booking-step hidden" data-booking-step="4">
+                    <h3 class="text-2xl font-bold mb-2">Step 4: Choose Your Preferred Date & Time</h3>
+                    <p class="text-slate-300 mb-6">Gen Z Tutors operates weekends only (unless approved by admin for weekday sessions). Each lesson slot is 1hr 15mins with 15-min tutor breaks.</p>
                     <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl p-4 mb-6 text-sky-200 text-sm">
                         <i class="fa-solid fa-circle-info mr-2"></i>
-                        Booked slots are saved in this browser for now. When Firestore is enabled, bookings are also saved to Firebase.
+                        <strong>Weekend Schedule:</strong> 8:00 AM - 5:00 PM | <strong>Slot Duration:</strong> 1hr 15mins | <strong>Tutor Break:</strong> 15 mins between lessons | <strong>Bootcamp:</strong> Uses 2 consecutive slots (2hrs 30mins)
                     </div>
                     <label class="block mb-2 text-sm text-slate-300">Date (Saturday or Sunday)</label>
                     <input id="bookingDate" type="date" class="booking-input mb-3">
@@ -412,13 +499,14 @@
                     <label class="block mb-2 text-sm text-slate-300">Additional Notes (Optional)</label>
                     <textarea id="bookingNotes" rows="4" placeholder="Tell us about your learning goals, challenges, or any specific topics you'd like to focus on..." class="booking-input"></textarea>
                     <div class="flex justify-between gap-3 mt-8">
-                        <button type="button" data-prev-step="2" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
-                        <button type="button" data-next-step="4" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
+                        <button type="button" data-prev-step="3" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+                        <button type="button" data-next-step="5" class="booking-next bg-orange-500 hover:bg-orange-600 px-5 py-3 rounded-xl font-semibold transition">Next</button>
                     </div>
                 </div>
 
-                <div class="booking-step hidden" data-booking-step="4">
-                    <h3 class="text-2xl font-bold mb-2">Step 4: Confirm Your Booking</h3>
+                <!-- STEP 5: CONFIRM BOOKING -->
+                <div class="booking-step hidden" data-booking-step="5">
+                    <h3 class="text-2xl font-bold mb-2">Step 5: Confirm Your Booking</h3>
                     <p class="text-slate-300 mb-6">Review your booking details before sending your request.</p>
                     <div id="bookingSummary" class="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 mb-6"></div>
                     <div class="grid md:grid-cols-2 gap-5 mb-6">
@@ -433,7 +521,7 @@
                     </div>
                     <p class="text-slate-400 text-sm mb-6">Payment will be arranged via PayFast, Yoco, EFT, or WhatsApp confirmation.</p>
                     <div class="flex justify-between gap-3">
-                        <button type="button" data-prev-step="3" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
+                        <button type="button" data-prev-step="4" class="booking-prev border border-white/20 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold transition">Back</button>
                         <button type="button" id="submitBookingRequest" class="bg-green-500 hover:bg-green-600 px-5 py-3 rounded-xl font-bold transition">Send Booking Request</button>
                     </div>
                 </div>
@@ -447,10 +535,10 @@
             <p class="text-slate-300 max-w-2xl mx-auto mb-10">Ready to improve your grades and confidence? Reach out to Gen Z Tutors today.</p>
             <div class="glass rounded-3xl p-10 max-w-2xl mx-auto">
                 <div class="space-y-6 text-left">
-                    <div class="flex items-center gap-4"><div class="bg-orange-500/20 p-4 rounded-xl"><i class="fa-solid fa-phone text-orange-400"></i></div><div><p class="text-slate-400 text-sm">WhatsApp</p><p class="font-bold text-lg">067 925 6394</p></div></div>
-                    <div class="flex items-center gap-4"><div class="bg-sky-500/20 p-4 rounded-xl"><i class="fa-solid fa-envelope text-sky-400"></i></div><div><p class="text-slate-400 text-sm">Email</p><p class="font-bold text-lg">GenZTutorsza@gmail.com</p></div></div>
+                    <div class="flex items-center gap-4"><div class="bg-orange-500/20 p-4 rounded-xl"><i class="fa-solid fa-phone text-orange-400"></i></div><div><p class="text-slate-400 text-sm">WhatsApp</p><p class="font-semibold">+27 67 925 6394</p></div></div>
+                    <div class="flex items-center gap-4"><div class="bg-sky-500/20 p-4 rounded-xl"><i class="fa-solid fa-envelope text-sky-400"></i></div><div><p class="text-slate-400 text-sm">Email</p><p class="font-semibold">info@genztutors.com</p></div></div>
                 </div>
-                <a href="https://wa.me/27679256394" target="_blank" class="inline-block mt-10 bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-bold text-lg transition"><i class="fa-brands fa-whatsapp mr-2"></i> Chat on WhatsApp</a>
+                <a href="https://wa.me/27679256394" target="_blank" class="inline-block mt-10 bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-bold text-lg transition"><i class="fa-brands fa-whatsapp mr-2"></i>Start on WhatsApp</a>
             </div>
         </div>
     </section>
@@ -463,7 +551,7 @@
     </footer>
 </div>
 
-<a href="https://wa.me/27679256394" target="_blank" class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 h-16 w-16 rounded-full flex items-center justify-center text-3xl shadow-2xl z-[30] transition">
+<a href="https://wa.me/27679256394" target="_blank" class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 h-16 w-16 rounded-full flex items-center justify-center text-3xl shadow-2xl z-[30] transition hover:scale-110">
     <i class="fa-brands fa-whatsapp"></i>
 </a>
 
@@ -479,8 +567,8 @@
             <p id="authSubtitle" class="text-slate-300">Login to your Gen Z Tutors account.</p>
         </div>
         <form id="authForm" class="space-y-5">
-            <div><label class="block mb-2 text-sm text-slate-300">Email</label><input id="authEmail" type="email" placeholder="Enter your email" required class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white"></div>
-            <div><label class="block mb-2 text-sm text-slate-300">Password</label><input id="authPassword" type="password" placeholder="Enter your password" required minlength="6" class="w-full bg-[#09111d] border border-white/10 rounded-xl px-5 py-4 text-white"></div>
+            <div><label class="block mb-2 text-sm text-slate-300">Email</label><input id="authEmail" type="email" placeholder="Enter your email" required class="w-full bg-[#09111d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sky-500"></div>
+            <div><label class="block mb-2 text-sm text-slate-300">Password</label><input id="authPassword" type="password" placeholder="Enter your password" required minlength="6" class="w-full bg-[#09111d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sky-500"></div>
             <p id="authMessage" class="hidden rounded-xl px-4 py-3 text-sm font-medium"></p>
             <button id="authSubmit" type="submit" class="w-full bg-orange-500 hover:bg-orange-600 transition py-4 rounded-xl font-bold text-lg">Login</button>
         </form>
@@ -491,61 +579,47 @@
     </div>
 </div>
 
-<div id="inactivityWarningModal" class="hidden fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center">
-    <div class="bg-[#0d1728] border border-orange-500/30 rounded-2xl p-8 max-w-md w-[90%] text-center shadow-2xl shadow-orange-500/10">
-        <i class="fa-solid fa-triangle-exclamation text-5xl text-orange-400 mb-4"></i>
-        <h3 class="text-2xl font-bold mb-2 text-white">Are you still there?</h3>
-        <p class="text-slate-300 mb-6">You have been inactive for a while. You will be automatically logged out in <strong>5 minutes</strong> to protect your account.</p>
-        <button onclick="window.resetInactivityTimer()" class="w-full bg-orange-500 hover:bg-orange-600 transition py-3 rounded-xl font-bold text-lg text-white">Keep Me Logged In</button>
-    </div>
-</div>
-
-<div id="tyrenModal" class="profile-modal">
-    <div class="profile-modal-content">
-        <button class="close-profile-btn" onclick="closeTutorProfile('tyren')"><i class="fa-solid fa-xmark"></i></button>
-        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/eYjP9kK.png" alt="Tyren Majola"></div><div><h2 class="text-4xl font-extrabold mb-2">Tyren Majola</h2><div class="tutor-role text-orange-400"><i class="fa-solid fa-crown"></i> Founder & CEO</div><div class="flex gap-2 mb-6"><span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">Commerce Expert</span><span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm">Leader</span></div><p class="text-slate-300 leading-relaxed mb-6">Let's be honest: sitting through a lecture that feels like it's in a different language is exhausting. I'm here to be the person who finally makes it click!</p><div class="flex flex-col gap-3"><a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition"><i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Tyren</a><p class="text-slate-400 text-sm">Available: Sat & Sun &bull; 067 925 6394</p></div></div></div></div>
-    </div>
-</div>
-<div id="lilonkeModal" class="profile-modal">
-    <div class="profile-modal-content">
-        <button class="close-profile-btn" onclick="closeTutorProfile('lilonke')"><i class="fa-solid fa-xmark"></i></button>
-        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8k2qL.png" alt="Lilonke Breakfast"></div><div><h2 class="text-4xl font-extrabold mb-2">Lilonke Breakfast</h2><div class="tutor-role text-emerald-400"><i class="fa-solid fa-book"></i> Accounting Tutor</div><div class="flex gap-2 mb-6"><span class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm">Accounting Expert</span><span class="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">UFS Graduate</span></div><p class="text-slate-300 leading-relaxed mb-6">Being a tutor allows me to make a real difference while growing my own skills and building meaningful connections.</p><div class="flex flex-col gap-3"><a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition"><i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Lilonke</a><p class="text-slate-400 text-sm">Available: Sat & Sun &bull; 067 925 6394</p></div></div></div></div>
-    </div>
-</div>
-<div id="thapeloModal" class="profile-modal">
-    <div class="profile-modal-content">
-        <button class="close-profile-btn" onclick="closeTutorProfile('thapelo')"><i class="fa-solid fa-xmark"></i></button>
-        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8k2qL.png" alt="Thapelo"></div><div><h2 class="text-4xl font-extrabold mb-2">Thapelo</h2><div class="tutor-role text-orange-400"><i class="fa-solid fa-chalkboard-user"></i> Commerce Tutor</div><p class="text-slate-300 leading-relaxed mb-6">Passionate about helping students build confidence and master difficult concepts.</p><div class="flex flex-col gap-3"><a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition"><i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Thapelo</a><p class="text-slate-400 text-sm">Available: Sat & Sun &bull; 067 925 6394</p></div></div></div></div>
-    </div>
-</div>
-<div id="mikeModal" class="profile-modal">
-    <div class="profile-modal-content">
-        <button class="close-profile-btn" onclick="closeTutorProfile('mike')"><i class="fa-solid fa-xmark"></i></button>
-        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8k2qL.png" alt="Mike"></div><div><h2 class="text-4xl font-extrabold mb-2">Mike</h2><div class="tutor-role text-sky-400"><i class="fa-solid fa-graduation-cap"></i> Academic Mentor</div><p class="text-slate-300 leading-relaxed mb-6">Dedicated to creating engaging lessons that help students achieve excellence.</p><div class="flex flex-col gap-3"><a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition"><i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Mike</a><p class="text-slate-400 text-sm">Available: Sat & Sun &bull; 067 925 6394</p></div></div></div></div>
-    </div>
-</div>
-<div id="fulufheloModal" class="profile-modal">
-    <div class="profile-modal-content">
-        <button class="close-profile-btn" onclick="closeTutorProfile('fulufhelo')"><i class="fa-solid fa-xmark"></i></button>
-        <div class="p-8 md:p-12"><div class="grid md:grid-cols-2 gap-8 items-start"><div class="tutor-profile-image"><img src="https://i.imgur.com/9B8x2qL.png" alt="Fulufhelo"></div><div><h2 class="text-4xl font-extrabold mb-2">Fulufhelo</h2><div class="tutor-role text-orange-400"><i class="fa-solid fa-calculator"></i> Accounting Tutor</div><p class="text-slate-300 leading-relaxed mb-6">Encouraging discipline, consistency and academic growth for every learner.</p><div class="flex flex-col gap-3"><a href="https://wa.me/27679256394" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold text-center transition"><i class="fa-brands fa-whatsapp mr-2"></i> WhatsApp Fulufhelo</a><p class="text-slate-400 text-sm">Available: Sat & Sun &bull; 067 925 6394</p></div></div></div></div>
-    </div>
-</div>
-
 <script>
-    // -----------------------------------------
-    // UTILITIES & SECURITY
-    // -----------------------------------------
+    // ===== LESSON PACKAGES DATA =====
+    const lessonPackages = {
+        'single': { name: 'Single Lesson', price: 175, duration: '1h 15m', sessions: 1, type: 'one-time' },
+        'monthly': { name: 'Monthly Package', price: 595, duration: '1h 15m x 4 weeks', sessions: 4, type: 'weekly-recurring' },
+        'bootcamp': { name: 'Bootcamp', price: 250, duration: '2h 30m x 2 days', sessions: 2, type: 'intensive-weekend' },
+        'group': { name: 'Group Lesson', price: 400, duration: '1h 15m x 4 weeks', sessions: 4, type: 'weekly-recurring' }
+    };
+
+    // ===== TIME SLOT GENERATION =====
+    function generateTimeSlots(isBootcamp = false) {
+        const slots = [];
+        const startHour = 8;  // 8 AM
+        const endHour = 17;   // 5 PM
+        const slotDuration = 75;  // 1hr 15mins in minutes
+        const breakDuration = 15;  // 15-min break
+
+        let currentTime = startHour * 60;  // Convert to minutes
+        const endTime = endHour * 60;
+
+        while (currentTime + (isBootcamp ? slotDuration * 2 : slotDuration) <= endTime) {
+            const hours = Math.floor(currentTime / 60);
+            const mins = currentTime % 60;
+            const endHours = Math.floor((currentTime + slotDuration) / 60);
+            const endMins = (currentTime + slotDuration) % 60;
+
+            const timeSlot = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} - ${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+            slots.push(timeSlot);
+
+            currentTime += slotDuration + breakDuration;  // Add break after lesson
+        }
+
+        return slots;
+    }
+
+    // ===== UTILITIES =====
     function escapeHTML(str) {
         if(!str) return '';
-        return String(str).replace(/[&<>'"]/g, 
-            tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag])
-        );
+        return String(str).replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[tag]));
     }
 
     function safeJSONParse(key, fallback) {
@@ -553,628 +627,166 @@
         catch(e) { console.warn(`Failed to parse ${key}`, e); return fallback; }
     }
 
-    // -----------------------------------------
-    // THEME & MOBILE MENU & TESTIMONIALS & MODALS
-    // -----------------------------------------
-    const themeToggle = document.getElementById('themeToggle');
-    let isDarkMode = true;
-    themeToggle.addEventListener('click', () => {
-        isDarkMode = !isDarkMode; document.body.classList.toggle('light-mode');
-        themeToggle.innerHTML = isDarkMode ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-    });
+    // ===== BOOKING DATA STORAGE =====
+    let bookingData = {
+        packageType: null,
+        academicLevel: null,
+        modules: [],
+        tutor: null,
+        lessonType: null,
+        venue: null,
+        date: null,
+        timeSlot: null,
+        notes: null
+    };
 
-    const menuBtn = document.getElementById('menuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('active');
-        menuBtn.querySelector('i').className = mobileMenu.classList.contains('active') ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
-    });
-    document.querySelectorAll('#mobileMenu a').forEach(link => { link.addEventListener('click', () => { mobileMenu.classList.remove('active'); menuBtn.querySelector('i').className = 'fa-solid fa-bars'; }); });
-
-    let currentTestimonial = 0;
-    const testimonials = document.querySelectorAll('.testimonial-slide');
-    
-    function autoTestimonial() {
-        window.changeTestimonial((currentTestimonial + 1) % testimonials.length, false);
+    // ===== INITIALIZE BOOKING =====
+    function initializeBooking() {
+        renderPackageOptions();
+        setupBookingStepNavigation();
+        updateTimeSlots();
     }
-    
-    let testimonialInterval = setInterval(autoTestimonial, 6000);
 
-    window.changeTestimonial = function(index, resetTimer = true) {
-        testimonials[currentTestimonial].classList.add('hidden'); testimonials[currentTestimonial].classList.remove('active');
-        testimonials[index].classList.remove('hidden'); testimonials[index].classList.add('active');
-        document.querySelectorAll('[onclick^="changeTestimonial"]').forEach((dot, i) => {
-            if (i === index) { dot.classList.remove('bg-white/30'); dot.classList.add('bg-orange-400'); } 
-            else { dot.classList.remove('bg-orange-400'); dot.classList.add('bg-white/30'); }
+    function renderPackageOptions() {
+        const container = document.getElementById('packageOptions');
+        container.innerHTML = '';
+        for (const [key, pkg] of Object.entries(lessonPackages)) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'booking-choice';
+            btn.innerHTML = `<strong>${pkg.name}</strong><br><span class="text-sm text-slate-400">R${pkg.price}</span>`;
+            btn.onclick = () => selectPackage(key);
+            container.appendChild(btn);
+        }
+    }
+
+    function selectPackage(packageKey) {
+        bookingData.packageType = packageKey;
+        document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
+        event.target.closest('.booking-choice').classList.add('active');
+    }
+
+    function setupBookingStepNavigation() {
+        // Next buttons
+        document.querySelectorAll('.booking-next').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const nextStep = btn.getAttribute('data-next-step');
+                const currentStep = document.querySelector('.booking-step:not(.hidden)').getAttribute('data-booking-step');
+                
+                if (validateStep(currentStep)) {
+                    moveToStep(nextStep);
+                }
+            });
         });
-        currentTestimonial = index;
-        
-        if(resetTimer) {
-            clearInterval(testimonialInterval);
-            testimonialInterval = setInterval(autoTestimonial, 6000);
-        }
-    }
 
-    window.openTutorProfile = function(tutor) { const modal = document.getElementById(tutor + 'Modal'); if (modal) { modal.classList.add('active'); document.body.style.overflow = 'hidden'; } }
-    window.closeTutorProfile = function(tutor) { const modal = document.getElementById(tutor + 'Modal'); if (modal) { modal.classList.remove('active'); document.body.style.overflow = 'auto'; } }
-    document.querySelectorAll('.profile-modal').forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) closeTutorProfile(modal.id.replace('Modal', '')); }); });
-
-    // -----------------------------------------
-    // AUTH MODAL LOGIC
-    // -----------------------------------------
-    let authMode = 'login';
-    window.openAuthModal = function(mode) {
-        authMode = mode;
-        document.getElementById('authTitle').textContent = mode === 'signup' ? 'Create Account' : 'Welcome Back';
-        document.getElementById('authSubtitle').textContent = mode === 'signup' ? 'Create your Gen Z Tutors account.' : 'Login to your Gen Z Tutors account.';
-        document.getElementById('authSubmit').textContent = mode === 'signup' ? 'Sign Up' : 'Login';
-        document.getElementById('authMessage').classList.add('hidden');
-        document.getElementById('authForm').reset();
-        document.getElementById('authModal').classList.add('active');
-    };
-
-    window.closeAuthModal = function() {
-        document.getElementById('authModal').classList.remove('active');
-    };
-
-    // -----------------------------------------
-    // SYSTEM CORE: FIREBASE, AUTH, ROUTING
-    // -----------------------------------------
-    let firebaseAuth;
-    let currentUserData = null;
-    let firebaseReady = false;
-    let firebaseInitPromise;
-    let createUserWithEmailAndPassword;
-    let signInWithEmailAndPassword;
-    let signInWithPopup;
-    let GoogleAuthProvider;
-    let onAuthStateChanged;
-    let signOut;
-    let setPersistence;
-    let browserLocalPersistence;
-
-    const firebaseConfig = { apiKey: 'AIzaSyAGG8S44RzRP129Caj5QfyVkT8dffH0ip0', authDomain: 'genztutorsza-efa13.firebaseapp.com', projectId: 'genztutorsza-efa13', storageBucket: 'genztutorsza-efa13.firebasestorage.app', messagingSenderId: '699691673917', appId: '1:699691673917:web:7ed8bd10cf0701410cfd54', measurementId: 'G-CL8NS75JGJ' };
-    
-    function hasFirebaseConfig() { return !Object.values(firebaseConfig).some(value => String(value).includes('PASTE_YOUR')); }
-    function currentAuthDomain() { return window.location.hostname || 'this domain'; }
-    function isLocalTestingHost() { return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname); }
-    function authorizedDomainHelp() { return `Add ${currentAuthDomain()} in Firebase Console > Authentication > Settings > Authorized domains.`; }
-
-    function showAuthMessage(message, type = 'error') {
-        const authMessage = document.getElementById('authMessage');
-        authMessage.textContent = message;
-        authMessage.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30');
-        authMessage.classList.add('border');
-        if (type === 'success') { authMessage.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); } 
-        else { authMessage.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30'); }
-    }
-
-    function friendlyAuthError(error) {
-        const messages = {
-            'auth/admin-restricted-operation': 'Email/password login is not enabled yet. Enable it in Firebase Authentication > Sign-in method.',
-            'auth/api-key-not-valid': 'Firebase rejected this API key. Check the Firebase config in the page.',
-            'auth/app-not-authorized': 'This website domain is not authorized in Firebase.',
-            'auth/configuration-not-found': 'Firebase Authentication is not enabled yet. Open Firebase Console > Authentication and click Get started.',
-            'auth/email-already-in-use': 'This account already exists. Please login instead.',
-            'auth/invalid-email': 'Please enter a valid email address.',
-            'auth/invalid-credential': 'Incorrect email or password.',
-            'auth/network-request-failed': 'Firebase could not be reached from this page. Check your internet connection, use HTTPS online, and make sure this domain is authorized in Firebase.',
-            'auth/operation-not-allowed': 'This sign-in method is disabled. Enable Email/Password or Google in Firebase Authentication > Sign-in method.',
-            'auth/popup-blocked': 'The Google popup was blocked. Allow popups for this site and try again.',
-            'auth/popup-closed-by-user': 'Google login was closed before it finished.',
-            'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
-            'auth/unauthorized-domain': 'This domain is not authorized for Firebase login.',
-            'auth/user-not-found': 'No account found with that email. Please sign up first.',
-            'auth/weak-password': 'Password must be at least 6 characters.',
-            'auth/wrong-password': 'Incorrect email or password.'
-        };
-        if (['auth/app-not-authorized', 'auth/unauthorized-domain'].includes(error.code)) return `${messages[error.code]} ${authorizedDomainHelp()}`;
-        if (error.code === 'auth/network-request-failed') return `${messages[error.code]} Current domain: ${currentAuthDomain()}.`;
-        return messages[error.code] || error.message || 'Something went wrong. Please try again.';
-    }
-
-    // --- TIMERS & THROTTLING ---
-    let warningTimer, logoutTimer;
-    let lastActivityTime = Date.now();
-
-    window.resetInactivityTimer = function() {
-        const now = Date.now();
-        if (now - lastActivityTime < 5000 && warningTimer) return; 
-        lastActivityTime = now;
-
-        clearTimeout(warningTimer); 
-        clearTimeout(logoutTimer);
-        document.getElementById('inactivityWarningModal').classList.add('hidden');
-        
-        if (currentUserData) {
-            warningTimer = setTimeout(() => {
-                document.getElementById('inactivityWarningModal').classList.remove('hidden');
-            }, 10 * 60 * 1000);
-            
-            logoutTimer = setTimeout(async () => { 
-                if (firebaseAuth) await window.signOut(firebaseAuth); 
-                goToHome(); 
-                alert("You have been automatically logged out due to inactivity."); 
-            }, 15 * 60 * 1000);
-        }
-    }
-    ;
-    ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(e => document.addEventListener(e, window.resetInactivityTimer, true));
-
-    async function initializeFirebaseAuth(showErrors = false) {
-        if (firebaseReady) return true;
-        if (firebaseInitPromise) return firebaseInitPromise;
-
-        firebaseInitPromise = (async () => {
-            if (!hasFirebaseConfig()) { if (showErrors) showAuthMessage('Firebase is ready in the code, but the config values are missing.'); return false; }
-            if (window.location.protocol === 'file:') { if (showErrors) showAuthMessage('Firebase login must run from a website URL. Use http://localhost for testing or publish the site to an HTTPS domain.'); return false; }
-            if (window.location.protocol === 'http:' && !isLocalTestingHost()) { if (showErrors) showAuthMessage('Online Firebase login should be served over HTTPS. Publish the site with HTTPS, then add the domain in Firebase Authorized domains.'); return false; }
-
-            try {
-                const appModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js');
-                const authModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js');
-                const app = appModule.initializeApp(firebaseConfig);
-
-                firebaseAuth = authModule.getAuth(app);
-                createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
-                signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
-                signInWithPopup = authModule.signInWithPopup;
-                GoogleAuthProvider = authModule.GoogleAuthProvider;
-                onAuthStateChanged = authModule.onAuthStateChanged;
-                signOut = authModule.signOut;
-                setPersistence = authModule.setPersistence;
-                browserLocalPersistence = authModule.browserLocalPersistence;
-                window.signOut = signOut; 
-
-                await setPersistence(firebaseAuth, browserLocalPersistence);
-                firebaseReady = true;
-
-                onAuthStateChanged(firebaseAuth, (user) => {
-                    const navAuthArea = document.getElementById('navAuthArea');
-                    const mobileNavAuthArea = document.getElementById('mobileNavAuthArea');
-                    
-                    if (user) {
-                        currentUserData = user; 
-                        window.resetInactivityTimer();
-                        
-                        const dashBtnHtml = `<button onclick="openDashboard('${localStorage.getItem('activeDashView') || ''}')" class="bg-sky-500 hover:bg-sky-600 transition px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg shadow-sky-500/20">Dashboard</button>`;
-                        if(navAuthArea) navAuthArea.innerHTML = dashBtnHtml;
-                        if(mobileNavAuthArea) mobileNavAuthArea.innerHTML = dashBtnHtml;
-                        
-                        document.getElementById('bookingAuthNotice').classList.add('hidden'); 
-                        document.getElementById('bookingApp').classList.remove('hidden');
-
-                        const isDashOpen = localStorage.getItem('isDashboardOpen');
-                        const savedView = localStorage.getItem('activeDashView'); 
-                        if (isDashOpen === 'true') {
-                            openDashboard(savedView);
-                        }
-                    } else {
-                        currentUserData = null; 
-                        clearTimeout(warningTimer); 
-                        clearTimeout(logoutTimer); 
-                        
-                        if(document.getElementById('inactivityWarningModal')) document.getElementById('inactivityWarningModal').classList.add('hidden');
-                        
-                        const loginHtml = `<button onclick="openAuthModal('login')" class="auth-btn border border-white/15 hover:bg-white/10 px-5 py-3 rounded-xl font-semibold text-sm">Login</button><button onclick="openAuthModal('signup')" class="auth-btn bg-sky-500 hover:bg-sky-600 transition px-5 py-3 rounded-xl font-semibold text-sm">Sign Up</button>`;
-                        if(navAuthArea) navAuthArea.innerHTML = loginHtml;
-                        if(mobileNavAuthArea) mobileNavAuthArea.innerHTML = loginHtml;
-                        
-                        document.getElementById('bookingAuthNotice').classList.remove('hidden'); 
-                        document.getElementById('bookingApp').classList.add('hidden');
-                        
-                        localStorage.setItem('isDashboardOpen', 'false');
-                        goToHome(); 
-                    }
-                });
-                return true;
-            } catch (error) {
-                console.error('Firebase initialization failed:', error);
-                if (showErrors) showAuthMessage(friendlyAuthError(error));
-                return false;
-            } finally {
-                firebaseInitPromise = null;
-            }
-        })();
-        return firebaseInitPromise;
-    }
-
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-        const submitBtn = document.getElementById('authSubmit');
-        submitBtn.disabled = true;
-
-        try {
-            if (!(await initializeFirebaseAuth(true))) return;
-            if (authMode === 'signup') {
-                await createUserWithEmailAndPassword(firebaseAuth, email, password);
-                showAuthMessage('Account created successfully. You are now logged in.', 'success');
-            } else {
-                await signInWithEmailAndPassword(firebaseAuth, email, password);
-                showAuthMessage('Login successful. Welcome back.', 'success');
-            }
-            setTimeout(() => { closeAuthModal(); openDashboard(); }, 1000);
-        } catch (error) {
-            showAuthMessage(friendlyAuthError(error));
-        } finally {
-            submitBtn.disabled = false;
-        }
-    });
-    
-    document.getElementById('googleAuthBtn').addEventListener('click', async () => {
-        if (!(await initializeFirebaseAuth(true))) return;
-        try {
-            await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
-            showAuthMessage('Google login successful. Welcome.', 'success');
-            setTimeout(() => { closeAuthModal(); openDashboard(); }, 1000);
-        } catch (error) {
-            showAuthMessage(friendlyAuthError(error));
-        }
-    });
-
-    initializeFirebaseAuth(false);
-
-    function showToast(message) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div'); toast.className = 'toast flex items-center gap-3'; toast.innerHTML = `<i class="fa-solid fa-bell"></i> ${escapeHTML(message)}`;
-        container.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
-    }
-
-    // -----------------------------------------
-    // MOBILE DASHBOARD NAVIGATION
-    // -----------------------------------------
-    window.toggleDashSidebar = function() {
-        const sidebar = document.getElementById('dashSidebar');
-        const overlay = document.getElementById('dashSidebarOverlay');
-        sidebar.classList.toggle('-translate-x-full');
-        if(sidebar.classList.contains('-translate-x-full')){ overlay.classList.add('hidden'); } else { overlay.classList.remove('hidden'); }
-    };
-
-    // -----------------------------------------
-    // MESSAGING SYSTEM
-    // -----------------------------------------
-    let currentChatContactEmail = null, currentChatContactName = null, pendingAttachmentData = null;
-    const contactDirectory = { "Lilonke (Accounting)": "lilonke@genztutors.com", "Tyren M. (Commerce)": "tyren@genztutors.com", "Admin Support": "admin@genztutors.com", "All Tutors (Broadcast)": "broadcast_tutors" };
-    function initMockDatabase() { if (!localStorage.getItem('genzMessages')) localStorage.setItem('genzMessages', JSON.stringify([{ sender: "lilonke@genztutors.com", receiver: "student.john@gmail.com", text: "Don't forget to review IAS 1!", time: new Date().toISOString() }])); }
-    initMockDatabase();
-
-    window.handleFileSelect = function(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const reader = new FileReader(); document.getElementById('previewFileName').value = file.name;
-        const previewArea = document.getElementById('previewContentArea'); previewArea.innerHTML = '<p class="text-slate-400">Loading preview...</p>';
-        document.getElementById('filePreviewModal').classList.remove('hidden');
-        reader.onload = (e) => {
-            const content = e.target.result; pendingAttachmentData = { name: file.name, type: file.type, content: content };
-            if (file.type.startsWith('image/')) previewArea.innerHTML = `<img src="${escapeHTML(content)}" class="max-w-full h-auto rounded mx-auto">`;
-            else if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.csv')) previewArea.innerHTML = `<textarea id="editFileText" class="w-full h-full min-h-[180px] bg-transparent text-slate-200 border-none outline-none resize-none font-mono text-sm">${escapeHTML(content)}</textarea>`;
-            else previewArea.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-file text-4xl text-slate-500 mb-2"></i><p>Preview not available for this file type.</p></div>`;
-        };
-        if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.csv')) reader.readAsText(file); else reader.readAsDataURL(file);
-        event.target.value = ''; 
-    };
-
-    window.closeFilePreview = function() { document.getElementById('filePreviewModal').classList.add('hidden'); if(!document.getElementById('attachmentIndicator').classList.contains('flex')) pendingAttachmentData = null; };
-    window.attachPreparedFile = function() {
-        pendingAttachmentData.name = document.getElementById('previewFileName').value;
-        const textArea = document.getElementById('editFileText'); if (textArea) pendingAttachmentData.content = textArea.value;
-        document.getElementById('filePreviewModal').classList.add('hidden');
-        const indicator = document.getElementById('attachmentIndicator'), filenameSpan = document.getElementById('attachmentName');
-        if(indicator && filenameSpan) { filenameSpan.textContent = pendingAttachmentData.name; indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
-    };
-    window.removeAttachment = function() { pendingAttachmentData = null; const indicator = document.getElementById('attachmentIndicator'); if(indicator) { indicator.classList.add('hidden'); indicator.classList.remove('flex'); } };
-    
-    window.selectChat = function(name, emailOverride = null) { 
-        currentChatContactName = name; 
-        currentChatContactEmail = emailOverride || contactDirectory[name] || name; 
-        const headerName = document.getElementById('chatHeaderName'); 
-        if (headerName) headerName.innerHTML = `<i class="fa-solid fa-user-circle mr-2 text-slate-400"></i> ${escapeHTML(name)}`; 
-        if(window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
-        renderChatHistory(); 
-    };
-
-    window.downloadMockAttachment = function(filename) {
-        alert(`In a real app, this downloads: ${filename}`);
-    };
-
-    function renderChatHistory() {
-        const msgsArea = document.getElementById('chatMessagesArea'); if (!msgsArea || !currentChatContactEmail || !currentUserData) return;
-        const allMessages = safeJSONParse('genzMessages', []); const myEmail = currentUserData.email.toLowerCase();
-        const chatHistory = allMessages.filter(m => (m.sender === myEmail && m.receiver === currentChatContactEmail) || (m.sender === currentChatContactEmail && m.receiver === myEmail) || (m.receiver === 'broadcast_tutors' && (myEmail.includes('tutor') || myEmail.includes('admin') || currentChatContactEmail === 'broadcast_tutors')));
-        if (chatHistory.length === 0) { msgsArea.innerHTML = `<div class="text-center text-slate-500 text-sm mt-10">This is the beginning of your conversation with ${escapeHTML(currentChatContactName)}.</div>`; return; }
-        let html = '';
-        chatHistory.forEach(msg => {
-            const isMe = msg.sender === myEmail; const timeStr = new Date(msg.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let attachmentHtml = '';
-            if (msg.attachment) {
-                if (msg.attachment.type.startsWith('image/')) attachmentHtml = `<img src="${escapeHTML(msg.attachment.content)}" class="mt-2 max-w-[200px] rounded border border-white/20">`;
-                else attachmentHtml = `<a href="#" onclick="downloadMockAttachment('${escapeHTML(msg.attachment.name)}'); return false;" class="chat-attachment"><i class="fa-solid fa-file-arrow-down mr-2"></i>${escapeHTML(msg.attachment.name)}</a>`;
-            }
-            if (isMe) html += `<div class="chat-message-sent"><p class="text-sm text-white">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-sky-200/50 mt-1 text-right">${timeStr}</p></div>`;
-            else { let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast from Admin • ` : ''; html += `<div class="chat-message-received"><p class="text-sm text-slate-200">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-slate-500 mt-1">${senderLabel}${timeStr}</p></div>`; }
+        // Previous buttons
+        document.querySelectorAll('.booking-prev').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const prevStep = btn.getAttribute('data-prev-step');
+                moveToStep(prevStep);
+            });
         });
-        msgsArea.innerHTML = html; msgsArea.scrollTop = msgsArea.scrollHeight; 
+
+        // Clear button
+        document.getElementById('clearBookingStep1').addEventListener('click', () => {
+            bookingData.packageType = null;
+            document.querySelectorAll('#packageOptions .booking-choice').forEach(el => el.classList.remove('active'));
+        });
     }
 
-    window.sendMessage = function() {
-        if (!currentChatContactEmail) { alert("Please select a contact from the list first."); return; }
-        const inputEl = document.getElementById('chatInput'); const text = inputEl.value.trim();
-        if (!text && !pendingAttachmentData) return; 
-        const newMsg = { sender: currentUserData.email.toLowerCase(), receiver: currentChatContactEmail, text: text, attachment: pendingAttachmentData, time: new Date().toISOString() };
-        const allMessages = safeJSONParse('genzMessages', []); allMessages.push(newMsg); localStorage.setItem('genzMessages', JSON.stringify(allMessages));
-        inputEl.value = ''; removeAttachment(); renderChatHistory(); showToast(`Email notification dispatched to ${currentChatContactName}`);
-    };
-    document.addEventListener('keypress', function(e) { if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'chatInput') window.sendMessage(); });
-
-    // -----------------------------------------
-    // DASHBOARD VIEWS & DYNAMIC DATA
-    // -----------------------------------------
-    function getRoleFromEmail(email) { if (!email) return 'student'; const e = email.toLowerCase(); if (e.includes('admin') || e === 'tyren@genztutors.com') return 'admin'; if (e.includes('tutor') || e === 'lilonke@genztutors.com') return 'tutor'; return 'student'; }
-    function getTutorNameFromEmail(email) { if (!email) return ''; const e = email.toLowerCase(); if (e.includes('lilonke')) return 'Lilonke Breakfast'; if (e.includes('tyren')) return 'Tyren K.M'; if (e.includes('thapelo')) return 'Thapelo'; if (e.includes('mike')) return 'Mike'; if (e.includes('fulufhelo')) return 'Fulufhelo Masevhe'; return 'Tutor'; }
-
-    window.openDashboard = function(targetView = null) {
-        if (!currentUserData) return;
-        localStorage.setItem('isDashboardOpen', 'true'); 
-        mainHeader.classList.add('hidden'); landingPageContent.classList.add('hidden'); appDashboard.classList.remove('hidden'); window.scrollTo(0, 0);
-        const role = getRoleFromEmail(currentUserData.email); document.getElementById('dashUserRole').textContent = role; document.getElementById('dashUserEmail').textContent = currentUserData.email;
-        renderDashboardNavigation(role);
+    function moveToStep(stepNumber) {
+        document.querySelectorAll('.booking-step').forEach(step => step.classList.add('hidden'));
+        document.querySelectorAll('.booking-step-tab').forEach(tab => tab.classList.remove('active'));
         
-        if (targetView && targetView.trim() !== '' && targetView !== 'null' && targetView.startsWith(role)) {
-            renderDashView(targetView);
-        } else {
-            renderDashView(`${role}-home`);
-        }
-    }
-
-    window.goToHome = function() { 
-        localStorage.setItem('isDashboardOpen', 'false'); 
-        appDashboard.classList.add('hidden'); 
-        mainHeader.classList.remove('hidden'); 
-        landingPageContent.classList.remove('hidden'); 
-        window.scrollTo(0, 0); 
-    }
-    
-    window.logoutUser = async function() { 
-        if(firebaseAuth) await window.signOut(firebaseAuth); 
-        localStorage.removeItem('activeDashView'); 
-        localStorage.setItem('isDashboardOpen', 'false');
-        goToHome(); 
-    };
-
-    function renderDashboardNavigation(role) {
-        let links = '';
-        if (role === 'student') links = `<a class="dash-sidebar-link" data-view="student-home" onclick="renderDashView('student-home')"><i class="fa-solid fa-house"></i> Home</a><a class="dash-sidebar-link" data-view="student-schedule" onclick="renderDashView('student-schedule')"><i class="fa-solid fa-calendar"></i> My Schedule</a><a class="dash-sidebar-link" data-view="student-materials" onclick="renderDashView('student-materials')"><i class="fa-solid fa-folder-open"></i> Study Materials</a><a class="dash-sidebar-link" data-view="student-finance" onclick="renderDashView('student-finance')"><i class="fa-solid fa-wallet"></i> Finances & Credits</a><a class="dash-sidebar-link" data-view="student-messages" onclick="renderDashView('student-messages')"><i class="fa-solid fa-comments"></i> Messages</a>`;
-        else if (role === 'tutor') links = `<a class="dash-sidebar-link" data-view="tutor-home" onclick="renderDashView('tutor-home')"><i class="fa-solid fa-chalkboard-user"></i> Dashboard</a><a class="dash-sidebar-link" data-view="tutor-schedule" onclick="renderDashView('tutor-schedule')"><i class="fa-solid fa-calendar-check"></i> Lesson Roster</a><a class="dash-sidebar-link" data-view="tutor-finance" onclick="renderDashView('tutor-finance')"><i class="fa-solid fa-money-bill-trend-up"></i> Income & Earnings</a><a class="dash-sidebar-link" data-view="tutor-tools" onclick="renderDashView('tutor-tools')"><i class="fa-solid fa-toolbox"></i> Platform Tools</a><a class="dash-sidebar-link" data-view="tutor-messages" onclick="renderDashView('tutor-messages')"><i class="fa-solid fa-comments"></i> Messages</a>`;
-        else links = `<a class="dash-sidebar-link" data-view="admin-home" onclick="renderDashView('admin-home')"><i class="fa-solid fa-chart-line"></i> Overview</a><a class="dash-sidebar-link" data-view="admin-bookings" onclick="renderDashView('admin-bookings')"><i class="fa-solid fa-list-check"></i> All Bookings</a><a class="dash-sidebar-link" data-view="admin-users" onclick="renderDashView('admin-users')"><i class="fa-solid fa-users"></i> Manage Users</a><a class="dash-sidebar-link" data-view="admin-finance" onclick="renderDashView('admin-finance')"><i class="fa-solid fa-vault"></i> Master Financials</a><a class="dash-sidebar-link" data-view="admin-messages" onclick="renderDashView('admin-messages')"><i class="fa-solid fa-comments"></i> Communications</a>`;
-        dashNav.innerHTML = links;
-    }
-
-    function generateDynamicTutorContacts() {
-        if(!currentUserData) return '';
-        const allBookings = safeJSONParse('genZTutorsBookings', []); const myTutorName = getTutorNameFromEmail(currentUserData.email); const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-        const uniqueStudents = {}; myBookings.forEach(b => { uniqueStudents[b.student.email] = `${b.student.firstName} ${b.student.lastName}`; });
-        let contactsHtml = '';
-        for (const [email, name] of Object.entries(uniqueStudents)) contactsHtml += `<button onclick="selectChat('${escapeHTML(name)}', '${escapeHTML(email)}')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div><div><p class="font-bold">${escapeHTML(name)}</p><p class="text-xs text-slate-400">Student</p></div></button>`;
-        if (contactsHtml === '') contactsHtml = '<p class="text-xs text-slate-500 italic p-2">You have no booked students yet.</p>'; return contactsHtml;
-    }
-
-    window.renderDashView = function(view) {
-        if(!currentUserData) return;
+        document.querySelector(`[data-booking-step="${stepNumber}"]`).classList.remove('hidden');
+        document.querySelector(`[data-step-tab="${stepNumber}"]`).classList.add('active');
         
-        localStorage.setItem('activeDashView', view);
-        document.querySelectorAll('.dash-sidebar-link').forEach(el => { el.classList.remove('active'); if (el.getAttribute('data-view') === view) el.classList.add('active'); });
-        
-        if (window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
-        
-        currentChatContactEmail = null; currentChatContactName = null; let html = ''; 
-        const allBookings = safeJSONParse('genZTutorsBookings', []);
-
-        // ------------- STUDENT VIEWS -------------
-        if (view === 'student-home') {
-            const myBookings = allBookings.filter(b => b.student.email === currentUserData.email);
-            html = `<h2 class="text-3xl font-bold mb-6">Welcome back, ${escapeHTML(currentUserData.email.split('@')[0])}!</h2><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="dash-card"><p class="text-slate-400 mb-1">Upcoming Lessons</p><h3 class="text-3xl font-bold text-sky-400">${myBookings.length}</h3></div><div class="dash-card"><p class="text-slate-400 mb-1">Account Balance</p><h3 class="text-3xl font-bold text-emerald-400">R0.00</h3></div><div class="dash-card"><p class="text-slate-400 mb-1">New Materials</p><h3 class="text-3xl font-bold text-orange-400">0</h3></div></div><div class="mt-8"><button onclick="goToHome(); setTimeout(() => document.getElementById('booking').scrollIntoView({behavior: 'smooth'}), 100);" class="bg-orange-500 hover:bg-orange-600 transition px-8 py-4 rounded-xl font-bold shadow-lg shadow-orange-500/20 text-lg"><i class="fa-solid fa-calendar-plus mr-2"></i> Schedule a New Lesson</button></div>`;
-        } 
-        else if (view === 'student-schedule') {
-            const myBookings = allBookings.filter(b => b.student.email === currentUserData.email);
-            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.modules.join(', '))}</p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p></div><div class="text-left sm:text-right"><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span></div></div>`).join('');
-            if(!bList) bList = '<p class="text-slate-400">You have no upcoming lessons scheduled.</p>';
-            html = `<h2 class="text-3xl font-bold mb-6">My Schedule</h2><div class="dash-card border-sky-500/30">${bList}</div>`;
-        }
-        else if (view === 'student-materials') {
-            html = `<h2 class="text-3xl font-bold mb-6">Study Materials</h2><div class="grid md:grid-cols-2 gap-4"><div class="dash-card flex justify-between items-center"><div><h4 class="font-bold">Accounting 101 Notes</h4><p class="text-xs text-slate-400">PDF • 2.4 MB</p></div><button class="text-sky-400 hover:text-white"><i class="fa-solid fa-download"></i></button></div><div class="dash-card flex justify-between items-center"><div><h4 class="font-bold">Economics Past Paper</h4><p class="text-xs text-slate-400">PDF • 1.1 MB</p></div><button class="text-sky-400 hover:text-white"><i class="fa-solid fa-download"></i></button></div></div>`;
-        }
-        else if (view === 'student-finance') {
-            const myBookings = allBookings.filter(b => b.student.email === currentUserData.email);
-            const totalSpent = myBookings.reduce((sum, b) => sum + b.total, 0);
-            html = `<h2 class="text-3xl font-bold mb-6">Finances & Credits</h2><div class="dash-card mb-6 border-emerald-500/30"><p class="text-slate-400">Total Spent on Lessons</p><h3 class="text-4xl font-bold text-emerald-400">R${totalSpent}</h3></div><p class="text-sm text-slate-400">Payments are arranged securely via PayFast, EFT or Yoco links sent via WhatsApp after booking.</p>`;
-        }
-        else if (view === 'student-messages') {
-            html = `
-                <h2 class="text-3xl font-bold mb-6">Messages</h2>
-                <div class="grid md:grid-cols-3 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
-                    <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
-                        <h3 class="font-bold mb-4 text-slate-300">Contacts</h3>
-                        <button onclick="selectChat('Lilonke (Accounting)')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center"><i class="fa-solid fa-chalkboard-user text-sky-400"></i></div><div><p class="font-bold">Lilonke</p><p class="text-xs text-sky-400">Accounting Tutor</p></div></button>
-                        <button onclick="selectChat('Tyren M. (Commerce)')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-crown text-slate-300"></i></div><div><p class="font-bold">Tyren M.</p><p class="text-xs text-slate-400">Commerce Tutor</p></div></button>
-                        <button onclick="selectChat('Admin Support')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mt-4"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-headset text-orange-400"></i></div><div><p class="font-bold text-orange-400">Admin Support</p><p class="text-xs text-slate-400">Billing & Issues</p></div></button>
-                    </div>
-                    <div class="dash-card col-span-2 flex flex-col p-6 relative">
-                        <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center"><h3 class="font-bold text-lg" id="chatHeaderName">Select a Contact</h3></div>
-                        <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2" id="chatMessagesArea"><div class="text-center text-slate-500 text-sm mt-10">Select a contact from the left menu to view messages.</div></div>
-                        <div id="attachmentIndicator" class="hidden items-center justify-between bg-sky-500/20 border border-sky-500/40 rounded-lg p-2 mb-3"><div class="flex items-center gap-2 overflow-hidden"><i class="fa-solid fa-file-lines text-sky-400"></i><span id="attachmentName" class="text-sm truncate text-slate-200">filename.txt</span></div><button onclick="removeAttachment()" class="text-slate-400 hover:text-white px-2"><i class="fa-solid fa-xmark"></i></button></div>
-                        <div class="mt-auto flex gap-2 items-center bg-[#09111d] border border-white/10 rounded-xl p-1 pr-2"><label class="cursor-pointer text-slate-400 hover:text-white transition p-3" title="Attach File"><i class="fa-solid fa-paperclip text-lg"></i><input type="file" class="hidden" onchange="handleFileSelect(event)"></label><input type="text" id="chatInput" placeholder="Type a message..." class="bg-transparent border-none outline-none text-white flex-1 py-3 px-2 text-sm"><button onclick="sendMessage()" id="chatSendBtn" class="bg-sky-500 hover:bg-sky-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold transition shadow-lg"><i class="fa-solid fa-paper-plane"></i></button></div>
-                    </div>
-                </div>`;
-        }
-
-        // ------------- TUTOR VIEWS -------------
-        else if (view === 'tutor-home') {
-            const myTutorName = getTutorNameFromEmail(currentUserData.email);
-            const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-            const expectedInc = myBookings.reduce((sum, b) => sum + (b.total/b.tutors.length), 0);
-            html = `<h2 class="text-3xl font-bold mb-6">Tutor Dashboard</h2><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="dash-card border-sky-500/30"><p class="text-slate-400 mb-1">Total Expected Income</p><h3 class="text-3xl font-bold text-white">R${expectedInc}</h3></div><div class="dash-card border-emerald-500/30"><p class="text-emerald-400 mb-1 text-sm"><i class="fa-solid fa-check-circle"></i> Accrued (Taught)</p><h3 class="text-2xl font-bold text-emerald-400">R0</h3></div><div class="dash-card border-orange-500/30"><p class="text-orange-400 mb-1 text-sm"><i class="fa-solid fa-clock"></i> Upcoming Bookings</p><h3 class="text-2xl font-bold text-orange-400">${myBookings.length}</h3></div></div>`;
-        } 
-        else if (view === 'tutor-schedule') {
-            const myTutorName = getTutorNameFromEmail(currentUserData.email);
-            const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400">R${b.total / b.tutors.length}</p></div></div>`).join('');
-            if(!bList) bList = '<p class="text-slate-400">You have no students scheduled yet.</p>';
-            html = `<h2 class="text-3xl font-bold mb-6">Lesson Roster</h2><div class="dash-card border-sky-500/30">${bList}</div>`;
-        }
-        else if (view === 'tutor-finance') {
-            const myTutorName = getTutorNameFromEmail(currentUserData.email);
-            const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-            const expectedInc = myBookings.reduce((sum, b) => sum + (b.total/b.tutors.length), 0);
-            html = `<h2 class="text-3xl font-bold mb-6">Income & Earnings</h2><div class="dash-card mb-6 border-emerald-500/30"><p class="text-slate-400">Total Generated Revenue</p><h3 class="text-4xl font-bold text-emerald-400">R${expectedInc}</h3></div><p class="text-sm text-slate-400">Payouts are processed at the end of each weekend shift. Contact Admin for disputes.</p>`;
-        }
-        else if (view === 'tutor-tools') {
-            html = `<h2 class="text-3xl font-bold mb-6">Platform Tools & Resources</h2><div class="grid md:grid-cols-2 gap-6"><div class="dash-card"><h3 class="font-bold text-xl mb-2"><i class="fa-solid fa-video text-sky-400 mr-2"></i> Lesson Recording</h3><p class="text-slate-400 text-sm mb-4">Tools approved for recording sessions for students to review.</p><div class="flex gap-2"><a href="https://zoom.us" target="_blank" class="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold">Launch Zoom</a><a href="https://obsproject.com" target="_blank" class="bg-slate-700 px-4 py-2 rounded-lg text-sm font-bold">Get OBS</a></div></div><div class="dash-card"><h3 class="font-bold text-xl mb-2"><i class="fa-solid fa-cloud text-orange-400 mr-2"></i> Resource Drive</h3><p class="text-slate-400 text-sm mb-4">Access Gen Z Tutors master study guides, past papers, and memos.</p><button class="bg-orange-500 px-4 py-2 rounded-lg text-sm font-bold">Open Google Drive</button></div></div>`;
-        }
-        else if (view === 'tutor-messages') {
-            const dynamicStudentContacts = generateDynamicTutorContacts();
-            html = `
-                <h2 class="text-3xl font-bold mb-6">Tutor Communications</h2>
-                <div class="grid md:grid-cols-3 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
-                    <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
-                        <h3 class="font-bold mb-4 text-slate-300">Management</h3>
-                        <button onclick="selectChat('Admin Support')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-orange-400"></i></div><div><p class="font-bold text-orange-400">Admin / System</p><p class="text-xs text-slate-400">Priority Channel</p></div></button>
-                        <h3 class="font-bold mb-4 text-slate-300">Your Students</h3>
-                        ${dynamicStudentContacts}
-                    </div>
-                    <div class="dash-card col-span-2 flex flex-col p-6 relative">
-                        <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center"><h3 class="font-bold text-lg" id="chatHeaderName">Select a Contact</h3></div>
-                        <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2" id="chatMessagesArea"><div class="text-center text-slate-500 text-sm mt-10">Select a contact from the left menu.</div></div>
-                        <div id="attachmentIndicator" class="hidden items-center justify-between bg-sky-500/20 border border-sky-500/40 rounded-lg p-2 mb-3"><div class="flex items-center gap-2 overflow-hidden"><i class="fa-solid fa-file-lines text-sky-400"></i><span id="attachmentName" class="text-sm truncate text-slate-200">filename.txt</span></div><button onclick="removeAttachment()" class="text-slate-400 hover:text-white px-2"><i class="fa-solid fa-xmark"></i></button></div>
-                        <div class="mt-auto flex gap-2 items-center bg-[#09111d] border border-white/10 rounded-xl p-1 pr-2"><label class="cursor-pointer text-slate-400 hover:text-white transition p-3" title="Attach File"><i class="fa-solid fa-paperclip text-lg"></i><input type="file" class="hidden" onchange="handleFileSelect(event)"></label><input type="text" id="chatInput" placeholder="Type a message..." class="bg-transparent border-none outline-none text-white flex-1 py-3 px-2 text-sm"><button onclick="sendMessage()" id="chatSendBtn" class="bg-sky-500 hover:bg-sky-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold transition shadow-lg"><i class="fa-solid fa-paper-plane"></i></button></div>
-                    </div>
-                </div>`;
-        }
-
-        // ------------- ADMIN VIEWS -------------
-        else if (view === 'admin-home') {
-            const totalRev = allBookings.reduce((sum, b) => sum + b.total, 0);
-            html = `<h2 class="text-3xl font-bold mb-6">Admin Overview</h2><div class="grid md:grid-cols-4 gap-4 mb-8"><div class="dash-card"><p class="text-slate-400 text-sm">Total Revenue</p><h3 class="text-2xl font-bold text-emerald-400">R${totalRev}</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">System Bookings</p><h3 class="text-2xl font-bold text-white">${allBookings.length}</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">Pending Support</p><h3 class="text-2xl font-bold text-orange-400">0</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">Tutors Active</p><h3 class="text-2xl font-bold text-sky-400">5</h3></div></div>`;
-        } 
-        else if (view === 'admin-bookings') {
-            let bList = allBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p><p class="text-xs text-slate-500 mt-1">${escapeHTML(b.student.email)} • ${escapeHTML(b.student.phone)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400 mb-1">R${b.total}</p><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span></div></div>`).join('');
-            if(!bList) bList = '<p class="text-slate-400">No bookings exist in the system yet.</p>';
-            html = `<h2 class="text-3xl font-bold mb-6">All Bookings Master List</h2><div class="dash-card border-orange-500/30">${bList}</div>`;
-        }
-        else if (view === 'admin-users') {
-            html = `<h2 class="text-3xl font-bold mb-6">Manage Users</h2><div class="dash-card"><table class="w-full text-left border-collapse"><thead><tr class="border-b border-white/10 text-slate-400"><th class="pb-3">User</th><th class="pb-3">Role</th><th class="pb-3">Status</th></tr></thead><tbody><tr class="border-b border-white/5"><td class="py-3 font-bold">${escapeHTML(currentUserData.email)}</td><td class="py-3 text-sky-400">Admin</td><td class="py-3 text-emerald-400">Active (You)</td></tr><tr class="border-b border-white/5"><td class="py-3 font-bold">lilonke@genztutors.com</td><td class="py-3 text-orange-400">Tutor</td><td class="py-3 text-emerald-400">Active</td></tr></tbody></table></div>`;
-        }
-        else if (view === 'admin-finance') {
-            const totalRev = allBookings.reduce((sum, b) => sum + b.total, 0);
-            html = `<h2 class="text-3xl font-bold mb-6">Master Financials</h2><div class="dash-card mb-6 border-emerald-500/30"><p class="text-slate-400">Total Platform Revenue Generated</p><h3 class="text-4xl font-bold text-emerald-400">R${totalRev}</h3></div>`;
-        }
-        else if (view === 'admin-messages') {
-            html = `
-                <h2 class="text-3xl font-bold mb-6">Master Communications</h2>
-                <div class="grid md:grid-cols-3 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
-                    <div class="dash-card col-span-1 overflow-y-auto space-y-2 p-4">
-                        <h3 class="font-bold mb-4 text-slate-300">Broadcasts</h3>
-                        <button onclick="selectChat('All Tutors (Broadcast)')" class="w-full text-left p-3 rounded-xl hover:bg-orange-500/10 border border-transparent transition flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><i class="fa-solid fa-bullhorn text-orange-400"></i></div><div><p class="font-bold text-orange-400">All Tutors</p><p class="text-xs text-slate-400">Broadcast</p></div></button>
-                        <h3 class="font-bold mb-4 text-slate-300">Tutors</h3>
-                        <button onclick="selectChat('Lilonke (Accounting)', 'lilonke@genztutors.com')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user-tie text-slate-300"></i></div><div><p class="font-bold">Lilonke</p><p class="text-xs text-slate-400">Tutor</p></div></button>
-                    </div>
-                    <div class="dash-card col-span-2 flex flex-col p-6 relative">
-                        <div class="border-b border-white/10 pb-4 mb-4 flex justify-between items-center"><h3 class="font-bold text-lg text-orange-400" id="chatHeaderName">Select a Channel</h3></div>
-                        <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2" id="chatMessagesArea"><div class="text-center text-slate-500 text-sm mt-10">Select a channel from the left to broadcast or message.</div></div>
-                        <div id="attachmentIndicator" class="hidden items-center justify-between bg-sky-500/20 border border-sky-500/40 rounded-lg p-2 mb-3"><div class="flex items-center gap-2 overflow-hidden"><i class="fa-solid fa-file-lines text-sky-400"></i><span id="attachmentName" class="text-sm truncate text-slate-200">filename.txt</span></div><button onclick="removeAttachment()" class="text-slate-400 hover:text-white px-2"><i class="fa-solid fa-xmark"></i></button></div>
-                        <div class="mt-auto flex gap-2 items-center bg-[#09111d] border border-white/10 rounded-xl p-1 pr-2"><label class="cursor-pointer text-slate-400 hover:text-white transition p-3" title="Attach Document"><i class="fa-solid fa-paperclip text-lg"></i><input type="file" class="hidden" onchange="handleFileSelect(event)"></label><input type="text" id="chatInput" placeholder="Type message..." class="bg-transparent border-none outline-none text-white flex-1 py-3 px-2 text-sm"><button onclick="sendMessage()" id="chatSendBtn" class="bg-orange-500 hover:bg-orange-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold transition shadow-lg"><i class="fa-solid fa-paper-plane"></i></button></div>
-                    </div>
-                </div>`;
-        }
-        dashContentArea.innerHTML = html;
-    };
-
-    // --- FULL ORIGINAL BOOKING SYSTEM LOGIC ---
-    const academicLevels = ['High School', 'BAcc 1st Year', 'BCom 1st Year', '2nd Year'];
-    const modulesByLevel = { 'High School': ['Economics', 'Maths', 'Physics', 'Accounting'], 'BAcc 1st Year': ['Accounting (EFIN1/FACC1)'], 'BCom 1st Year': ['Accounting', 'Commercial Law', 'Economics'], '2nd Year': ['Tax (Tax1/2)', 'Accounting (EFIN2/FACC2)', 'Managerial/Cost & Financial Management (MFM/CFM)'] };
-    const bookingTutors = [{ id: 'tyren', name: 'Tyren K.M', rating: 4.9, modules: ['Economics', 'Accounting', 'Tax', 'Commercial Law'] }, { id: 'lilonke', name: 'Lilonke Breakfast', rating: 4.95, modules: ['Accounting', 'Economics'] }, { id: 'fulufhelo', name: 'Fulufhelo Masevhe', rating: 4.85, modules: ['Maths', 'Accounting', 'Tax'] }, { id: 'thapelo', name: 'Thapelo', rating: 4.8, modules: ['Commerce', 'Business Studies', 'Economics'] }, { id: 'mike', name: 'Mike', rating: 4.8, modules: ['Academic Mentorship', 'Commerce'] }];
-    const onlinePlatforms = ['Zoom', 'Google Meet', 'Jitsi Meet'], inPersonVenues = ['UFS Campus', 'Student Home', "Tutor's Office", 'Library', 'Coffee Shop'], timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'];
-    const bookingRatePerTutor = 150;
-    const bookingState = { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' };
-
-    function bookingEls() { return { app: document.getElementById('bookingApp'), notice: document.getElementById('bookingAuthNotice'), message: document.getElementById('bookingMessage'), levels: document.getElementById('academicLevelOptions'), moduleArea: document.getElementById('moduleArea'), modules: document.getElementById('moduleOptions'), tutors: document.getElementById('tutorOptions'), lessonType: document.getElementById('bookingLessonType'), venue: document.getElementById('bookingVenue'), venueLabel: document.getElementById('bookingVenueLabel'), duration: document.getElementById('bookingDuration'), date: document.getElementById('bookingDate'), nextWeekendHint: document.getElementById('nextWeekendHint'), times: document.getElementById('timeSlotOptions'), notes: document.getElementById('bookingNotes'), summary: document.getElementById('bookingSummary'), total: document.getElementById('bookingTotal'), firstName: document.getElementById('bookingFirstName'), lastName: document.getElementById('bookingLastName'), email: document.getElementById('bookingEmail'), phone: document.getElementById('bookingPhone'), idNumber: document.getElementById('bookingIdNumber') }; }
-    function showBookingMessage(message, type = 'error') { const el = bookingEls().message; if (!el) return; el.textContent = message; el.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); el.classList.add('border'); if (type === 'success') el.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); else el.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30'); }
-    function clearBookingMessage() { const el = bookingEls().message; if (el) el.classList.add('hidden'); }
-    function getBookedSlots() { return safeJSONParse('genZTutorsBookedSlots', {}); }
-    function saveBookedSlot(date, time) { const bookedSlots = getBookedSlots(); bookedSlots[`${date}|${time}`] = true; localStorage.setItem('genZTutorsBookedSlots', JSON.stringify(bookedSlots)); }
-    function isBookedSlot(time) { return Boolean(getBookedSlots()[`${bookingState.date}|${time}`]); }
-    function isWeekend(dateValue) { if (!dateValue) return false; const [year, month, day] = dateValue.split('-').map(Number); const date = new Date(year, month - 1, day); return date.getDay() === 0 || date.getDay() === 6; }
-    function getNextWeekendDate() { const date = new Date(); date.setHours(0, 0, 0, 0); while (date.getDay() !== 0 && date.getDay() !== 6) date.setDate(date.getDate() + 1); return date.toISOString().split('T')[0]; }
-    
-    function setBookingStep(step) {
-        bookingState.step = step;
-        document.querySelectorAll('[data-booking-step]').forEach(panel => panel.classList.toggle('hidden', panel.dataset.bookingStep !== String(step)));
-        document.querySelectorAll('[data-step-tab]').forEach(tab => { const tabStep = Number(tab.dataset.stepTab); tab.classList.toggle('active', tabStep === step); tab.classList.toggle('bg-emerald-500/20', tabStep < step); });
-        clearBookingMessage(); if (step === 4) renderBookingSummary();
-    }
-    
-    function validateBookingStep(step) {
-        if (step === 1 && bookingState.modules.length === 0) return 'Please select at least one module.';
-        if (step === 2 && bookingState.tutors.length === 0) return 'Please choose at least one tutor.';
-        if (step === 2 && (!bookingState.lessonType || !bookingState.venue || !bookingState.duration)) return 'Please choose the lesson type, platform or venue, and duration.';
-        if (step === 3 && (!bookingState.date || !bookingState.time)) return 'Please choose a Saturday/Sunday date and an available time slot.';
-        return '';
-    }
-    
-    function renderAcademicLevels() { const els = bookingEls(); if (!els.levels) return; els.levels.innerHTML = academicLevels.map(level => `<button type="button" class="booking-choice text-left ${bookingState.academicLevel === level ? 'active' : ''}" data-academic-level="${level}"><span class="font-bold">${level}</span></button>`).join(''); }
-    function renderModules() { const els = bookingEls(); if (!els.modules || !els.moduleArea) return; els.moduleArea.classList.toggle('hidden', !bookingState.academicLevel); const modules = modulesByLevel[bookingState.academicLevel] || []; els.modules.innerHTML = modules.map(module => `<label class="booking-choice flex items-center gap-3 ${bookingState.modules.includes(module) ? 'active' : ''}"><input type="checkbox" class="booking-module accent-sky-500" value="${module}" ${bookingState.modules.includes(module) ? 'checked' : ''}><span>${module}</span></label>`).join(''); }
-    function matchingTutors() { if (bookingState.modules.length === 0) return bookingTutors; return bookingTutors.filter(tutor => bookingState.modules.some(module => tutor.modules.some(tutorModule => module.toLowerCase().includes(tutorModule.toLowerCase()) || tutorModule.toLowerCase().includes(module.split(' ')[0].toLowerCase())))); }
-    function renderTutors() { const els = bookingEls(); if (!els.tutors) return; const tutors = matchingTutors(); els.tutors.innerHTML = tutors.map(tutor => `<button type="button" class="booking-choice text-left ${bookingState.tutors.includes(tutor.id) ? 'active' : ''}" data-tutor-id="${tutor.id}"><div class="flex items-start justify-between gap-4"><div><p class="font-bold">${tutor.name}</p><p class="text-sm text-slate-300">Star ${tutor.rating} • ${tutor.modules.join(', ')}</p></div><span class="h-5 w-5 rounded border border-white/25 flex-shrink-0 ${bookingState.tutors.includes(tutor.id) ? 'bg-sky-500' : ''}"></span></div></button>`).join(''); }
-    function renderVenueOptions() { const els = bookingEls(); if (!els.venue) return; const options = bookingState.lessonType === 'Online' ? onlinePlatforms : bookingState.lessonType === 'In-Person' ? inPersonVenues : []; els.venueLabel.textContent = bookingState.lessonType === 'Online' ? 'Platform' : bookingState.lessonType === 'In-Person' ? 'Venue' : 'Platform / Venue'; els.venue.innerHTML = '<option value="">Select platform or venue</option>' + options.map(option => `<option>${option}</option>`).join(''); els.venue.value = bookingState.venue; }
-    function renderTimeSlots() { const els = bookingEls(); if (!els.times) return; els.times.innerHTML = timeSlots.map(slot => { const booked = isBookedSlot(slot); const active = bookingState.time === slot; return `<button type="button" class="time-slot rounded-xl px-3 py-3 font-semibold transition ${booked ? 'booked' : active ? 'bg-orange-500 text-white' : 'bg-white/10 hover:bg-white/15 text-white'}" data-time-slot="${slot}" ${booked ? 'disabled' : ''}>${slot}</button>`; }).join(''); }
-    function renderBookingSummary() { const els = bookingEls(); const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name); const rows = [['Academic Level', bookingState.academicLevel], ['Modules', bookingState.modules.join(', ')], ['Tutors', tutorNames.join(', ')], ['Lesson Type', bookingState.lessonType], ['Platform / Venue', bookingState.venue], ['Duration', bookingState.duration], ['Date & Time', `${bookingState.date} at ${bookingState.time}`], ['Notes', escapeHTML(bookingState.notes) || 'None']]; els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join(''); els.total.textContent = `R${bookingState.tutors.length * bookingRatePerTutor}`; if (currentUserData && !els.email.value) els.email.value = currentUserData.email; }
-    function resetBooking() { Object.assign(bookingState, { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' }); ['bookingLessonType', 'bookingVenue', 'bookingDuration', 'bookingDate', 'bookingNotes', 'bookingFirstName', 'bookingLastName', 'bookingEmail', 'bookingPhone', 'bookingIdNumber'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); renderBookingAll(); setBookingStep(1); }
-    function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
-
-    async function saveBookingToFirebase(booking) {
-        if (!firebaseAuth || !currentUserData) return false;
-        try {
-            const savePromise = (async () => { const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js'); const db = firestoreModule.getFirestore(firebaseAuth.app); await firestoreModule.addDoc(firestoreModule.collection(db, 'bookings'), { ...booking, userId: currentUserData.uid, userEmail: currentUserData.email, status: 'pending', createdAt: firestoreModule.serverTimestamp() }); return true; })();
-            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 5000));
-            return await Promise.race([savePromise, timeoutPromise]);
-        } catch (error) { return false; }
-    }
-    
-    function buildWhatsAppBookingUrl(booking, savedOnline) { const lines = ['New Gen Z Tutors booking request', '', `Name: ${booking.student.firstName} ${booking.student.lastName}`, `Email: ${booking.student.email}`, `Phone: ${booking.student.phone}`, `Academic Level: ${booking.academicLevel}`, `Modules: ${booking.modules.join(', ')}`, `Tutors: ${booking.tutors.map(t => t.name).join(', ')}`, `Lesson Type: ${booking.lessonType}`, `Platform/Venue: ${booking.venue}`, `Duration: ${booking.duration}`, `Date/Time: ${booking.date} at ${booking.time}`, `Total: R${booking.total}`, booking.notes ? `Notes: ${booking.notes}` : '', savedOnline ? 'Saved online: Yes' : 'Saved online: Local backup only'].filter(Boolean); return `https://wa.me/27679256394?text=${encodeURIComponent(lines.join('\n'))}`; }
-    
-    async function submitBookingRequest() {
-        const els = bookingEls(); bookingState.notes = els.notes.value.trim(); const student = { firstName: els.firstName.value.trim(), lastName: els.lastName.value.trim(), email: els.email.value.trim(), phone: els.phone.value.trim(), idNumber: els.idNumber.value.trim() };
-        if (!student.firstName || !student.lastName || !student.email || !student.phone || !student.idNumber) { showBookingMessage('Please complete all required student details.'); return; }
-        const booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, duration: bookingState.duration, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: bookingState.tutors.length * bookingRatePerTutor, createdAt: new Date().toISOString() };
-        const submitBtn = document.getElementById('submitBookingRequest'); submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
-        const savedOnline = await saveBookingToFirebase(booking);
-        const existingBookings = safeJSONParse('genZTutorsBookings', []); existingBookings.push({ ...booking, savedOnline }); localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
-        saveBookedSlot(booking.date, booking.time); showBookingMessage(savedOnline ? 'Booking saved. Opening WhatsApp...' : 'Booking saved locally. Opening WhatsApp...', 'success'); renderTimeSlots();
-        if(localStorage.getItem('activeDashView')) renderDashView(localStorage.getItem('activeDashView'));
-        setTimeout(() => { window.open(buildWhatsAppBookingUrl(booking, savedOnline), '_blank'); resetBooking(); submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request'; }, 700);
+        if (stepNumber === '4') updateTimeSlots();
+        if (stepNumber === '5') generateBookingSummary();
     }
 
-    function setupBookingSystem() {
-        const els = bookingEls(); if (!els.app) return;
-        renderBookingAll(); setBookingStep(1);
-        document.getElementById('clearBookingStep1').addEventListener('click', () => { bookingState.academicLevel = ''; bookingState.modules = []; bookingState.tutors = []; renderBookingAll(); clearBookingMessage(); });
-        els.levels.addEventListener('click', event => { const button = event.target.closest('[data-academic-level]'); if (!button) return; bookingState.academicLevel = button.dataset.academicLevel; bookingState.modules = []; bookingState.tutors = []; renderBookingAll(); });
-        els.modules.addEventListener('change', event => { if (!event.target.classList.contains('booking-module')) return; const value = event.target.value; bookingState.modules = event.target.checked ? [...bookingState.modules, value] : bookingState.modules.filter(module => module !== value); bookingState.tutors = bookingState.tutors.filter(id => matchingTutors().some(tutor => tutor.id === id)); renderModules(); renderTutors(); });
-        els.tutors.addEventListener('click', event => { const button = event.target.closest('[data-tutor-id]'); if (!button) return; const id = button.dataset.tutorId; bookingState.tutors = bookingState.tutors.includes(id) ? bookingState.tutors.filter(tutorId => tutorId !== id) : [...bookingState.tutors, id]; renderTutors(); });
-        els.lessonType.addEventListener('change', event => { bookingState.lessonType = event.target.value; bookingState.venue = ''; renderVenueOptions(); });
-        els.venue.addEventListener('change', event => bookingState.venue = event.target.value);
-        els.duration.addEventListener('change', event => bookingState.duration = event.target.value);
-        els.date.addEventListener('change', event => { if (!isWeekend(event.target.value)) { event.target.value = ''; bookingState.date = ''; bookingState.time = ''; renderTimeSlots(); showBookingMessage('Please select a Saturday or Sunday.'); return; } bookingState.date = event.target.value; bookingState.time = ''; clearBookingMessage(); renderTimeSlots(); });
-        els.times.addEventListener('click', event => { const button = event.target.closest('[data-time-slot]'); if (!button || button.disabled) return; bookingState.time = button.dataset.timeSlot; renderTimeSlots(); });
-        els.notes.addEventListener('input', event => bookingState.notes = event.target.value.trim());
-        document.querySelectorAll('.booking-next').forEach(button => { button.addEventListener('click', () => { const error = validateBookingStep(bookingState.step); if (error) { showBookingMessage(error); return; } setBookingStep(Number(button.dataset.nextStep)); }); });
-        document.querySelectorAll('.booking-prev').forEach(button => button.addEventListener('click', () => setBookingStep(Number(button.dataset.prevStep))));
-        document.getElementById('submitBookingRequest').addEventListener('click', submitBookingRequest);
+    function validateStep(stepNumber) {
+        if (stepNumber === '1') return bookingData.packageType !== null;
+        if (stepNumber === '2') return bookingData.academicLevel !== null && bookingData.modules.length > 0;
+        if (stepNumber === '3') return bookingData.tutor !== null && document.getElementById('bookingLessonType').value && document.getElementById('bookingVenue').value;
+        if (stepNumber === '4') return bookingData.date !== null && bookingData.timeSlot !== null;
+        return true;
     }
-    setupBookingSystem();
 
+    function updateTimeSlots() {
+        const dateInput = document.getElementById('bookingDate');
+        if (!dateInput.value) {
+            const nextSaturday = getNextWeekend();
+            dateInput.value = nextSaturday;
+            updateNextWeekendHint(nextSaturday);
+        }
+
+        const selectedDate = new Date(dateInput.value);
+        const dayOfWeek = selectedDate.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        if (!isWeekend) {
+            alert('Lessons are only available on weekends (Saturday & Sunday) unless approved by admin.');
+            dateInput.value = '';
+            return;
+        }
+
+        const isBootcamp = bookingData.packageType === 'bootcamp';
+        const slots = generateTimeSlots(isBootcamp);
+        const slotsContainer = document.getElementById('timeSlotOptions');
+        slotsContainer.innerHTML = '';
+
+        slots.forEach(slot => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'time-slot';
+            btn.textContent = slot;
+            btn.onclick = () => selectTimeSlot(slot, btn);
+            slotsContainer.appendChild(btn);
+        });
+    }
+
+    function selectTimeSlot(slot, element) {
+        bookingData.timeSlot = slot;
+        document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function getNextWeekend() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        let daysUntilSaturday;
+
+        if (dayOfWeek === 0) daysUntilSaturday = 6;  // Sunday -> Saturday
+        else if (dayOfWeek === 6) daysUntilSaturday = 1;  // Saturday -> next Saturday
+        else daysUntilSaturday = 6 - dayOfWeek;
+
+        const nextSaturday = new Date(today);
+        nextSaturday.setDate(today.getDate() + daysUntilSaturday);
+        return nextSaturday.toISOString().split('T')[0];
+    }
+
+    function updateNextWeekendHint(dateStr) {
+        const date = new Date(dateStr);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        document.getElementById('nextWeekendHint').textContent = `Selected: ${dayName}, ${date.toLocaleDateString()}`;
+    }
+
+    function generateBookingSummary() {
+        const pkg = lessonPackages[bookingData.packageType];
+        const summary = `
+            <div><span class="text-slate-400">Package:</span> <strong>${pkg.name}</strong></div>
+            <div><span class="text-slate-400">Price:</span> <strong>R${pkg.price}</strong></div>
+            <div><span class="text-slate-400">Tutor:</span> <strong>${bookingData.tutor}</strong></div>
+            <div><span class="text-slate-400">Lesson Type:</span> <strong>${document.getElementById('bookingLessonType').value}</strong></div>
+            <div><span class="text-slate-400">Date & Time:</span> <strong>${bookingData.date} at ${bookingData.timeSlot}</strong></div>
+        `;
+        document.getElementById('bookingSummary').innerHTML = summary;
+        document.getElementById('bookingTotal').textContent = `R${pkg.price}`;
+    }
+
+    // Initialize booking on page load
+    document.addEventListener('DOMContentLoaded', initializeBooking);
 </script>
-
 </body>
 </html>
