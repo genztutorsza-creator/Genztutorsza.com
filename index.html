@@ -79,15 +79,16 @@
         .toast { background: rgba(16, 185, 129, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.4); color: white; padding: 1rem 1.5rem; border-radius: 1rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); animation: slideDown 0.3s ease forwards; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
+    
+    <style id="flicker-prevention"></style>
+    <script>
+        // Safely prevents flash without document.write blocking the parser
+        if(localStorage.getItem('isDashboardOpen') === 'true') {
+            document.getElementById('flicker-prevention').textContent = '#mainHeader, #landingPageContent { display: none !important; } #appDashboard { display: flex !important; }';
+        }
+    </script>
 </head>
 <body>
-
-<script>
-    // This executes instantly to prevent the screen from flashing the homepage if you refresh inside the dashboard
-    if(localStorage.getItem('isDashboardOpen') === 'true') {
-        document.write('<style>#mainHeader, #landingPageContent { display: none !important; } #appDashboard { display: flex !important; }</style>');
-    }
-</script>
 
 <div id="toastContainer"></div>
 
@@ -169,7 +170,7 @@
         </div>
         
         <div class="p-4 md:p-10 max-w-6xl mx-auto" id="dashContentArea">
-            </div>
+        </div>
     </main>
 </div>
 
@@ -508,6 +509,27 @@
 
 <script>
     // -----------------------------------------
+    // UTILITIES & SECURITY
+    // -----------------------------------------
+    function escapeHTML(str) {
+        if(!str) return '';
+        return String(str).replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag])
+        );
+    }
+
+    function safeJSONParse(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+        catch(e) { console.warn(`Failed to parse ${key}`, e); return fallback; }
+    }
+
+    // -----------------------------------------
     // THEME & MOBILE MENU & TESTIMONIALS & MODALS
     // -----------------------------------------
     const themeToggle = document.getElementById('themeToggle');
@@ -527,7 +549,14 @@
 
     let currentTestimonial = 0;
     const testimonials = document.querySelectorAll('.testimonial-slide');
-    window.changeTestimonial = function(index) {
+    
+    function autoTestimonial() {
+        window.changeTestimonial((currentTestimonial + 1) % testimonials.length, false);
+    }
+    
+    let testimonialInterval = setInterval(autoTestimonial, 6000);
+
+    window.changeTestimonial = function(index, resetTimer = true) {
         testimonials[currentTestimonial].classList.add('hidden'); testimonials[currentTestimonial].classList.remove('active');
         testimonials[index].classList.remove('hidden'); testimonials[index].classList.add('active');
         document.querySelectorAll('[onclick^="changeTestimonial"]').forEach((dot, i) => {
@@ -535,8 +564,12 @@
             else { dot.classList.remove('bg-orange-400'); dot.classList.add('bg-white/30'); }
         });
         currentTestimonial = index;
+        
+        if(resetTimer) {
+            clearInterval(testimonialInterval);
+            testimonialInterval = setInterval(autoTestimonial, 6000);
+        }
     }
-    setInterval(() => changeTestimonial((currentTestimonial + 1) % testimonials.length), 6000);
 
     window.openTutorProfile = function(tutor) { const modal = document.getElementById(tutor + 'Modal'); if (modal) { modal.classList.add('active'); document.body.style.overflow = 'hidden'; } }
     window.closeTutorProfile = function(tutor) { const modal = document.getElementById(tutor + 'Modal'); if (modal) { modal.classList.remove('active'); document.body.style.overflow = 'auto'; } }
@@ -622,7 +655,6 @@
 
     window.resetInactivityTimer = function() {
         const now = Date.now();
-        // Throttle updates to only fire once every 5 seconds to prevent browser crashing
         if (now - lastActivityTime < 5000 && warningTimer) return; 
         lastActivityTime = now;
 
@@ -643,7 +675,6 @@
         }
     }
     
-    // Listen for user activity
     ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(e => document.addEventListener(e, window.resetInactivityTimer, true));
 
     async function initializeFirebaseAuth(showErrors = false) {
@@ -671,7 +702,6 @@
                 browserLocalPersistence = authModule.browserLocalPersistence;
                 window.signOut = signOut; 
 
-                // Ensure strict browser local storage persistence for page refreshes
                 await setPersistence(firebaseAuth, browserLocalPersistence);
                 firebaseReady = true;
 
@@ -690,7 +720,6 @@
                         document.getElementById('bookingAuthNotice').classList.add('hidden'); 
                         document.getElementById('bookingApp').classList.remove('hidden');
 
-                        // Memory State Check for Page Refresh
                         const isDashOpen = localStorage.getItem('isDashboardOpen');
                         const savedView = localStorage.getItem('activeDashView'); 
                         if (isDashOpen === 'true') {
@@ -710,7 +739,6 @@
                         document.getElementById('bookingAuthNotice').classList.remove('hidden'); 
                         document.getElementById('bookingApp').classList.add('hidden');
                         
-                        // Clear memory and force home
                         localStorage.setItem('isDashboardOpen', 'false');
                         goToHome(); 
                     }
@@ -762,12 +790,11 @@
         }
     });
 
-    // Run Background Init
     initializeFirebaseAuth(false);
 
     function showToast(message) {
         const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div'); toast.className = 'toast flex items-center gap-3'; toast.innerHTML = `<i class="fa-solid fa-bell"></i> ${message}`;
+        const toast = document.createElement('div'); toast.className = 'toast flex items-center gap-3'; toast.innerHTML = `<i class="fa-solid fa-bell"></i> ${escapeHTML(message)}`;
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
     }
@@ -797,8 +824,8 @@
         document.getElementById('filePreviewModal').classList.remove('hidden');
         reader.onload = (e) => {
             const content = e.target.result; pendingAttachmentData = { name: file.name, type: file.type, content: content };
-            if (file.type.startsWith('image/')) previewArea.innerHTML = `<img src="${content}" class="max-w-full h-auto rounded mx-auto">`;
-            else if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.csv')) previewArea.innerHTML = `<textarea id="editFileText" class="w-full h-full min-h-[180px] bg-transparent text-slate-200 border-none outline-none resize-none font-mono text-sm">${content}</textarea>`;
+            if (file.type.startsWith('image/')) previewArea.innerHTML = `<img src="${escapeHTML(content)}" class="max-w-full h-auto rounded mx-auto">`;
+            else if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.csv')) previewArea.innerHTML = `<textarea id="editFileText" class="w-full h-full min-h-[180px] bg-transparent text-slate-200 border-none outline-none resize-none font-mono text-sm">${escapeHTML(content)}</textarea>`;
             else previewArea.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-file text-4xl text-slate-500 mb-2"></i><p>Preview not available for this file type.</p></div>`;
         };
         if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.csv')) reader.readAsText(file); else reader.readAsDataURL(file);
@@ -819,26 +846,30 @@
         currentChatContactName = name; 
         currentChatContactEmail = emailOverride || contactDirectory[name] || name; 
         const headerName = document.getElementById('chatHeaderName'); 
-        if (headerName) headerName.innerHTML = `<i class="fa-solid fa-user-circle mr-2 text-slate-400"></i> ${name}`; 
+        if (headerName) headerName.innerHTML = `<i class="fa-solid fa-user-circle mr-2 text-slate-400"></i> ${escapeHTML(name)}`; 
         if(window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
         renderChatHistory(); 
     };
 
+    window.downloadMockAttachment = function(filename) {
+        alert(`In a real app, this downloads: ${filename}`);
+    };
+
     function renderChatHistory() {
         const msgsArea = document.getElementById('chatMessagesArea'); if (!msgsArea || !currentChatContactEmail || !currentUserData) return;
-        const allMessages = JSON.parse(localStorage.getItem('genzMessages') || '[]'); const myEmail = currentUserData.email.toLowerCase();
+        const allMessages = safeJSONParse('genzMessages', []); const myEmail = currentUserData.email.toLowerCase();
         const chatHistory = allMessages.filter(m => (m.sender === myEmail && m.receiver === currentChatContactEmail) || (m.sender === currentChatContactEmail && m.receiver === myEmail) || (m.receiver === 'broadcast_tutors' && (myEmail.includes('tutor') || myEmail.includes('admin') || currentChatContactEmail === 'broadcast_tutors')));
-        if (chatHistory.length === 0) { msgsArea.innerHTML = `<div class="text-center text-slate-500 text-sm mt-10">This is the beginning of your conversation with ${currentChatContactName}.</div>`; return; }
+        if (chatHistory.length === 0) { msgsArea.innerHTML = `<div class="text-center text-slate-500 text-sm mt-10">This is the beginning of your conversation with ${escapeHTML(currentChatContactName)}.</div>`; return; }
         let html = '';
         chatHistory.forEach(msg => {
             const isMe = msg.sender === myEmail; const timeStr = new Date(msg.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             let attachmentHtml = '';
             if (msg.attachment) {
-                if (msg.attachment.type.startsWith('image/')) attachmentHtml = `<img src="${msg.attachment.content}" class="mt-2 max-w-[200px] rounded border border-white/20">`;
-                else attachmentHtml = `<a href="#" onclick="alert('In a real app, this downloads: ${msg.attachment.name}'); return false;" class="chat-attachment"><i class="fa-solid fa-file-arrow-down mr-2"></i>${msg.attachment.name}</a>`;
+                if (msg.attachment.type.startsWith('image/')) attachmentHtml = `<img src="${escapeHTML(msg.attachment.content)}" class="mt-2 max-w-[200px] rounded border border-white/20">`;
+                else attachmentHtml = `<a href="#" onclick="downloadMockAttachment('${escapeHTML(msg.attachment.name)}'); return false;" class="chat-attachment"><i class="fa-solid fa-file-arrow-down mr-2"></i>${escapeHTML(msg.attachment.name)}</a>`;
             }
-            if (isMe) html += `<div class="chat-message-sent"><p class="text-sm text-white">${msg.text}</p>${attachmentHtml}<p class="text-[10px] text-sky-200/50 mt-1 text-right">${timeStr}</p></div>`;
-            else { let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast from Admin • ` : ''; html += `<div class="chat-message-received"><p class="text-sm text-slate-200">${msg.text}</p>${attachmentHtml}<p class="text-[10px] text-slate-500 mt-1">${senderLabel}${timeStr}</p></div>`; }
+            if (isMe) html += `<div class="chat-message-sent"><p class="text-sm text-white">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-sky-200/50 mt-1 text-right">${timeStr}</p></div>`;
+            else { let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast from Admin • ` : ''; html += `<div class="chat-message-received"><p class="text-sm text-slate-200">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-slate-500 mt-1">${senderLabel}${timeStr}</p></div>`; }
         });
         msgsArea.innerHTML = html; msgsArea.scrollTop = msgsArea.scrollHeight; 
     }
@@ -848,7 +879,7 @@
         const inputEl = document.getElementById('chatInput'); const text = inputEl.value.trim();
         if (!text && !pendingAttachmentData) return; 
         const newMsg = { sender: currentUserData.email.toLowerCase(), receiver: currentChatContactEmail, text: text, attachment: pendingAttachmentData, time: new Date().toISOString() };
-        const allMessages = JSON.parse(localStorage.getItem('genzMessages') || '[]'); allMessages.push(newMsg); localStorage.setItem('genzMessages', JSON.stringify(allMessages));
+        const allMessages = safeJSONParse('genzMessages', []); allMessages.push(newMsg); localStorage.setItem('genzMessages', JSON.stringify(allMessages));
         inputEl.value = ''; removeAttachment(); renderChatHistory(); showToast(`Email notification dispatched to ${currentChatContactName}`);
     };
     document.addEventListener('keypress', function(e) { if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'chatInput') window.sendMessage(); });
@@ -861,7 +892,7 @@
 
     window.openDashboard = function(targetView = null) {
         if (!currentUserData) return;
-        localStorage.setItem('isDashboardOpen', 'true'); // Memory flag for refresh
+        localStorage.setItem('isDashboardOpen', 'true'); 
         mainHeader.classList.add('hidden'); landingPageContent.classList.add('hidden'); appDashboard.classList.remove('hidden'); window.scrollTo(0, 0);
         const role = getRoleFromEmail(currentUserData.email); document.getElementById('dashUserRole').textContent = role; document.getElementById('dashUserEmail').textContent = currentUserData.email;
         renderDashboardNavigation(role);
@@ -874,7 +905,7 @@
     }
 
     window.goToHome = function() { 
-        localStorage.setItem('isDashboardOpen', 'false'); // Memory flag for refresh
+        localStorage.setItem('isDashboardOpen', 'false'); 
         appDashboard.classList.add('hidden'); 
         mainHeader.classList.remove('hidden'); 
         landingPageContent.classList.remove('hidden'); 
@@ -898,10 +929,10 @@
 
     function generateDynamicTutorContacts() {
         if(!currentUserData) return '';
-        const allBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]'); const myTutorName = getTutorNameFromEmail(currentUserData.email); const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
+        const allBookings = safeJSONParse('genZTutorsBookings', []); const myTutorName = getTutorNameFromEmail(currentUserData.email); const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
         const uniqueStudents = {}; myBookings.forEach(b => { uniqueStudents[b.student.email] = `${b.student.firstName} ${b.student.lastName}`; });
         let contactsHtml = '';
-        for (const [email, name] of Object.entries(uniqueStudents)) contactsHtml += `<button onclick="selectChat('${name}', '${email}')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div><div><p class="font-bold">${name}</p><p class="text-xs text-slate-400">Student</p></div></button>`;
+        for (const [email, name] of Object.entries(uniqueStudents)) contactsHtml += `<button onclick="selectChat('${escapeHTML(name)}', '${escapeHTML(email)}')" class="w-full text-left p-3 rounded-xl hover:bg-white/10 border border-transparent transition flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-user text-slate-300"></i></div><div><p class="font-bold">${escapeHTML(name)}</p><p class="text-xs text-slate-400">Student</p></div></button>`;
         if (contactsHtml === '') contactsHtml = '<p class="text-xs text-slate-500 italic p-2">You have no booked students yet.</p>'; return contactsHtml;
     }
 
@@ -914,16 +945,16 @@
         if (window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
         
         currentChatContactEmail = null; currentChatContactName = null; let html = ''; 
-        const allBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]');
+        const allBookings = safeJSONParse('genZTutorsBookings', []);
 
         // ------------- STUDENT VIEWS -------------
         if (view === 'student-home') {
             const myBookings = allBookings.filter(b => b.student.email === currentUserData.email);
-            html = `<h2 class="text-3xl font-bold mb-6">Welcome back, ${currentUserData.email.split('@')[0]}!</h2><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="dash-card"><p class="text-slate-400 mb-1">Upcoming Lessons</p><h3 class="text-3xl font-bold text-sky-400">${myBookings.length}</h3></div><div class="dash-card"><p class="text-slate-400 mb-1">Account Balance</p><h3 class="text-3xl font-bold text-emerald-400">R0.00</h3></div><div class="dash-card"><p class="text-slate-400 mb-1">New Materials</p><h3 class="text-3xl font-bold text-orange-400">0</h3></div></div><div class="mt-8"><button onclick="goToHome(); setTimeout(() => document.getElementById('booking').scrollIntoView({behavior: 'smooth'}), 100);" class="bg-orange-500 hover:bg-orange-600 transition px-8 py-4 rounded-xl font-bold shadow-lg shadow-orange-500/20 text-lg"><i class="fa-solid fa-calendar-plus mr-2"></i> Schedule a New Lesson</button></div>`;
+            html = `<h2 class="text-3xl font-bold mb-6">Welcome back, ${escapeHTML(currentUserData.email.split('@')[0])}!</h2><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="dash-card"><p class="text-slate-400 mb-1">Upcoming Lessons</p><h3 class="text-3xl font-bold text-sky-400">${myBookings.length}</h3></div><div class="dash-card"><p class="text-slate-400 mb-1">Account Balance</p><h3 class="text-3xl font-bold text-emerald-400">R0.00</h3></div><div class="dash-card"><p class="text-slate-400 mb-1">New Materials</p><h3 class="text-3xl font-bold text-orange-400">0</h3></div></div><div class="mt-8"><button onclick="goToHome(); setTimeout(() => document.getElementById('booking').scrollIntoView({behavior: 'smooth'}), 100);" class="bg-orange-500 hover:bg-orange-600 transition px-8 py-4 rounded-xl font-bold shadow-lg shadow-orange-500/20 text-lg"><i class="fa-solid fa-calendar-plus mr-2"></i> Schedule a New Lesson</button></div>`;
         } 
         else if (view === 'student-schedule') {
             const myBookings = allBookings.filter(b => b.student.email === currentUserData.email);
-            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${b.modules.join(', ')}</p><p class="text-sm text-sky-400">${b.date} at ${b.time} &bull; ${b.venue}</p></div><div class="text-left sm:text-right"><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${b.tutors.map(t=>t.name).join(', ')}</span></div></div>`).join('');
+            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.modules.join(', '))}</p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p></div><div class="text-left sm:text-right"><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span></div></div>`).join('');
             if(!bList) bList = '<p class="text-slate-400">You have no upcoming lessons scheduled.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">My Schedule</h2><div class="dash-card border-sky-500/30">${bList}</div>`;
         }
@@ -964,7 +995,7 @@
         else if (view === 'tutor-schedule') {
             const myTutorName = getTutorNameFromEmail(currentUserData.email);
             const myBookings = allBookings.filter(b => b.tutors.some(t => t.name === myTutorName));
-            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${b.student.firstName} ${b.student.lastName} <span class="text-slate-400 text-sm font-normal">(${b.modules.join(', ')})</span></p><p class="text-sm text-sky-400">${b.date} at ${b.time} &bull; ${b.venue}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400">R${b.total / b.tutors.length}</p></div></div>`).join('');
+            let bList = myBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400">R${b.total / b.tutors.length}</p></div></div>`).join('');
             if(!bList) bList = '<p class="text-slate-400">You have no students scheduled yet.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">Lesson Roster</h2><div class="dash-card border-sky-500/30">${bList}</div>`;
         }
@@ -1003,12 +1034,12 @@
             html = `<h2 class="text-3xl font-bold mb-6">Admin Overview</h2><div class="grid md:grid-cols-4 gap-4 mb-8"><div class="dash-card"><p class="text-slate-400 text-sm">Total Revenue</p><h3 class="text-2xl font-bold text-emerald-400">R${totalRev}</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">System Bookings</p><h3 class="text-2xl font-bold text-white">${allBookings.length}</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">Pending Support</p><h3 class="text-2xl font-bold text-orange-400">0</h3></div><div class="dash-card"><p class="text-slate-400 text-sm">Tutors Active</p><h3 class="text-2xl font-bold text-sky-400">5</h3></div></div>`;
         } 
         else if (view === 'admin-bookings') {
-            let bList = allBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${b.student.firstName} ${b.student.lastName} <span class="text-slate-400 text-sm font-normal">(${b.modules.join(', ')})</span></p><p class="text-sm text-sky-400">${b.date} at ${b.time} &bull; ${b.venue}</p><p class="text-xs text-slate-500 mt-1">${b.student.email} • ${b.student.phone}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400 mb-1">R${b.total}</p><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${b.tutors.map(t=>t.name).join(', ')}</span></div></div>`).join('');
+            let bList = allBookings.map(b => `<div class="bg-[#09111d] p-4 rounded-xl border border-white/10 mb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="font-bold">${escapeHTML(b.student.firstName)} ${escapeHTML(b.student.lastName)} <span class="text-slate-400 text-sm font-normal">(${escapeHTML(b.modules.join(', '))})</span></p><p class="text-sm text-sky-400">${escapeHTML(b.date)} at ${escapeHTML(b.time)} &bull; ${escapeHTML(b.venue)}</p><p class="text-xs text-slate-500 mt-1">${escapeHTML(b.student.email)} • ${escapeHTML(b.student.phone)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-emerald-400 mb-1">R${b.total}</p><span class="text-xs bg-white/10 px-2 py-1 rounded text-slate-300">Tutors: ${escapeHTML(b.tutors.map(t=>t.name).join(', '))}</span></div></div>`).join('');
             if(!bList) bList = '<p class="text-slate-400">No bookings exist in the system yet.</p>';
             html = `<h2 class="text-3xl font-bold mb-6">All Bookings Master List</h2><div class="dash-card border-orange-500/30">${bList}</div>`;
         }
         else if (view === 'admin-users') {
-            html = `<h2 class="text-3xl font-bold mb-6">Manage Users</h2><div class="dash-card"><table class="w-full text-left border-collapse"><thead><tr class="border-b border-white/10 text-slate-400"><th class="pb-3">User</th><th class="pb-3">Role</th><th class="pb-3">Status</th></tr></thead><tbody><tr class="border-b border-white/5"><td class="py-3 font-bold">${currentUserData.email}</td><td class="py-3 text-sky-400">Admin</td><td class="py-3 text-emerald-400">Active (You)</td></tr><tr class="border-b border-white/5"><td class="py-3 font-bold">lilonke@genztutors.com</td><td class="py-3 text-orange-400">Tutor</td><td class="py-3 text-emerald-400">Active</td></tr></tbody></table></div>`;
+            html = `<h2 class="text-3xl font-bold mb-6">Manage Users</h2><div class="dash-card"><table class="w-full text-left border-collapse"><thead><tr class="border-b border-white/10 text-slate-400"><th class="pb-3">User</th><th class="pb-3">Role</th><th class="pb-3">Status</th></tr></thead><tbody><tr class="border-b border-white/5"><td class="py-3 font-bold">${escapeHTML(currentUserData.email)}</td><td class="py-3 text-sky-400">Admin</td><td class="py-3 text-emerald-400">Active (You)</td></tr><tr class="border-b border-white/5"><td class="py-3 font-bold">lilonke@genztutors.com</td><td class="py-3 text-orange-400">Tutor</td><td class="py-3 text-emerald-400">Active</td></tr></tbody></table></div>`;
         }
         else if (view === 'admin-finance') {
             const totalRev = allBookings.reduce((sum, b) => sum + b.total, 0);
@@ -1046,7 +1077,7 @@
     function bookingEls() { return { app: document.getElementById('bookingApp'), notice: document.getElementById('bookingAuthNotice'), message: document.getElementById('bookingMessage'), levels: document.getElementById('academicLevelOptions'), moduleArea: document.getElementById('moduleArea'), modules: document.getElementById('moduleOptions'), tutors: document.getElementById('tutorOptions'), lessonType: document.getElementById('bookingLessonType'), venue: document.getElementById('bookingVenue'), venueLabel: document.getElementById('bookingVenueLabel'), duration: document.getElementById('bookingDuration'), date: document.getElementById('bookingDate'), nextWeekendHint: document.getElementById('nextWeekendHint'), times: document.getElementById('timeSlotOptions'), notes: document.getElementById('bookingNotes'), summary: document.getElementById('bookingSummary'), total: document.getElementById('bookingTotal'), firstName: document.getElementById('bookingFirstName'), lastName: document.getElementById('bookingLastName'), email: document.getElementById('bookingEmail'), phone: document.getElementById('bookingPhone'), idNumber: document.getElementById('bookingIdNumber') }; }
     function showBookingMessage(message, type = 'error') { const el = bookingEls().message; if (!el) return; el.textContent = message; el.classList.remove('hidden', 'bg-red-500/15', 'text-red-300', 'border-red-500/30', 'bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); el.classList.add('border'); if (type === 'success') el.classList.add('bg-emerald-500/15', 'text-emerald-300', 'border-emerald-500/30'); else el.classList.add('bg-red-500/15', 'text-red-300', 'border-red-500/30'); }
     function clearBookingMessage() { const el = bookingEls().message; if (el) el.classList.add('hidden'); }
-    function getBookedSlots() { return JSON.parse(localStorage.getItem('genZTutorsBookedSlots') || '{}'); }
+    function getBookedSlots() { return safeJSONParse('genZTutorsBookedSlots', {}); }
     function saveBookedSlot(date, time) { const bookedSlots = getBookedSlots(); bookedSlots[`${date}|${time}`] = true; localStorage.setItem('genZTutorsBookedSlots', JSON.stringify(bookedSlots)); }
     function isBookedSlot(time) { return Boolean(getBookedSlots()[`${bookingState.date}|${time}`]); }
     function isWeekend(dateValue) { if (!dateValue) return false; const [year, month, day] = dateValue.split('-').map(Number); const date = new Date(year, month - 1, day); return date.getDay() === 0 || date.getDay() === 6; }
@@ -1073,7 +1104,7 @@
     function renderTutors() { const els = bookingEls(); if (!els.tutors) return; const tutors = matchingTutors(); els.tutors.innerHTML = tutors.map(tutor => `<button type="button" class="booking-choice text-left ${bookingState.tutors.includes(tutor.id) ? 'active' : ''}" data-tutor-id="${tutor.id}"><div class="flex items-start justify-between gap-4"><div><p class="font-bold">${tutor.name}</p><p class="text-sm text-slate-300">Star ${tutor.rating} • ${tutor.modules.join(', ')}</p></div><span class="h-5 w-5 rounded border border-white/25 flex-shrink-0 ${bookingState.tutors.includes(tutor.id) ? 'bg-sky-500' : ''}"></span></div></button>`).join(''); }
     function renderVenueOptions() { const els = bookingEls(); if (!els.venue) return; const options = bookingState.lessonType === 'Online' ? onlinePlatforms : bookingState.lessonType === 'In-Person' ? inPersonVenues : []; els.venueLabel.textContent = bookingState.lessonType === 'Online' ? 'Platform' : bookingState.lessonType === 'In-Person' ? 'Venue' : 'Platform / Venue'; els.venue.innerHTML = '<option value="">Select platform or venue</option>' + options.map(option => `<option>${option}</option>`).join(''); els.venue.value = bookingState.venue; }
     function renderTimeSlots() { const els = bookingEls(); if (!els.times) return; els.times.innerHTML = timeSlots.map(slot => { const booked = isBookedSlot(slot); const active = bookingState.time === slot; return `<button type="button" class="time-slot rounded-xl px-3 py-3 font-semibold transition ${booked ? 'booked' : active ? 'bg-orange-500 text-white' : 'bg-white/10 hover:bg-white/15 text-white'}" data-time-slot="${slot}" ${booked ? 'disabled' : ''}>${slot}</button>`; }).join(''); }
-    function renderBookingSummary() { const els = bookingEls(); const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name); const rows = [['Academic Level', bookingState.academicLevel], ['Modules', bookingState.modules.join(', ')], ['Tutors', tutorNames.join(', ')], ['Lesson Type', bookingState.lessonType], ['Platform / Venue', bookingState.venue], ['Duration', bookingState.duration], ['Date & Time', `${bookingState.date} at ${bookingState.time}`], ['Notes', bookingState.notes || 'None']]; els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join(''); els.total.textContent = `R${bookingState.tutors.length * bookingRatePerTutor}`; if (currentUserData && !els.email.value) els.email.value = currentUserData.email; }
+    function renderBookingSummary() { const els = bookingEls(); const tutorNames = bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => tutor.name); const rows = [['Academic Level', bookingState.academicLevel], ['Modules', bookingState.modules.join(', ')], ['Tutors', tutorNames.join(', ')], ['Lesson Type', bookingState.lessonType], ['Platform / Venue', bookingState.venue], ['Duration', bookingState.duration], ['Date & Time', `${bookingState.date} at ${bookingState.time}`], ['Notes', escapeHTML(bookingState.notes) || 'None']]; els.summary.innerHTML = rows.map(([label, value]) => `<div class="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-white/10 pb-3"><span class="font-semibold text-slate-300">${label}:</span><span class="text-white sm:text-right">${value}</span></div>`).join(''); els.total.textContent = `R${bookingState.tutors.length * bookingRatePerTutor}`; if (currentUserData && !els.email.value) els.email.value = currentUserData.email; }
     function resetBooking() { Object.assign(bookingState, { step: 1, academicLevel: '', modules: [], tutors: [], lessonType: '', venue: '', duration: '', date: '', time: '', notes: '' }); ['bookingLessonType', 'bookingVenue', 'bookingDuration', 'bookingDate', 'bookingNotes', 'bookingFirstName', 'bookingLastName', 'bookingEmail', 'bookingPhone', 'bookingIdNumber'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); renderBookingAll(); setBookingStep(1); }
     function renderBookingAll() { renderAcademicLevels(); renderModules(); renderTutors(); renderVenueOptions(); renderTimeSlots(); const els = bookingEls(); if (els.date) els.date.min = new Date().toISOString().split('T')[0]; if (els.nextWeekendHint) els.nextWeekendHint.textContent = `Next available weekend date: ${getNextWeekendDate()}`; }
 
@@ -1094,7 +1125,7 @@
         const booking = { academicLevel: bookingState.academicLevel, modules: [...bookingState.modules], tutors: bookingTutors.filter(tutor => bookingState.tutors.includes(tutor.id)).map(tutor => ({ id: tutor.id, name: tutor.name })), lessonType: bookingState.lessonType, venue: bookingState.venue, duration: bookingState.duration, date: bookingState.date, time: bookingState.time, notes: bookingState.notes, student, total: bookingState.tutors.length * bookingRatePerTutor, createdAt: new Date().toISOString() };
         const submitBtn = document.getElementById('submitBookingRequest'); submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
         const savedOnline = await saveBookingToFirebase(booking);
-        const existingBookings = JSON.parse(localStorage.getItem('genZTutorsBookings') || '[]'); existingBookings.push({ ...booking, savedOnline }); localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
+        const existingBookings = safeJSONParse('genZTutorsBookings', []); existingBookings.push({ ...booking, savedOnline }); localStorage.setItem('genZTutorsBookings', JSON.stringify(existingBookings));
         saveBookedSlot(booking.date, booking.time); showBookingMessage(savedOnline ? 'Booking saved. Opening WhatsApp...' : 'Booking saved locally. Opening WhatsApp...', 'success'); renderTimeSlots();
         if(localStorage.getItem('activeDashView')) renderDashView(localStorage.getItem('activeDashView'));
         setTimeout(() => { window.open(buildWhatsAppBookingUrl(booking, savedOnline), '_blank'); resetBooking(); submitBtn.disabled = false; submitBtn.textContent = 'Send Booking Request'; }, 700);
