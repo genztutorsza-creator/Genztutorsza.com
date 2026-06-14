@@ -750,7 +750,7 @@
             submitBtn.disabled = false;
         }
     });
-    // --- UPDATED GOOGLE AUTHENTICATION FIX ---
+   // --- UPDATED GOOGLE AUTHENTICATION FIX ---
     // Finds ALL instances of the Google Auth button to bypass the duplicate ID bug
     const googleBtns = document.querySelectorAll('#googleAuthBtn');
     
@@ -798,16 +798,6 @@
             }
         });
     });
-
-    // Run Background Init
-    initializeFirebaseAuth(false);
-
-    function showToast(message) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div'); toast.className = 'toast flex items-center gap-3'; toast.innerHTML = `<i class="fa-solid fa-bell"></i> ${message}`;
-        container.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
-    }
 
     // -----------------------------------------
     // MOBILE DASHBOARD NAVIGATION
