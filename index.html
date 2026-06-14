@@ -481,11 +481,11 @@
                     <p class="text-slate-300 mb-6">Select a tutor and specify your lesson preferences.</p>
                     <label class="block text-sm font-semibold text-slate-300 mb-3">Available Tutors</label>
                     <div id="tutorOptions" class="grid gap-4 mb-6"></div>
-                    <div class="grid md:grid-cols-3 gap-5">
+                    <div class="grid md:grid-cols-4 gap-5">
                         <div>
                             <label class="block mb-2 text-sm text-slate-300">Lesson Type</label>
                             <select id="bookingLessonType" class="booking-input">
-                                <option value="">Select lesson type</option>
+                                <option value="">Select type</option>
                                 <option>Online</option>
                                 <option>In-Person</option>
                             </select>
@@ -493,17 +493,25 @@
                         <div>
                             <label id="bookingVenueLabel" class="block mb-2 text-sm text-slate-300">Platform / Venue</label>
                             <select id="bookingVenue" class="booking-input">
-                                <option value="">Select platform or venue</option>
+                                <option value="">Select venue</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block mb-2 text-sm text-slate-300">Lesson Duration</label>
-                            <select id="bookingDuration" class="booking-input">
-                                <option value="">Select duration</option>
-                                <option>30 minutes</option>
-                                <option>1 hour</option>
-                                <option>1.5 hours</option>
-                                <option>2 hours</option>
+                            <label class="block mb-2 text-sm text-slate-300">Package</label>
+                            <select id="bookingPackage" class="booking-input">
+                                <option value="">Select package</option>
+                                <option value="single">Single Lesson (R175)</option>
+                                <option value="monthly">Monthly Package (R595)</option>
+                                <option value="bootcamp">Bootcamp (R250)</option>
+                                <option value="group">Group Lesson (R400)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm text-slate-300">Extra Time (+R175)</label>
+                            <select id="bookingExtraTime" class="booking-input">
+                                <option value="0">None</option>
+                                <option value="1">+ 1hr 15mins</option>
+                                <option value="2">+ 2hrs 30mins</option>
                             </select>
                         </div>
                     </div>
