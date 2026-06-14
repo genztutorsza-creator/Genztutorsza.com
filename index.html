@@ -966,8 +966,7 @@
     // -----------------------------------------
     let currentChatContactEmail = null, currentChatContactName = null, pendingAttachmentData = null;
     const contactDirectory = { "Lilonke (Accounting)": "lilonke@genztutors.com", "Tyren M. (Commerce)": "tyren@genztutors.com", "Admin Support": "admin@genztutors.com", "All Tutors (Broadcast)": "broadcast_tutors" };
-    function initMockDatabase() { if (!localStorage.getItem('genzMessages')) localStorage.setItem('genzMessages', JSON.stringify([{ sender: "lilonke@genztutors.com", receiver: "student.john@gmail.com", text: "Don't forget to review IAS 1!", time: new Date().toISOString() }])); }
-    initMockDatabase();
+    
 
     window.handleFileSelect = function(event) {
         const file = event.target.files[0]; if (!file) return;
@@ -994,45 +993,120 @@
     };
     window.removeAttachment = function() { pendingAttachmentData = null; const indicator = document.getElementById('attachmentIndicator'); if(indicator) { indicator.classList.add('hidden'); indicator.classList.remove('flex'); } };
     
+    let chatUnsubscribe = null;
+
     window.selectChat = function(name, emailOverride = null) { 
         currentChatContactName = name; 
         currentChatContactEmail = emailOverride || contactDirectory[name] || name; 
         const headerName = document.getElementById('chatHeaderName'); 
         if (headerName) headerName.innerHTML = `<i class="fa-solid fa-user-circle mr-2 text-slate-400"></i> ${escapeHTML(name)}`; 
         if(window.innerWidth < 768 && document.getElementById('dashSidebarOverlay').classList.contains('hidden') === false) { toggleDashSidebar(); }
-        renderChatHistory(); 
+        
+        // Trigger the live Firebase fetch
+        loadLiveChat(); 
     };
 
     window.downloadMockAttachment = function(filename) {
         alert(`In a real app, this downloads: ${filename}`);
     };
 
-    function renderChatHistory() {
-        const msgsArea = document.getElementById('chatMessagesArea'); if (!msgsArea || !currentChatContactEmail || !currentUserData) return;
-        const allMessages = safeJSONParse('genzMessages', []); const myEmail = currentUserData.email.toLowerCase();
-        const chatHistory = allMessages.filter(m => (m.sender === myEmail && m.receiver === currentChatContactEmail) || (m.sender === currentChatContactEmail && m.receiver === myEmail) || (m.receiver === 'broadcast_tutors' && (myEmail.includes('tutor') || myEmail.includes('admin') || currentChatContactEmail === 'broadcast_tutors')));
-        if (chatHistory.length === 0) { msgsArea.innerHTML = `<div class="text-center text-slate-500 text-sm mt-10">This is the beginning of your conversation with ${escapeHTML(currentChatContactName)}.</div>`; return; }
-        let html = '';
-        chatHistory.forEach(msg => {
-            const isMe = msg.sender === myEmail; const timeStr = new Date(msg.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let attachmentHtml = '';
-            if (msg.attachment) {
-                if (msg.attachment.type.startsWith('image/')) attachmentHtml = `<img src="${escapeHTML(msg.attachment.content)}" class="mt-2 max-w-[200px] rounded border border-white/20">`;
-                else attachmentHtml = `<a href="#" onclick="downloadMockAttachment('${escapeHTML(msg.attachment.name)}'); return false;" class="chat-attachment"><i class="fa-solid fa-file-arrow-down mr-2"></i>${escapeHTML(msg.attachment.name)}</a>`;
+    async function loadLiveChat() {
+        const msgsArea = document.getElementById('chatMessagesArea'); 
+        if (!msgsArea || !currentChatContactEmail || !currentUserData) return;
+        
+        msgsArea.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-sky-500 mb-2"></i><p class="text-slate-400">Connecting to chat...</p></div>';
+
+        const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
+        const db = firestoreModule.getFirestore(firebaseAuth.app);
+        const myEmail = currentUserData.email.toLowerCase();
+
+        // Stop listening to the previous chat if the user switches contacts
+        if (chatUnsubscribe) chatUnsubscribe();
+
+        // Query Firestore for messages where the current user is a participant
+        const q = firestoreModule.query(
+            firestoreModule.collection(db, 'messages'),
+            firestoreModule.where('participants', 'array-contains', myEmail)
+        );
+
+        // onSnapshot creates a live, real-time connection to the database
+        chatUnsubscribe = firestoreModule.onSnapshot(q, (snapshot) => {
+            const allMessages = [];
+            snapshot.forEach(doc => allMessages.push({ id: doc.id, ...doc.data() }));
+
+            // Sort messages chronologically
+            allMessages.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+            // Filter out messages to ensure we only see the ones with the currently selected contact
+            const chatHistory = allMessages.filter(m => 
+                (m.sender === myEmail && m.receiver === currentChatContactEmail) || 
+                (m.sender === currentChatContactEmail && m.receiver === myEmail) || 
+                (m.receiver === 'broadcast_tutors' && (myEmail.includes('tutor') || myEmail.includes('admin') || currentChatContactEmail === 'broadcast_tutors'))
+            );
+
+            if (chatHistory.length === 0) { 
+                msgsArea.innerHTML = `<div class="text-center text-slate-500 text-sm mt-10">This is the beginning of your conversation with ${escapeHTML(currentChatContactName)}.</div>`; 
+                return; 
             }
-            if (isMe) html += `<div class="chat-message-sent"><p class="text-sm text-white">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-sky-200/50 mt-1 text-right">${timeStr}</p></div>`;
-            else { let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast from Admin • ` : ''; html += `<div class="chat-message-received"><p class="text-sm text-slate-200">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-slate-500 mt-1">${senderLabel}${timeStr}</p></div>`; }
+            
+            let html = '';
+            chatHistory.forEach(msg => {
+                const isMe = msg.sender === myEmail; 
+                const timeStr = new Date(msg.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                let attachmentHtml = '';
+                if (msg.attachment) {
+                    if (msg.attachment.type.startsWith('image/')) attachmentHtml = `<img src="${escapeHTML(msg.attachment.content)}" class="mt-2 max-w-[200px] rounded border border-white/20">`;
+                    else attachmentHtml = `<a href="#" onclick="downloadMockAttachment('${escapeHTML(msg.attachment.name)}'); return false;" class="chat-attachment"><i class="fa-solid fa-file-arrow-down mr-2"></i>${escapeHTML(msg.attachment.name)}</a>`;
+                }
+                
+                if (isMe) html += `<div class="chat-message-sent"><p class="text-sm text-white">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-sky-200/50 mt-1 text-right">${timeStr}</p></div>`;
+                else { 
+                    let senderLabel = msg.receiver === 'broadcast_tutors' ? `Broadcast from Admin • ` : ''; 
+                    html += `<div class="chat-message-received"><p class="text-sm text-slate-200">${escapeHTML(msg.text)}</p>${attachmentHtml}<p class="text-[10px] text-slate-500 mt-1">${senderLabel}${timeStr}</p></div>`; 
+                }
+            });
+            msgsArea.innerHTML = html; 
+            msgsArea.scrollTop = msgsArea.scrollHeight; 
         });
-        msgsArea.innerHTML = html; msgsArea.scrollTop = msgsArea.scrollHeight; 
     }
 
-    window.sendMessage = function() {
+    window.sendMessage = async function() {
         if (!currentChatContactEmail) { alert("Please select a contact from the list first."); return; }
-        const inputEl = document.getElementById('chatInput'); const text = inputEl.value.trim();
+        const inputEl = document.getElementById('chatInput'); 
+        const text = inputEl.value.trim();
         if (!text && !pendingAttachmentData) return; 
-        const newMsg = { sender: currentUserData.email.toLowerCase(), receiver: currentChatContactEmail, text: text, attachment: pendingAttachmentData, time: new Date().toISOString() };
-        const allMessages = safeJSONParse('genzMessages', []); allMessages.push(newMsg); localStorage.setItem('genzMessages', JSON.stringify(allMessages));
-        inputEl.value = ''; removeAttachment(); renderChatHistory(); showToast(`Email notification dispatched to ${currentChatContactName}`);
+
+        const sendBtn = document.getElementById('chatSendBtn');
+        sendBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        sendBtn.disabled = true;
+
+        const myEmail = currentUserData.email.toLowerCase();
+        
+        // We add a 'participants' array to make real-time querying highly efficient
+        const newMsg = { 
+            sender: myEmail, 
+            receiver: currentChatContactEmail, 
+            participants: [myEmail, currentChatContactEmail],
+            text: text, 
+            attachment: pendingAttachmentData, 
+            time: new Date().toISOString() 
+        };
+
+        try {
+            const firestoreModule = await import('https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js');
+            const db = firestoreModule.getFirestore(firebaseAuth.app);
+            await firestoreModule.addDoc(firestoreModule.collection(db, 'messages'), newMsg);
+            
+            inputEl.value = ''; 
+            removeAttachment(); 
+            // We don't need to manually call render here because the onSnapshot listener will detect the new database entry and instantly update the UI!
+        } catch (error) {
+            console.error("Error sending live message:", error);
+            showToast("Failed to send message. Please check your connection.");
+        } finally {
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+            sendBtn.disabled = false;
+        }
     };
     document.addEventListener('keypress', function(e) { if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'chatInput') window.sendMessage(); });
 
