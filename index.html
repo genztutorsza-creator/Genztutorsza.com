@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+     <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./coop-sw.js')
+      .then(reg => {
+        // If the service worker just took control, reload once to apply headers
+        if (!navigator.serviceWorker.controller) {
+          window.location.reload();
+        }
+      })
+      .catch(err => console.error('COOP Service Worker registration failed:', err));
+  }
+</script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gen Z Tutors | Learn Differently</title>
@@ -88,18 +101,6 @@
         }
     </script>
 </head>
-    <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./coop-sw.js')
-      .then(reg => {
-        // If the service worker just took control, reload once to apply headers
-        if (!navigator.serviceWorker.controller) {
-          window.location.reload();
-        }
-      })
-      .catch(err => console.error('COOP Service Worker registration failed:', err));
-  }
-</script>
 <body>
 
 <div id="toastContainer"></div>
